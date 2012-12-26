@@ -1,0 +1,110 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Miniplate</title>
+        <style rel="stylesheet" href="http://yui.yahooapis.com/3.7.3/build/cssreset/cssreset-min.css"/>
+        <style>
+            html {
+                background: #eee;
+                font-family: Arial, sans-serif;
+            }
+
+            h1 {
+                font-family: Georgia, serif;
+            }
+
+            div.container {
+                margin: 120px auto;
+                width: 600px;
+            }
+
+            .effect {
+                float: left;
+                width: 33%;
+            }
+
+            label {
+                display: block;
+            }
+
+            hr {
+                clear: both;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>New Music Machine</h1>
+            <p class="icon">Test suite.</p>
+
+            <div class="effect delay">
+                <h2>Delay</h2>
+                <label for="delay-delay-time"/>Delay time</label>
+                <input name="delay-delay-time" type="range" min="0" max="1" step="0.1"/>
+
+                <label for="delay-feedback"/>Feedback</label>
+                <input name="delay-feedback" type="range" min="0" max="1" step="0.1"/>
+
+                <label for="delay-effect-level"/>Effect Level</label>
+                <input name="delay-effect-level" type="range" min="0" max="1" step="0.1"/>
+            </div>
+            <div class="effect reverb">
+                <h2>Reverb</h2>
+                <label for="reverb-time">Reverb time</label>
+                <input name="reverb-time" type="range" min="0" max="1" step="0.1"/>
+
+                <label for="reverb-effect-level"/>Effect Level</label>
+                <input name="reverb-effect-level" type="range" min="0" max="1" step="0.1"/>
+            </div>
+
+            <hr/>
+            <button name="play-note">Play note</button>
+        </div>
+        <script src="new-music-machine.js"></script>
+        <script>
+            // Create context and nodes
+            var context = new webkitAudioContext(),
+                output = context.destination,
+                myMusicMachine = new MusicMachine(context),
+                delay = myMusicMachine.createDelay({delayTime: 0.1}),
+                reverb = myMusicMachine.createReverb(),
+                reverb2 = myMusicMachine.createReverb();
+
+            // Play short sound
+            var playNote = function () {
+                var osc = context.createOscillator();
+
+                osc.connect(delay.input);
+                delay.connect(reverb.input);
+                reverb.connect(context.destination);
+
+                osc.start(myMusicMachine.now());
+                osc.stop(myMusicMachine.now() + 0.1);
+            };
+
+            // Slider event listeners
+            // Delay
+            document.getElementsByName('delay-delay-time')[0].addEventListener('change', function () {
+                delay.setDelayTime(this.value);
+            });
+
+            document.getElementsByName('delay-feedback')[0].addEventListener('change', function () {
+                delay.setFeedback(this.value);
+            });
+
+            document.getElementsByName('delay-effect-level')[0].addEventListener('change', function () {
+                delay.setEffectLevel(this.value);
+            });
+
+            // Reverb
+            document.getElementsByName('reverb-effect-level')[0].addEventListener('change', function () {
+                reverb.setEffectLevel(this.value);
+            });
+
+            document.getElementsByName('play-note')[0].addEventListener('click', function () {
+                playNote();
+            });
+        </script>
+    </body>
+</html>
