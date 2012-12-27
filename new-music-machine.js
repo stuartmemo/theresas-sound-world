@@ -1,7 +1,8 @@
-/*******************
+/****************************
 * New Music Machine
-* by Stuart Memo
-********************/
+* Audio effects library
+* Copyright 2012 Stuart Memo
+*****************************/
 
 (function (window, undefined) {
 
@@ -13,7 +14,7 @@
         };
 
         MusicMachine.prototype.now = function () {
-            return context.currentTime;
+            return this.context.currentTime;
         };
 
         /**************
@@ -54,6 +55,155 @@
         };
 
         /**********************
+        * createCompressor
+        * Creates compressor
+        ***********************/
+
+        MusicMachine.prototype.createCompressor = function (settings) {
+
+            /**************************************************************
+
+            Compressor 
+            ==========
+
+            +----------+     +----------------------+     +---------------+
+            |  Input   |-->--|       Compressor     |-->--|     Output    |
+            | (Source) |     | (DynamicsCompressor) |     | (Destination) |
+            +----------+     +----------------------+     +---------------+
+
+            **************************************************************/
+
+            var mmNode = {},
+                compressor = context.createDynamicsCompressor();
+
+            var config = {};     
+
+            // Set values
+
+            settings = settings || {};
+
+            mmNode.input = context.createGain()
+
+            mmNode.connect = function (output) {
+                mmNode.connect(compressor);
+                compressor.connect(output);
+            };
+
+            return mmNode;
+        };
+
+        /****************************
+        * createDistortion 
+        * Creates a distortion effect
+        *****************************/
+
+        MusicMachine.prototype.createDistortion = function (settings) {
+
+            /******************************************************
+
+            Distortion
+            ==========
+
+            +----------+     +--------------+
+            |  Input   |-->--|  Distortion  |
+            | (Source) |     | (WaveShaper) |
+            +----------+     +--------------+
+                                |        | 
+                 +-----------------+   +-------------------+
+                 | Low-pass Filter |   |  High-pass Filter |
+                 |  (BiquadFilter) |   |   (BiquadFilter)  |
+                 +-----------------+   +-------------------+
+                                |         |
+                             +---------------+
+                             |     Output    |
+                             | (Destination) |
+                             +---------------+
+
+            ******************************************************/
+
+            var distortion = context.createWaveShaper(),
+                lowpass = context.createBiquadFilter(),
+                highpass = context.createBiquadFilter(),
+                mmNode = {};
+
+            var config = {
+                distortionLevel: 0.5
+            };
+
+            // Set values
+            settings = settings || {};
+
+            mmNode.input = context.createGain();
+
+            mmNode.connect = function (output) {
+                mmNode.input.connect(distortion);
+                distortion.connect(lowpass);
+                distortion.connect(highpass);
+                lowpass.connect(output);
+                highpass.connect(output);
+            };
+
+            mmNode.setDistotionLevel = function (d) {
+
+            };
+
+            mmNode.setTone = function (t) {
+
+            };
+
+            return mmNode;
+        };
+
+        /**********************
+        * createFlanger
+        * Creates flange effect
+        ***********************/
+
+        MusicMachine.prototype.createFlanger = function (settings) {
+
+            /****************************
+
+            Flanger 
+            =======
+
+            +----------+
+            |  Input   |
+            | (Source) |
+            +----------+
+
+            *****************************/
+
+            var mmNode = {};
+
+            return mmNode;
+        };
+
+        /**********************
+        * createPhaser
+        * Creates phaser effect
+        ***********************/
+
+        MusicMachine.prototype.createPhaser = function (settings) {
+
+            /****************************
+
+            Phaser
+            ======
+
+            +----------+
+            |  Input   |
+            | (Source) |
+            +----------+
+
+            *****************************/
+
+            var mmNode = {};
+
+            return mmNode;
+
+        };
+
+        /**********************
         * createReverb
         * Creates reverb effect
         ***********************/
@@ -62,8 +212,8 @@
 
             /***********************************
 
-            Reverb effect
-            =============
+            Reverb
+            ======
 
             +----------+         +-------------+
             |  Input   |---->----|   Reverb    |
@@ -95,6 +245,7 @@
             effectLevel.gain.value = settings.effectLevel || config.effectLevel;
 
             this.loadFiles({
+                'hall': 'samples/bright-hall.wav',
                 'room': 'samples/medium-room.wav',
                 'spring': 'samples/feedback-spring.wav'
             }, function (buffers) {
