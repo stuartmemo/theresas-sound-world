@@ -62,9 +62,16 @@
                 <label for="distortion-effect-level"/>Effect Level</label>
                 <input name="distortion-effect-level" type="range" min="0" max="1" step="0.1"/>
             </div>
+            <div class="effect phaser">
+                <h2>Phaser</h2>
+                <label for="phaser-cutoff-level"/>Cutoff Level</label>
+                <input name="phaser-cutoff-level" type="range" min="0" max="1000" step="10"/>
+            </div>
+
 
             <hr/>
             <button name="play-note">Play note</button>
+            <button name="play-file">Play file</button>
         </div>
         <script src="new-music-machine.js"></script>
         <script>
@@ -74,7 +81,7 @@
                 myMusicMachine = new MusicMachine(context),
                 delay = myMusicMachine.createDelay({delayTime: 0.1}),
                 reverb = myMusicMachine.createReverb(),
-                reverb2 = myMusicMachine.createReverb();
+                phaser = myMusicMachine.createPhaser();
 
             // Play short sound
             var playNote = function () {
@@ -82,11 +89,28 @@
 
                 osc.connect(delay.input);
                 delay.connect(reverb.input);
-                reverb.connect(context.destination);
+                reverb.connect(phaser.input);
+                phaser.connect(context.destination);
 
                 osc.start(myMusicMachine.now());
-                osc.stop(myMusicMachine.now() + 0.1);
+                osc.stop(myMusicMachine.now() + 10);
             };
+
+            var buffs;
+
+            myMusicMachine.loadFiles({'guitar': 'samples/guitar.ogg'}, function (buffers) {
+                buffs = buffers;
+            });
+
+            var playFile = function () {
+                var source = context.createBufferSource();
+
+                source.buffer = buffs.guitar;
+                source.connect(phaser.input);
+                //source.connect(context.destination)
+                phaser.connect(context.destination);
+                source.start(myMusicMachine.now());
+            }
 
             // Slider event listeners
             // Delay
@@ -107,8 +131,17 @@
                 reverb.setEffectLevel(this.value);
             });
 
+            // Phaser
+            document.getElementsByName('phaser-cutoff-level')[0].addEventListener('change', function () {
+                phaser.setCutoff(this.value);
+            });
+
             document.getElementsByName('play-note')[0].addEventListener('click', function () {
                 playNote();
+            });
+
+            document.getElementsByName('play-file')[0].addEventListener('click', function () {
+                playFile();
             });
         </script>
     </body>

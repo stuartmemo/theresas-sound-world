@@ -17,6 +17,21 @@
             return this.context.currentTime;
         };
 
+        /***********************************
+        * chainNodes
+        * Connect an array of nodes in order
+        ************************************/
+
+        var chainNodes = function (nodes) {
+            var numberOfNodes = nodes.length - 1;
+
+            for (var i = 0; i < numberOfNodes; i++) {
+                console.log('connecting: ' + nodes[i])
+                console.log(' to: ' + nodes[i + 1]);
+                nodes[i].connect(nodes[i + 1]);
+            }
+        };
+
         /**************
         * loadFiles
         * Asset manager
@@ -52,6 +67,19 @@
                 numberOfFiles++;
                 loadFile(file, files[file], returnObj, callback);
             }
+        };
+
+        /**********************
+        * playBuffer
+        * Play preloaded buffer
+        **********************/
+
+        MusicMachine.prototype.playBuffer = function (buffer) {
+            var source = context.createBufferSource();
+
+            source.buffer = buffer;
+            source.connect(this.context.destination);
+            source.start(this.now());
         };
 
         /**********************
@@ -178,6 +206,79 @@
             return mmNode;
         };
 
+        /*************
+        * createLFO
+        * Creates LFO
+        *************/
+
+        MusicMachine.prototype.createLFO = function (settings) {
+
+            /*********************************
+
+            LFO 
+            ===
+            +----------+     +------------+
+            |    LFO   |-->--|   Target   |
+            | (Source) |     | (Any Node) |
+            +----------+     +------------+
+
+            *********************************/
+
+            var mmNode = {},
+                lfo = this.context.createOscillator();
+
+            var config = {};
+
+            // Set values
+            settings = settings || {};
+
+            lfo.frequency.value = 10;
+
+            mmNode.input = this.context.createGain();
+
+            mmNode.connect = function (output) {
+                lfo.connect(output);
+            }
+
+            mmNode.modulate = function (target) {
+
+            }
+
+            return mmNode;
+        };
+
+        /****************
+        * createTremolo
+        * Creates tremolo
+        ****************/
+
+        MusicMachine.prototype.createTremolo = function (settings) {
+
+            /*************************
+
+            Tremolo
+            =======
+
+            ***/
+
+            var mmNode = {},
+                tremolo = this.context.createGain(),
+                lfo = this.createLFO();
+
+            var config = {};
+
+            // Set values
+            settings = settings || {};
+
+            mmNode.input = this.context.createGain();
+
+            mmNode.connect = function (output) {
+
+            };
+
+            return mmNode;
+        };
+
         /**********************
         * createPhaser
         * Creates phaser effect
@@ -189,18 +290,62 @@
 
             Phaser
             ======
-
-            +----------+
-            |  Input   |
-            | (Source) |
-            +----------+
+            +----------+     +-----------------+               +-----------------+
+            |  Input   |-->--| All-pass Filter |-->--(..n)-->--| All-pass Filter |
+            | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
+            +----------+     +-----------------+               +-----------------+
+                  |                |      |                           |
+                  v                v      ʌ                           v 
+            +---------------+      |      |                     +----------+
+            |     Output    |---<--+      +----------<----------| Feedback |
+            | (Destination) |                                   |  (Gain)  |
+            +---------------+                                   +----------+
 
             *****************************/
 
-            var mmNode = {};
+            var mmNode = {},
+                allPassFilters = [],
+                feedback = this.context.createGain();
+
+            var config = {
+                rate: 8,
+                depth: 0.5
+            };
+
+            // Set values
+            settings = settings || {};
+
+            feedback.gain.value = 0.8;
+
+            for (var i = 0; i < config.rate; i++) {
+                allPassFilters[i] = this.context.createBiquadFilter();
+                allPassFilters[i].type = 7;
+                allPassFilters[i].frequency.value = 100 * i;
+            }
+
+            mmNode.input = this.context.createGain();
+
+            for (var i = 0; i < allPassFilters.length - 1; i++) {
+                allPassFilters[i].connect(allPassFilters[i + 1]);
+            }
+
+            //chainNodes(allPassFilters);
+
+            mmNode.connect = function (output) {
+                mmNode.input.connect(output);
+                mmNode.input.connect(allPassFilters[0])
+                allPassFilters[allPassFilters.length - 1].connect(feedback);
+                allPassFilters[allPassFilters.length - 1].connect(output)
+                feedback.connect(allPassFilters[0]);
+            };
+
+            mmNode.setCutoff = function (c) {
+                for (var i = 0; i < allPassFilters.length; i++) {
+//                    allPassFilters[i].frequency.value = c;
+                }
+            }
 
             return mmNode;
-
         };
 
         /**********************
@@ -214,7 +359,6 @@
 
             Reverb
             ======
-
             +----------+         +-------------+
             |  Input   |---->----|   Reverb    |
             | (Source) |         | (Convolver) |
@@ -280,7 +424,6 @@
 
             Delay effect
             ============
-            
             +-------+         +----------+     +----------+
             | Input |---->----|   Delay  |-->--| Feedback |
             | (Osc) |         |  (Delay) |     |  (Gain)  |
@@ -312,14 +455,12 @@
             feedback.gain.value = settings.feedback || config.feedback;
             effectLevel.gain.value = settings.effectLevel || config.effectLevel;
 
-            // Set up connectections
-            delay.connect(feedback);
-            feedback.connect(delay);
-            delay.connect(effectLevel);
-
             mmNode.input = context.createGain();
 
             mmNode.connect = function (output) {
+                delay.connect(feedback);
+                feedback.connect(delay);
+                delay.connect(effectLevel);
                 mmNode.input.connect(output);
                 mmNode.input.connect(delay);
                 effectLevel.connect(output);
