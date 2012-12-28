@@ -120,6 +120,83 @@
             return mmNode;
         };
 
+        /********************
+        * createDelay
+        * Creates delay effect
+        *********************/ 
+
+        MusicMachine.prototype.createDelay = function (settings) {
+
+            /*********************************************
+
+            Delay effect
+            ============
+            +-------+         +----------+     +----------+
+            | Input |---->----|   Delay  |-->--| Feedback |
+            | (Osc) |         |  (Delay) |     |  (Gain)  |
+            +-------+         +----------+     +----------+
+                |                |   |              |
+                v                v   +-----<--------+
+                |                |   
+            +---------------+   +--------------+        
+            |     Output    |<--| Effect Level |
+            | (Destination) |   |    (Gain)    |
+            +---------------+   +--------------+
+
+            **********************************************/
+
+            var delay = context.createDelay(),
+                feedback = context.createGain(),
+                effectLevel = context.createGain(),
+                mmNode = {};
+
+            var config = {
+                delayTime: 0.5,
+                feedback: 0.5,
+                effectLevel: 0.5,
+            };
+
+            // Set values
+            settings = settings || {};
+            delay.delayTime.value =  settings.delayTime || config.delayTime;
+            feedback.gain.value = settings.feedback || config.feedback;
+            effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+
+            mmNode.input = context.createGain();
+
+            mmNode.connect = function (output) {
+                delay.connect(feedback);
+                feedback.connect(delay);
+                delay.connect(effectLevel);
+                mmNode.input.connect(output);
+                mmNode.input.connect(delay);
+                effectLevel.connect(output);
+            };
+
+            mmNode.setPreset = function (settings) {
+                settings = settings || {};
+                delay.delayTime.value =  settings.delayTime || config.delayTime;
+                feedback.gain.value = settings.feedback || config.feedback;
+                effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+            };
+
+            mmNode.setDelayTime = function (dt) {
+                delay.delayTime.value = dt;
+            };
+
+            mmNode.setFeedback = function (fb) {
+                feedback.gain.value = fb;
+            };
+
+            mmNode.setEffectLevel = function (e) {
+                effectLevel.gain.value = e;
+            }
+
+            return mmNode;
+        };
+
+
+
         /****************************
         * createDistortion 
         * Creates a distortion effect
@@ -217,63 +294,44 @@
 
             LFO 
             ===
-            +----------+     +------------+
-            |    LFO   |-->--|   Target   |
-            | (Source) |     | (Any Node) |
-            +----------+     +------------+
+            +----------+     +--------------+
+            |    LFO   |-->--|    Target    |
+            | (Source) |     | (AudioParam) |
+            +----------+     +--------------+
 
             *********************************/
 
             var mmNode = {},
-                lfo = this.context.createOscillator();
+                lfo = this.context.createOscillator(),
+                that = this;
 
             var config = {};
 
             // Set values
-            settings = settings || {};
+            settings = settings || {
+                frequency: 10,
+                waveType: 'TRIANGLE'
+            };
 
-            lfo.frequency.value = 10;
+            lfo.frequency.value = settings.frequency || config.frequency;
+            lfo.type = lfo[settings.waveType];
 
             mmNode.input = this.context.createGain();
-
-            mmNode.connect = function (output) {
-                lfo.connect(output);
-            }
 
             mmNode.modulate = function (target) {
+                lfo.connect(target);
+            };
 
-            }
+            mmNode.setFrequency = function (f) {
+                lfo.frequency.value = f;
+            };
 
-            return mmNode;
-        };
+            mmNode.start = function () {
+                lfo.start(that.now());
+            };
 
-        /****************
-        * createTremolo
-        * Creates tremolo
-        ****************/
-
-        MusicMachine.prototype.createTremolo = function (settings) {
-
-            /*************************
-
-            Tremolo
-            =======
-
-            ***/
-
-            var mmNode = {},
-                tremolo = this.context.createGain(),
-                lfo = this.createLFO();
-
-            var config = {};
-
-            // Set values
-            settings = settings || {};
-
-            mmNode.input = this.context.createGain();
-
-            mmNode.connect = function (output) {
-
+            mmNode.stop = function () {
+                lfo.stop(this.context.now());
             };
 
             return mmNode;
@@ -413,77 +471,68 @@
             return mmNode;
         };
 
-        /********************
-        * createDelay
-        * Creates delay effect
-        *********************/ 
+        /****************
+        * createTremolo
+        * Creates tremolo
+        ****************/
 
-        MusicMachine.prototype.createDelay = function (settings) {
+        MusicMachine.prototype.createTremolo = function (settings) {
 
-            /*********************************************
+            /******************************
 
-            Delay effect
-            ============
-            +-------+         +----------+     +----------+
-            | Input |---->----|   Delay  |-->--| Feedback |
-            | (Osc) |         |  (Delay) |     |  (Gain)  |
-            +-------+         +----------+     +----------+
-                |                |   |              |
-                v                v   +-----<--------+
-                |                |   
-            +---------------+   +--------------+        
-            |     Output    |<--| Effect Level |
-            | (Destination) |   |    (Gain)    |
-            +---------------+   +--------------+
+            Tremolo
+            =======
+            +---------+     +-------------+
+            |   LFO   |-->--|   Any Node  |
+            |         |     | (Amplitude) |
+            +---------+     +-------------+
 
-            **********************************************/
+            ******************************/
 
-            var delay = context.createDelay(),
-                feedback = context.createGain(),
-                effectLevel = context.createGain(),
-                mmNode = {};
+            var mmNode = {},
+                tremolo = this.context.createGain(),
+                lfo = this.createLFO(),
+                that = this;
 
-            var config = {
-                delayTime: 0.5,
-                feedback: 0.5,
-                effectLevel: 0.5,
-            };
+            var config = {};
 
             // Set values
             settings = settings || {};
-            delay.delayTime.value =  settings.delayTime || config.delayTime;
-            feedback.gain.value = settings.feedback || config.feedback;
-            effectLevel.gain.value = settings.effectLevel || config.effectLevel;
 
-            mmNode.input = context.createGain();
+            mmNode.input = this.context.createGain();
 
             mmNode.connect = function (output) {
-                delay.connect(feedback);
-                feedback.connect(delay);
-                delay.connect(effectLevel);
                 mmNode.input.connect(output);
-                mmNode.input.connect(delay);
-                effectLevel.connect(output);
+                lfo.modulate(mmNode.input.gain);
+                lfo.start(that.now())
             };
 
-            mmNode.setPreset = function (settings) {
-                settings = settings || {};
-                delay.delayTime.value =  settings.delayTime || config.delayTime;
-                feedback.gain.value = settings.feedback || config.feedback;
-                effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+            mmNode.setRate = function (r) {
+                lfo.setFrequency(r);
             };
 
-            mmNode.setDelayTime = function (dt) {
-                delay.delayTime.value = dt;
-            };
+            return mmNode;
+        };
 
-            mmNode.setFeedback = function (fb) {
-                feedback.gain.value = fb;
-            };
+        /*****************
+        * createVibrato
+        * Creates vibrato 
+        *****************/
 
-            mmNode.setEffectLevel = function (e) {
-                effectLevel.gain.value = e;
-            }
+        MusicMachine.prototype.createVibrato = function (settings) {
+
+            /******************************
+
+            Vibrato
+            =======
+            +---------+     +-------------+
+            |   LFO   |-->--|   Any Node  |
+            |         |     | (Frequency) |
+            +---------+     +-------------+
+
+            ******************************/
+
+            var mmNode = {};
 
             return mmNode;
         };

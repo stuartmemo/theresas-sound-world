@@ -67,7 +67,11 @@
                 <label for="phaser-cutoff-level"/>Cutoff Level</label>
                 <input name="phaser-cutoff-level" type="range" min="0" max="1000" step="10"/>
             </div>
-
+            <div class="effect tremolo">
+                <h2>Tremolo</h2>
+                <label for="tremolo-rate"/>Rate</label>
+                <input name="tremolo-rate" type="range" min="0" max="20" step="1"/>
+            </div>
 
             <hr/>
             <button name="play-note">Play note</button>
@@ -78,19 +82,32 @@
             // Create context and nodes
             var context = new webkitAudioContext(),
                 output = context.destination,
+                volume = context.createGain(),
                 myMusicMachine = new MusicMachine(context),
                 delay = myMusicMachine.createDelay({delayTime: 0.1}),
                 reverb = myMusicMachine.createReverb(),
-                phaser = myMusicMachine.createPhaser();
+                phaser = myMusicMachine.createPhaser(),
+                lfo = myMusicMachine.createLFO(),
+                tremolo = myMusicMachine.createTremolo();
 
             // Play short sound
             var playNote = function () {
                 var osc = context.createOscillator();
 
+                osc.type = osc.SQUARE;
+
                 osc.connect(delay.input);
                 delay.connect(reverb.input);
-                reverb.connect(phaser.input);
-                phaser.connect(context.destination);
+                reverb.connect(tremolo.input);
+
+                volume.gain.value = 0.2;
+                /*
+                lfo.modulate(osc.frequency);
+                lfo.start();
+                */
+
+                tremolo.connect(volume);
+                volume.connect(context.destination);
 
                 osc.start(myMusicMachine.now());
                 osc.stop(myMusicMachine.now() + 10);
@@ -134,6 +151,11 @@
             // Phaser
             document.getElementsByName('phaser-cutoff-level')[0].addEventListener('change', function () {
                 phaser.setCutoff(this.value);
+            });
+
+            // Tremolo 
+            document.getElementsByName('tremolo-rate')[0].addEventListener('change', function () {
+                tremolo.setRate(this.value);
             });
 
             document.getElementsByName('play-note')[0].addEventListener('click', function () {
