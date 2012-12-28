@@ -526,29 +526,6 @@
             return mmNode;
         };
 
-        /*****************
-        * createVibrato
-        * Creates vibrato 
-        *****************/
-
-        MusicMachine.prototype.createVibrato = function (settings) {
-
-            /******************************
-
-            Vibrato
-            =======
-            +---------+     +-------------+
-            |   LFO   |-->--|   Any Node  |
-            |         |     | (Frequency) |
-            +---------+     +-------------+
-
-            ******************************/
-
-            var mmNode = {};
-
-            return mmNode;
-        };
-
         return function (context) {
             return new MusicMachine(context);
         };
