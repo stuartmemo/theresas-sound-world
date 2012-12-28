@@ -303,6 +303,7 @@
 
             var mmNode = {},
                 lfo = this.context.createOscillator(),
+                depth = this.context.createGain(),
                 that = this;
 
             var config = {};
@@ -310,20 +311,27 @@
             // Set values
             settings = settings || {
                 frequency: 10,
+                depth: 1,
                 waveType: 'TRIANGLE'
             };
 
             lfo.frequency.value = settings.frequency || config.frequency;
+            depth.gain.value = settings.depth || config.depth;
             lfo.type = lfo[settings.waveType];
 
             mmNode.input = this.context.createGain();
 
             mmNode.modulate = function (target) {
-                lfo.connect(target);
+                lfo.connect(depth);
+                depth.connect(target);
             };
 
             mmNode.setFrequency = function (f) {
                 lfo.frequency.value = f;
+            };
+
+            mmNode.setDepth = function (d) {
+                depth.gain.value = d;
             };
 
             mmNode.start = function () {
@@ -509,6 +517,10 @@
 
             mmNode.setRate = function (r) {
                 lfo.setFrequency(r);
+            };
+
+            mmNode.setDepth = function (r) {
+                lfo.setDepth(r);
             };
 
             return mmNode;
