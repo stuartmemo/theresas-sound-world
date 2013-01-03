@@ -1,19 +1,19 @@
 /****************************
-* New Music Machine
+* Theresa's Sound World
 * Audio effects library
 * Copyright 2012 Stuart Memo
 *****************************/
 
 (function (window, undefined) {
 
-    var MusicMachine = (function () {
+    var SoundWorld = (function () {
 
-        var MusicMachine = function (context) {
+        var SoundWorld = function (context) {
             this.context = context;
             this.version = '0.0.1';
         };
 
-        MusicMachine.prototype.now = function () {
+        SoundWorld.prototype.now = function () {
             return this.context.currentTime;
         };
 
@@ -37,7 +37,7 @@
         * Asset manager
         ***************/
 
-        MusicMachine.prototype.loadFiles = function (files, callback) {
+        SoundWorld.prototype.load = function (files, callback) {
             var returnObj = {},
                 filesLoaded = 0,
                 numberOfFiles = 0;
@@ -74,7 +74,7 @@
         * Play preloaded buffer
         **********************/
 
-        MusicMachine.prototype.playBuffer = function (buffer) {
+        SoundWorld.prototype.playBuffer = function (buffer) {
             var source = context.createBufferSource();
 
             source.buffer = buffer;
@@ -87,7 +87,7 @@
         * Creates compressor
         ***********************/
 
-        MusicMachine.prototype.createCompressor = function (settings) {
+        SoundWorld.prototype.createCompressor = function (settings) {
 
             /**************************************************************
 
@@ -125,7 +125,7 @@
         * Creates delay effect
         *********************/ 
 
-        MusicMachine.prototype.createDelay = function (settings) {
+        SoundWorld.prototype.createDelay = function (settings) {
 
             /*********************************************
 
@@ -142,6 +142,12 @@
             |     Output    |<--| Effect Level |
             | (Destination) |   |    (Gain)    |
             +---------------+   +--------------+
+
+            Config
+            ------
+            Delay Time: Number of seconds to delay signal
+            Feedback: Volume of signal fed back into delay node
+            Effect Level: Volume of effect mixed back into signal
 
             **********************************************/
 
@@ -196,13 +202,12 @@
         };
 
 
-
         /****************************
         * createDistortion 
         * Creates a distortion effect
         *****************************/
 
-        MusicMachine.prototype.createDistortion = function (settings) {
+        SoundWorld.prototype.createDistortion = function (settings) {
 
             /******************************************************
 
@@ -264,7 +269,7 @@
         * Creates flange effect
         ***********************/
 
-        MusicMachine.prototype.createFlanger = function (settings) {
+        SoundWorld.prototype.createFlanger = function (settings) {
 
             /****************************
 
@@ -288,7 +293,7 @@
         * Creates LFO
         *************/
 
-        MusicMachine.prototype.createLFO = function (settings) {
+        SoundWorld.prototype.createLFO = function (settings) {
 
             /*********************************
 
@@ -350,7 +355,7 @@
         * Creates phaser effect
         ***********************/
 
-        MusicMachine.prototype.createPhaser = function (settings) {
+        SoundWorld.prototype.createPhaser = function (settings) {
 
             /****************************
 
@@ -366,6 +371,12 @@
             |     Output    |---<--+      +----------<----------| Feedback |
             | (Destination) |                                   |  (Gain)  |
             +---------------+                                   +----------+
+
+            Config
+            ------
+            Rate: The speed at which the filter changes
+            Depth: The depth of the filter change
+            Resonance: Strength of the filter effect
 
             *****************************/
 
@@ -395,8 +406,6 @@
                 allPassFilters[i].connect(allPassFilters[i + 1]);
             }
 
-            //chainNodes(allPassFilters);
-
             mmNode.connect = function (output) {
                 mmNode.input.connect(output);
                 mmNode.input.connect(allPassFilters[0])
@@ -407,7 +416,7 @@
 
             mmNode.setCutoff = function (c) {
                 for (var i = 0; i < allPassFilters.length; i++) {
-//                    allPassFilters[i].frequency.value = c;
+                    // allPassFilters[i].frequency.value = c;
                 }
             }
 
@@ -419,7 +428,7 @@
         * Creates reverb effect
         ***********************/
 
-        MusicMachine.prototype.createReverb = function (settings) {
+        SoundWorld.prototype.createReverb = function (settings) {
 
             /***********************************
 
@@ -436,6 +445,13 @@
             |     Output    |<--| Effect Level |
             | (Destination) |   |    (Gain)    |
             +---------------+   +--------------+
+
+            Config
+            ------
+            Effect Level - Volume of effect
+            Reverb Time - 
+            Reverb Type - 
+            Reverb Path - Path of impulse response file    
 
             ***********************************/
 
@@ -484,7 +500,7 @@
         * Creates tremolo
         ****************/
 
-        MusicMachine.prototype.createTremolo = function (settings) {
+        SoundWorld.prototype.createTremolo = function (settings) {
 
             /******************************
 
@@ -527,10 +543,10 @@
         };
 
         return function (context) {
-            return new MusicMachine(context);
+            return new SoundWorld(context);
         };
     })();
 
-    window.MusicMachine = MusicMachine;
+    window.SoundWorld = SoundWorld;
 
 })(window);

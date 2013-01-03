@@ -85,12 +85,12 @@
             var context = new webkitAudioContext(),
                 output = context.destination,
                 volume = context.createGain(),
-                myMusicMachine = new MusicMachine(context),
-                delay = myMusicMachine.createDelay({delayTime: 0.1}),
-                reverb = myMusicMachine.createReverb(),
-                phaser = myMusicMachine.createPhaser(),
-                lfo = myMusicMachine.createLFO(),
-                tremolo = myMusicMachine.createTremolo();
+                mySoundWorld = new SoundWorld(context),
+                delay = mySoundWorld.createDelay({delayTime: 0.1}),
+                reverb = mySoundWorld.createReverb(),
+                phaser = mySoundWorld.createPhaser(),
+                lfo = mySoundWorld.createLFO(),
+                tremolo = mySoundWorld.createTremolo();
 
             // Play short sound
             var playNote = function () {
@@ -111,13 +111,13 @@
                 tremolo.connect(volume);
                 volume.connect(context.destination);
 
-                osc.start(myMusicMachine.now());
-                osc.stop(myMusicMachine.now() + 10);
+                osc.start(mySoundWorld.now());
+                osc.stop(mySoundWorld.now() + 10);
             };
 
             var buffs;
 
-            myMusicMachine.loadFiles({'guitar': 'samples/guitar.ogg'}, function (buffers) {
+            mySoundWorld.loadFiles({'guitar': 'samples/guitar.ogg'}, function (buffers) {
                 buffs = buffers;
             });
 
@@ -128,7 +128,7 @@
                 source.connect(phaser.input);
                 //source.connect(context.destination)
                 phaser.connect(context.destination);
-                source.start(myMusicMachine.now());
+                source.start(mySoundWorld.now());
             }
 
             // Slider event listeners
