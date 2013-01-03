@@ -40,7 +40,8 @@
         SoundWorld.prototype.load = function (files, callback) {
             var returnObj = {},
                 filesLoaded = 0,
-                numberOfFiles = 0;
+                numberOfFiles = 0,
+                that = this;
 
             var loadFile = function (fileKey, filePath, returnObj, callback) {
                 var request = new XMLHttpRequest();
@@ -51,7 +52,7 @@
                 request.onload = function () {
                     filesLoaded++;
 
-                    context.decodeAudioData(request.response, function (decodedBuffer) {
+                    that.context.decodeAudioData(request.response, function (decodedBuffer) {
                         returnObj[fileKey] = decodedBuffer;
 
                         if (filesLoaded === numberOfFiles) {
@@ -74,8 +75,8 @@
         * Play preloaded buffer
         **********************/
 
-        SoundWorld.prototype.playBuffer = function (buffer) {
-            var source = context.createBufferSource();
+        SoundWorld.prototype.play = function (buffer) {
+            var source = this.context.createBufferSource();
 
             source.buffer = buffer;
             source.connect(this.context.destination);
@@ -102,7 +103,7 @@
             **************************************************************/
 
             var mmNode = {},
-                compressor = context.createDynamicsCompressor();
+                compressor = this.context.createDynamicsCompressor();
 
             var config = {};     
 
@@ -110,7 +111,7 @@
 
             settings = settings || {};
 
-            mmNode.input = context.createGain()
+            mmNode.input = this.context.createGain()
 
             mmNode.connect = function (output) {
                 mmNode.connect(compressor);
