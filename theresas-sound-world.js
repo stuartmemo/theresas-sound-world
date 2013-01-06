@@ -1,7 +1,7 @@
 /****************************
 * Theresa's Sound World
 * Audio effects library
-* Copyright 2012 Stuart Memo
+* Copyright 2013 Stuart Memo
 *****************************/
 
 (function (window, undefined) {
@@ -11,6 +11,7 @@
         var SoundWorld = function (context) {
             this.context = context;
             this.version = '0.0.1';
+            this.speakers = context.destination;
         };
 
         SoundWorld.prototype.now = function () {
@@ -58,7 +59,11 @@
                         returnObj[fileKey].buffer = decodedBuffer;
 
                         returnObj[fileKey].play = function () {
-                            that.play(this.buffer);
+                            that.play(this);
+                        };
+
+                        returnObj[fileKey].isPlaying = function () {
+                            return this.playbackState;
                         };
 
                         if (filesLoaded === numberOfFiles) {
@@ -82,14 +87,7 @@
         **********************/
 
         SoundWorld.prototype.play = function (buffer) {
-            var source = context.createBufferSource();
-
-            console.log(buffer)
-            source.buffer = buffer;
-            source.connect(context.destination);
-            source.start(0);
-
-            return this;
+            buffer.start(0);
         };
 
         /**********************
@@ -253,7 +251,7 @@
             // Set values
             settings = settings || {};
 
-            mmNode.input = context.createGain();
+            mmNode.input = this.context.createGain();
 
             mmNode.connect = function (output) {
                 mmNode.input.connect(distortion);
@@ -274,11 +272,49 @@
             return mmNode;
         };
 
+        /****************
+        * createSineWave
+        ****************/
 
-        /**********************
+        SoundWorld.prototype.createSineWave = function () {
+            return this.context.createOscillator();
+        };
+
+        /******************
+        * createSquareWave
+        ******************/
+
+        SoundWorld.prototype.createSquareWave = function () {
+            var swNode = this.context.createOscillator();
+            swNode.type = 1;
+            return swNode;
+        };
+
+        /********************
+        * createSawtoothWave
+        ********************/
+
+        SoundWorld.prototype.createSawtoothWave = function () {
+            var swNode = this.context.createOscillator();
+            swNode.type = 2;
+            return swNode;
+        };
+
+        /********************
+        * createTriangleWave
+        ********************/
+
+        SoundWorld.prototype.createSawtoothWave = function () {
+            var swNode = this.context.createOscillator();
+            swNode.type = 3;
+            return swNode;
+        };
+
+        /******************************
         * createFlanger
         * Creates flange effect
-        ***********************/
+        * Y'know, like Come As You Are
+        ******************************/
 
         SoundWorld.prototype.createFlanger = function (settings) {
 

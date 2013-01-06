@@ -95,37 +95,34 @@
 
             // Play short sound
             var playNote = function () {
-                var osc = context.createOscillator();
-
-                osc.type = osc.SQUARE;
+                var osc = mySoundWorld.createSquareWave();
 
                 osc.connect(delay.input);
                 delay.connect(reverb.input);
                 reverb.connect(tremolo.input);
 
                 volume.gain.value = 0.2;
-                /*
-                lfo.modulate(osc.frequency);
-                lfo.start();
-                */
 
                 tremolo.connect(volume);
                 volume.connect(context.destination);
 
                 osc.start(context.currentTime);
-                //osc.stop(mySoundWorld.now() + 10);
             };
 
-            var buffs;
+            var guitar;
 
             mySoundWorld.load({'guitar': 'samples/guitar.ogg'}, function (buffers) {
-                buffs = buffers;
+                guitar = buffers.guitar;
             });
 
             var playFile = function () {
-                buffs.guitar.connect(phaser.input);
-                phaser.connect(context.destination);
-                buffs.guitar.play();
+                guitar.connect(phaser.input);
+                phaser.connect(mySoundWorld.speakers);
+                //guitar.loop = true;
+                guitar.play();
+
+                var sineWave = mySoundWorld.createSineWave();
+
             };
 
             // Slider event listeners *
@@ -147,7 +144,7 @@
                         phaser.setCutoff(this.value);
                         break;
                     case 'tremolo-rate':
-                        tremolo.setCutoff(this.value);
+                        tremolo.setRate(this.value);
                         break;
                     case 'tremolo-depth':
                         tremolo.setDepth(this.value);
