@@ -35,7 +35,7 @@
     </head>
     <body>
         <div class="container">
-            <h1>New Music Machine</h1>
+            <h1>Theresa's Sound World</h1>
             <p class="icon">Test suite.</p>
 
             <div class="effect delay">
@@ -79,7 +79,8 @@
             <button name="play-note">Play note</button>
             <button name="play-file">Play file</button>
         </div>
-        <script src="new-music-machine.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script src="theresas-sound-world.js"></script>
         <script>
             // Create context and nodes
             var context = new webkitAudioContext(),
@@ -111,70 +112,64 @@
                 tremolo.connect(volume);
                 volume.connect(context.destination);
 
-                osc.start(mySoundWorld.now());
-                osc.stop(mySoundWorld.now() + 10);
+                osc.start(context.currentTime);
+                //osc.stop(mySoundWorld.now() + 10);
             };
 
             var buffs;
 
-            mySoundWorld.loadFiles({'guitar': 'samples/guitar.ogg'}, function (buffers) {
+            mySoundWorld.load({'guitar': 'samples/guitar.ogg'}, function (buffers) {
                 buffs = buffers;
             });
 
             var playFile = function () {
-                var source = context.createBufferSource();
-
-                source.buffer = buffs.guitar;
-                source.connect(phaser.input);
-                //source.connect(context.destination)
+                buffs.guitar.connect(phaser.input);
                 phaser.connect(context.destination);
-                source.start(mySoundWorld.now());
-            }
+                buffs.guitar.play();
+            };
 
-            // Slider event listeners
-            // Delay
-            document.getElementsByName('delay-delay-time')[0].addEventListener('change', function () {
-                delay.setDelayTime(this.value);
+            // Slider event listeners *
+            $('input').change(function () {
+                switch ($(this).attr('name')) {
+                    case 'delay-delay-time':
+                        delay.setDelayTime($(this).val());
+                        break;
+                    case 'delay-feedback':
+                        delay.setFeedback(this.value);
+                        break;
+                    case 'delay-effect-level':
+                        delay.setEffectLevel(this.value);
+                        break;
+                    case 'reverb-effect-level':
+                        delay.setEffectLevel(this.value);
+                        break;
+                    case 'phaser-cutoff-level':
+                        phaser.setCutoff(this.value);
+                        break;
+                    case 'tremolo-rate':
+                        tremolo.setCutoff(this.value);
+                        break;
+                    case 'tremolo-depth':
+                        tremolo.setDepth(this.value);
+                        break;
+                    default:
+                        break;
+                };
             });
 
-            document.getElementsByName('delay-feedback')[0].addEventListener('change', function () {
-                delay.setFeedback(this.value);
+            // Button event listeners
+            $('button').click(function () {
+                switch ($(this).attr('name')) {
+                    case 'play-note':
+                        playNote();
+                        break;
+                    case 'play-file':
+                        playFile();
+                        break;
+                    default:
+                        break;
+                }
             });
-
-            document.getElementsByName('delay-effect-level')[0].addEventListener('change', function () {
-                delay.setEffectLevel(this.value);
-            });
-
-            // Reverb
-            document.getElementsByName('reverb-effect-level')[0].addEventListener('change', function () {
-                reverb.setEffectLevel(this.value);
-            });
-
-            // Phaser
-            document.getElementsByName('phaser-cutoff-level')[0].addEventListener('change', function () {
-                phaser.setCutoff(this.value);
-            });
-
-            // Tremolo 
-            document.getElementsByName('tremolo-rate')[0].addEventListener('change', function () {
-                tremolo.setRate(this.value);
-            });
-
-            document.getElementsByName('tremolo-depth')[0].addEventListener('change', function () {
-                tremolo.setDepth(this.value);
-            });
-
-            // Buttons
-            document.getElementsByName('play-note')[0].addEventListener('click', function () {
-                playNote();
-            });
-
-            document.getElementsByName('play-file')[0].addEventListener('click', function () {
-                playFile();
-            });
-
-
-
         </script>
     </body>
 </html>

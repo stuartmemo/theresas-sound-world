@@ -15,7 +15,7 @@
 
         SoundWorld.prototype.now = function () {
             return this.context.currentTime;
-        };
+        }.bind(this);
 
         /***********************************
         * chainNodes
@@ -53,7 +53,13 @@
                     filesLoaded++;
 
                     that.context.decodeAudioData(request.response, function (decodedBuffer) {
-                        returnObj[fileKey] = decodedBuffer;
+
+                        returnObj[fileKey] = that.context.createBufferSource();
+                        returnObj[fileKey].buffer = decodedBuffer;
+
+                        returnObj[fileKey].play = function () {
+                            that.play(this.buffer);
+                        };
 
                         if (filesLoaded === numberOfFiles) {
                             callback(returnObj);
@@ -71,16 +77,19 @@
         };
 
         /**********************
-        * playBuffer
+        * play
         * Play preloaded buffer
         **********************/
 
         SoundWorld.prototype.play = function (buffer) {
-            var source = this.context.createBufferSource();
+            var source = context.createBufferSource();
 
+            console.log(buffer)
             source.buffer = buffer;
-            source.connect(this.context.destination);
-            source.start(this.now());
+            source.connect(context.destination);
+            source.start(0);
+
+            return this;
         };
 
         /**********************
@@ -264,6 +273,7 @@
 
             return mmNode;
         };
+
 
         /**********************
         * createFlanger
@@ -471,7 +481,7 @@
             settings = settings || {};
             effectLevel.gain.value = settings.effectLevel || config.effectLevel;
 
-            this.loadFiles({
+            this.load({
                 'hall': 'samples/bright-hall.wav',
                 'room': 'samples/medium-room.wav',
                 'spring': 'samples/feedback-spring.wav'
