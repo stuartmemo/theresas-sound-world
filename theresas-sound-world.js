@@ -59,7 +59,12 @@
                         returnObj[fileKey].buffer = decodedBuffer;
 
                         returnObj[fileKey].play = function () {
+                            console.log(this) 
                             that.play(this);
+                        };
+
+                        returnObj[fileKey].stop = function () {
+                            that.stop(this);
                         };
 
                         returnObj[fileKey].isPlaying = function () {
@@ -87,7 +92,15 @@
         **********************/
 
         SoundWorld.prototype.play = function (buffer) {
+            console.log(buffer)
             buffer.start(0);
+        };
+
+        SoundWorld.prototype.stop = function (buffer) {
+            buffer.stop(0);
+        };
+
+        SoundWorld.prototype.reverse = function (buffer) {
         };
 
         /**********************
@@ -594,6 +607,7 @@
         };
     })();
 
+    // Don't think this is right
     window.SoundWorld = SoundWorld;
 
 })(window);

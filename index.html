@@ -118,11 +118,9 @@
             var playFile = function () {
                 guitar.connect(phaser.input);
                 phaser.connect(mySoundWorld.speakers);
-                //guitar.loop = true;
                 guitar.play();
 
-                var sineWave = mySoundWorld.createSineWave();
-
+                console.log(guitar)
             };
 
             // Slider event listeners *
