@@ -4,7 +4,7 @@ var context = new webkitAudioContext(),
 
 var kit808 = {
         kitName: '808',
-        path: '/drum-machine/samples/808/',
+        path: '/samples/808/',
         samples: {
             kick: 'kick.ogg',
             snare: 'snare.ogg',
@@ -19,7 +19,7 @@ var song = {
         author: 'Stuart Memo'
     },
     settings: {
-        bpm: 140,
+        bpm: 120,
         beatsPerBar: 4,
         muted: false
     },

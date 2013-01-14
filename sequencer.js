@@ -63,7 +63,7 @@
         var beatToTime = function (bar, beat, steps, bpm, beatsPerBar) {
             var beatsPerSecond = bpm / 60,
                 secondsPerBeat = 1 / beatsPerSecond,
-                secondsPerBar = beatsPerBar * beatsPerSecond,
+                secondsPerBar = beatsPerBar * secondsPerBeat,
                 secondsPerStep = secondsPerBar / steps,
                 timeToPlay = (bar * secondsPerBar) + (beat * secondsPerStep);
 
