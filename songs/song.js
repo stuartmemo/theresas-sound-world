@@ -4,7 +4,7 @@ var context = new webkitAudioContext(),
 
 var kit808 = {
         kitName: '808',
-        path: '/samples/808/',
+        path: '/instruments/drum-machine/samples/808/',
         samples: {
             kick: 'kick.ogg',
             snare: 'snare.ogg',
@@ -28,7 +28,7 @@ var song = {
             steps: 8,
             sequence: {
                 kick:   [0, 1, 2, 3, 4, 5, 6, 7],
-                snare: [0, 4, 8]
+                snare: [2, 5, 8]
             }
         },
         drumVerse: {

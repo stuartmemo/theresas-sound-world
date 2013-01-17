@@ -80,10 +80,11 @@
             <button name="play-file">Play file</button>
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script src="theresas-sound-world.js"></script>
-        <script src="drum-machine.js"></script>
-        <script src="sequencer.js"></script>
-        <script src="song.js"></script>
+        <script src="instruments/drum-machine/drum-machine.js"></script>
+        <script src="tsw-core.js"></script>
+        <script src="tsw-sequencer.js"></script>
+        <script src="tsw-effects.js"></script>
+        <script src="songs/song.js"></script>
         <script>
             // Create context and nodes
             var context = new webkitAudioContext(),
@@ -114,7 +115,7 @@
 
             var guitar;
 
-            mySoundWorld.load({'guitar': 'samples/guitar.ogg'}, function (buffers) {
+            mySoundWorld.load({'guitar': '/audio/guitar.ogg'}, function (buffers) {
                 guitar = buffers.guitar;
             });
 

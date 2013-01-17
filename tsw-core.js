@@ -531,9 +531,9 @@
             effectLevel.gain.value = settings.effectLevel || config.effectLevel;
 
             this.load({
-                'hall': 'samples/bright-hall.wav',
-                'room': 'samples/medium-room.wav',
-                'spring': 'samples/feedback-spring.wav'
+                'hall': '/effects/reverb/responses/bright-hall.wav',
+                'room': '/effects/reverb/responses/medium-room.wav',
+                'spring': '/effects/reverb/responses/feedback-spring.wav'
             }, function (buffers) {
                 config.reverbPath = buffers[config.reverbType];
                 reverb.buffer = config.reverbPath;
