@@ -1,9 +1,6 @@
 Theresa's Sound World
 =====================
 
-So what is it?
---------------
-
 Theresa's Sound World is an audio framework for applying effects and sequencing sound in the browser using the Web Audio API.
 
 Getting Started
