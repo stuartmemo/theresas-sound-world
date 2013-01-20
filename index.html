@@ -78,9 +78,11 @@
             <hr/>
             <button name="play-note">Play note</button>
             <button name="play-file">Play file</button>
+            <button name="start-song" disabled>Start song</button>
         </div>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script src="instruments/drum-machine/drum-machine.js"></script>
+        <script src="instruments/synth/synth.js"></script>
         <script src="tsw-core.js"></script>
         <script src="tsw-sequencer.js"></script>
         <script src="tsw-effects.js"></script>
@@ -123,8 +125,10 @@
                 guitar.connect(phaser.input);
                 phaser.connect(mySoundWorld.speakers);
                 guitar.play();
+            };
 
-                console.log(guitar)
+            var startSong = function () {
+                //console.log(sequencer)
             };
 
             // Slider event listeners *
@@ -164,6 +168,9 @@
                         break;
                     case 'play-file':
                         playFile();
+                        break;
+                    case 'start-song':
+                        sequencer.startSong();
                         break;
                     default:
                         break;

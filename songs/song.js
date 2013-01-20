@@ -1,5 +1,6 @@
 var context = new webkitAudioContext(),
     drumMachine = new DrumMachine(context),
+    synth = new Synth(context),
     sequencer = new Sequencer(context);
 
 var kit808 = {
@@ -8,7 +9,8 @@ var kit808 = {
         samples: {
             kick: 'kick.ogg',
             snare: 'snare.ogg',
-            clap: 'clap.ogg'
+            clap: 'clap.ogg',
+            hiHat: 'chh.ogg'
         }
     };
 
@@ -26,13 +28,21 @@ var song = {
     patterns: {
         drumIntro: {
             steps: 8,
-            sequence: {
-                kick:   [0, 1, 2, 3, 4, 5, 6, 7],
-                snare: [2, 5, 8]
-            }
+            sequence: [
+                ['kick', '*', ['*', 'snare'], '*', '*', '*', ['*', 'snare'], 'kick'],
+                ['hiHat', 'hiHat', '*', '*', ['hiHat', 'clap'], '*', '*', ]
+            ]
         },
         drumVerse: {
-            sequence: {}
+            sequence: [] 
+        },
+        synthIntro: {
+            length: 16,
+            steps: 4,
+            sequence: [
+                ['A#2', '-', '-', '.'],
+                [['C3', 'Db'], '*', '*']
+            ]
         }
     },
     tracks: {
@@ -43,12 +53,17 @@ var song = {
                 drumIntro: [0, 1, 2],
                 drumVerse: [3]
             }
+        },
+        synth: {
+            instrument: synth,
+            pan: +24
         }
     }
 };
 
 drumMachine.loadKit(kit808, function () {
     sequencer.loadSong(song, function () {
+        document.getElementById()
         this.playSong();
     });
 });

@@ -38,7 +38,6 @@
 
                 request.onload = function () {
                     that.context.decodeAudioData(request.response, function (decodedBuffer) {
-                        filesLoaded++;
                         returnObj[fileKey] = decodedBuffer;
 
                         createPlayFunction(fileKey, returnObj[fileKey], that);
@@ -46,6 +45,8 @@
                         if (filesLoaded === numberOfFiles) {
                             callback(returnObj);
                         }
+                        
+                        filesLoaded++;
                     });
                 };
 

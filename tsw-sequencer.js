@@ -68,6 +68,17 @@
                 timeToPlay = (bar * secondsPerBar) + (beat * secondsPerStep);
 
             return timeToPlay;
+        };
+
+
+        var calculateNote = function (note) {
+
+            if (note === '*') {
+                // repeat last played note
+                note = previousNote;    
+            }
+            previousNote = note;
+            return note;
         }
 
         var playPatterns = function () {
@@ -75,7 +86,27 @@
                 instrument,
                 bars = [],
                 intervals = [],
-                steps;
+                steps,
+                previousNote;
+
+            var calculateTimeToPlay = function (bar, interval, steps, note) {
+                var timeToPlay = beatToTime(bar,
+                                            interval,
+                                            steps,
+                                            this.song.settings.bpm,
+                                            this.song.settings.beatsPerBar);
+
+                if (typeof note === 'object') {
+                    note = calculateNote(note);
+                    note.forEach(function (nestedNote) {
+                        note = calculateNote(nestedNote);
+                    });
+                } else {
+                    note = calculateNote(note);
+                }
+
+                instrument[note](timeToPlay);
+            };
 
             for (track in this.song.tracks) {
 
@@ -91,14 +122,11 @@
                         steps = this.song.patterns[pattern].steps;
 
                         bars.forEach(function (bar) {
-                            intervals.forEach(function (interval) {
-                                var timeToPlay = beatToTime(bar,
-                                                            interval,
-                                                            steps,
-                                                            this.song.settings.bpm,
-                                                            this.song.settings.beatsPerBar);
+                            var lastNotePlayed;
 
-                                instrument[sound](timeToPlay);
+                            intervals.forEach(function (note, interval) {
+
+                                calculateTimeToPlay(bar, interval, steps, note);
                             });
                         })
 
