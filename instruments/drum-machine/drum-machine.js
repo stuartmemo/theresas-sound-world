@@ -23,6 +23,14 @@
             }
         };
 
+        DrumMachine.prototype.playNote = function (note, time) {
+            this[note](time);
+        };
+
+        DrumMachine.prototype.stopNote = function (note, time) {
+            // do nothing
+        };
+
         DrumMachine.prototype.loadKit = function (kit, callback) {
             var returnObj = {},
                 filesLoaded = 0,

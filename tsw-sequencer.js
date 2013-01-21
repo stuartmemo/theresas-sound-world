@@ -78,9 +78,64 @@
                 note = previousNote;    
             }
             previousNote = note;
+
             return note;
         }
 
+        // Replace '*' in patterns with previous note in array
+        var replaceStars = function (pattern, prevNote) {
+            prevNote = prevNote || pattern[0];
+
+            pattern.forEach(function (steps, index) {
+                if (typeof steps === 'object') {
+                    replaceStars(steps, prevNote);
+                } else if (steps === '*') {
+                    pattern[index] = prevNote;
+                }
+            });
+
+            return pattern;
+        }
+
+        var play = function (instrument, note, startTime, stopTime) {
+            if (note instanceof Array) {
+                note.forEach(function (n) {
+                    instrument.playNote(n, startTime, stopTime);
+                })
+            } else {
+                instrument.playNote(note, startTime, stopTime);
+            }
+        }
+
+        // Figure out what time a note should start playing
+        var calculateStartTime = function (bar, interval, steps, note) {
+            var timeToPlay = beatToTime(bar,
+                                        interval,
+                                        steps,
+                                        this.song.settings.bpm,
+                                        this.song.settings.beatsPerBar);
+            return timeToPlay;
+        };
+
+        // Figure out what time a note should stop playing
+        var calculateStopTime = function (sequence, step, steps, startTime, noteLength) {
+            noteLength = noteLength || 1;
+
+            if (sequence instanceof Array) {
+                  sequence.forEach(function (sq, index) {
+                    if (sequence[index + 1] === '-') {
+                        noteLength++; 
+                    }
+                    calculateStopTime(sq, step, steps, startTime, noteLength)
+                });
+            } else {
+                stopTime = startTime + (noteLength)
+            }
+
+            return startTime + 1;
+        };
+
+        // Schedule the patterns in a song
         var playPatterns = function () {
             var beatLength = 60 / this.song.settings.bpm,
                 instrument,
@@ -89,48 +144,34 @@
                 steps,
                 previousNote;
 
-            var calculateTimeToPlay = function (bar, interval, steps, note) {
-                var timeToPlay = beatToTime(bar,
-                                            interval,
-                                            steps,
-                                            this.song.settings.bpm,
-                                            this.song.settings.beatsPerBar);
+            for (var track in this.song.tracks) {
 
-                if (typeof note === 'object') {
-                    note = calculateNote(note);
-                    note.forEach(function (nestedNote) {
-                        note = calculateNote(nestedNote);
-                    });
-                } else {
-                    note = calculateNote(note);
-                }
-
-                instrument[note](timeToPlay);
-            };
-
-            for (track in this.song.tracks) {
-
+                // Get instrument that should be used for track
                 instrument = this.song.tracks[track].instrument;
 
-                for (pattern in this.song.tracks[track].sequence) {
+                for (var patternName in this.song.tracks[track].sequence) {
 
-                    bars = this.song.tracks[track].sequence[pattern];
+                    // Get what bars on this track should play this pattern
+                    bars = this.song.tracks[track].sequence[patternName];
 
-                    for (sound in this.song.patterns[pattern].sequence) {
-                        intervals = this.song.patterns[pattern].sequence[sound];
+                    // Get the number of steps in a pattern
+                    steps = this.song.patterns[patternName].steps;
 
-                        steps = this.song.patterns[pattern].steps;
-
+                    this.song.patterns[patternName].sequence.forEach(function (sequence) {
                         bars.forEach(function (bar) {
-                            var lastNotePlayed;
+                            sequence = replaceStars(sequence)
 
-                            intervals.forEach(function (note, interval) {
+                            sequence.forEach(function (note, step) {
+                                if (note.length > 1) {
+                                    var startTime = calculateStartTime(bar, step, steps, note),
+                                        stopTime = calculateStopTime(sequence, step, steps, startTime);
 
-                                calculateTimeToPlay(bar, interval, steps, note);
+                                    // Start and stop instrument at specified time
+                                    play(instrument, note, startTime, stopTime);
+                                }
                             });
                         })
-
-                    }
+                    });
                 }
             }
         };

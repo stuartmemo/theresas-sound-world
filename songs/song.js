@@ -40,8 +40,8 @@ var song = {
             length: 16,
             steps: 4,
             sequence: [
-                ['A#2', '-', '-', '.'],
-                [['C3', 'Db'], '*', '*']
+                ['C3', '-' ,'-' ,'-', '-' ],
+                [['E3', 'C2'], '']
             ]
         }
     },
@@ -56,7 +56,10 @@ var song = {
         },
         synth: {
             instrument: synth,
-            pan: +24
+            pan: +24,
+            sequence: {
+                synthIntro: [0, 1, 2]
+            }
         }
     }
 };
