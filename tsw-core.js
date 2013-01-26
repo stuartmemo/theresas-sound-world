@@ -1,9 +1,9 @@
-/*****************************
-* Theresa's Sound World - Core
-* tsw-core.js
-* Core library
-* Copyright 2013 Stuart Memo
-*****************************/
+/******************************
+ * Theresa's Sound World - Core
+ * tsw-core.js
+ * Core library
+ * Copyright 2013 Stuart Memo
+ ******************************/
 
 (function (window, undefined) {
 

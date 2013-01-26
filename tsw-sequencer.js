@@ -23,14 +23,16 @@
             this.song.bpm = 120;
             this.song.beatsPerBar = 4;
             this.schedule = [];
+            this.music = new Music(context);
         };
 
         /*
          * Create a play function with given name.
          *
-         * @param {string} bufferName Name of buffer
-         * @param {AudioBuffer} buffer Buffer to play in function
-         * @para {object} that Keep binding to original Sequenece
+         * @method createPlayFunction
+         * @param {string} bufferName Name of buffer.
+         * @param {AudioBuffer} buffer Buffer to play in function.
+         * @para {object} that Keep binding to original Sequenece.
          */
         var createPlayFunction = function (bufferName, buffer, that) {
             that[bufferName] = function (time) {
@@ -42,8 +44,9 @@
         };
 
         /*
-         * Load files into buffers.
+         * Load files into audio buffers.
          *
+         * @method loadFiles
          * @param {kit}
          * @callback {function} Function to call once all files are loaded.
          */
@@ -82,7 +85,7 @@
         };
 
         /*
-         * Turns beat position into seconds
+         * Turns beat position into seconds.
          *
          * @method beatToTime
          * @param {number} bar
@@ -102,19 +105,14 @@
             return timeToPlay;
         };
 
-
-        var calculateNote = function (note) {
-            if (note === '*') {
-                // repeat last played note
-                note = previousNote;    
-            }
-            previousNote = note;
-
-            return note;
-        }
-
-        // Replace '*' in patterns with previous note in array
-        
+        /*
+         * Replaces '*' in patterns with previous note in array.
+         *
+         * @method replaceStars
+         * @param {array} pattern
+         * @param {string} prevNote
+         * @return New pattern without '*'s.
+         */
         var replaceStars = function (pattern, prevNote) {
             prevNote = prevNote || pattern[0];
 
@@ -129,6 +127,15 @@
             return pattern;
         }
 
+        /*
+         * Play note on an instrument at a certain time.
+         *
+         * @method play
+         * @param {object} instrument Instrument to play note on.
+         * @param {string} note Note to play.
+         * @param {number} startTime Time to start note.
+         * @param {number} stopTime Time to stop note.
+         */
         var play = function (instrument, note, startTime, stopTime) {
             if (note instanceof Array) {
                 note.forEach(function (n) {
@@ -139,7 +146,16 @@
             }
         }
 
-        // Figure out what time a note should start playing
+        /*
+         * Figure out what time a note should start playing.
+         *
+         * @method calculateStartTime
+         * @param {number} bar
+         * @param {number} interval
+         * @param {number} steps
+         * @param {string} note
+         * @return Time to start playing note.
+         */
         var calculateStartTime = function (bar, interval, steps, note) {
             var timeToPlay = beatToTime(bar,
                                         interval,
@@ -149,7 +165,16 @@
             return timeToPlay;
         };
 
-        // Figure out what time a note should stop playing
+        /*
+         * Figure out what time a note should stop playing.
+         *
+         * @method calculateStopTime
+         * @param {string || array} sequence
+         * @param {number} step
+         * @param {array} steps
+         * @param {number} startTime
+         * @param {number} noteLength
+         */
         var calculateStopTime = function (sequence, step, steps, startTime, noteLength) {
             noteLength = noteLength || 1;
 
@@ -167,7 +192,11 @@
             return startTime + 1;
         };
 
-        // Schedule the patterns in a song
+        /*
+         * Schedule the patterns in a song.
+         *
+         * @method playPatterns
+         */
         var playPatterns = function () {
             var beatLength = 60 / this.song.settings.bpm,
                 instrument,
@@ -197,7 +226,7 @@
                                 if (note.length > 1) {
                                     var startTime = calculateStartTime(bar, step, steps, note),
                                         stopTime = calculateStopTime(sequence, step, steps, startTime);
-
+ 
                                     // Start and stop instrument at specified time
                                     play(instrument, note, startTime, stopTime);
                                 }
@@ -208,13 +237,8 @@
             }
         };
 
-        // Set default values for things that haven't been set
-        var setDefaults = function () {
-
-        };
-
         /*
-         * Load song into sequencer object.
+         * Loads a song into sequencer object.
          *
          * @method loadSong
          * @param {object} song Song to play.
@@ -223,12 +247,11 @@
         Sequencer.prototype.loadSong = function (song, callback) {
             this.song = song;
             this.callback = callback;
-            setDefaults.call(this);
             this.callback();
         };
 
         /*
-         * Play song currently loaded into sequencer.
+         * Plays song currently loaded into sequencer.
          *
          * @method playSong
          */

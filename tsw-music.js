@@ -28,6 +28,27 @@
                         '11th', 'augmented 11th', 'perfect 12th', 'flat 13th', '13th'];
 
         /*
+         * Get position of note in note array.
+         *
+         * @method getNotePosition
+         * @param {string} note Note to get position of.
+         * @return {number} Position of note in note array.
+         */
+        var getNotePosition = function (note) {
+            var notesLength = notes.length;
+
+            // don't use forEach as we're breaking early
+            for (var i = 0; i < notesLength; i++) {
+                if (note.toUpperCase() === notes[i]) {
+                    positionOnScale = i;
+                    return i;
+                }
+            }
+
+            return null;
+        };
+
+        /*
          * Returns major scale of given root note
          * 
          * @method getMajorScale
@@ -35,16 +56,9 @@
          * @return {array} List of notes in scale
          */
         var getMajorScale = function (rootNote) {
-            var scale = [];
+            var scale = [],
+                positionOnScale = getNotePosition(rootNote);
             
-            // don't use forEach as we're breaking early
-            for (var i = 0; i < notesLength; i++) {
-                if (rootNote.toUpperCase() === notes[i]) {
-                    positionOnScale = i;
-                    break;
-                }
-            }
-
             scale.push(notes[positionOnScale]);
             scale.push(notes[positionOnScale + 2]);
             scale.push(notes[positionOnScale + 4]);
@@ -58,22 +72,27 @@
         };
 
         /*
-         * Checks if given chord name is minor
+         * Parses a chord name into a detailed object.
          *
-         * @method isMinor
-         * @param {string} chord Chord to check
-         * @return {boolean} Is the chord is minor
+         * @method parseChord 
+         * @param {string} chord Name of chord to turn into object.
+         * return {object} Detailed chord object.
          */
-        var isMinor = function (chord) {
-            note.match('m') ? return true : return false;
-        };
+        var parseChord = function (chord) {
+            var chordObj = {};
 
-        var getTriadNotes = function (rootNote) {
-            var triadNotes = [];
+            chord = chord.toLowerCase();
+            chordObj.rootNote = chord[0].toUpperCase();
+            chordObj.isMajor = (chord.indexOf('maj') > -1)
+            chordObj.isMinor = !chordObj.isMajor && (chord.indexOf('m') > -1);
+            chordObj.is7th = (chord.indexOf('7') > -1);
 
-            triadNotes.push(
+            if (!chordObj.isMajor && !chordObj.isMinor) {
+                // Hey! This aint no chord that I've ever seen!
+                return false;
+            }
 
-            return triadNotes;
+            return chordObj;
         };
 
         /*
@@ -84,13 +103,28 @@
          * @return {array} List of notes in scale.
          */
         Music.prototype.getScale = function (rootNote) {
-            var scale = [],
-                positionOnScale = 0,
-                notesLength = notes.length;
-            
-            scale = getMajorScale(rootNote);
+            return getMajorScale(rootNote);
+        };
 
-            return scale;
+        /*
+         * Returns the number of semitones an interval is from a base note.
+         *
+         * @method getSemitoneDifference
+         * @param {string} interval The name of the interval
+         * @return {number} Number of semitones of interval from a base note.
+         */
+        var getSemitoneDifference = function (interval) {
+            var numberOfIntervals = intervals.length;
+
+            for (var i = 0; i < numberOfIntervals; i++) {
+                if (interval === intervals[i]) {
+                    return i;
+                }
+            }
+        };
+
+        Music.prototype.isChord = function (str) {
+            return parseChord(str);
         };
 
         /*
@@ -101,7 +135,27 @@
          * @return {array} List of notes in chord.
          */
         Music.prototype.chordToNotes = function (chord) {
-            var rootNote = chord[0]; 
+            var rootNotePosition = 0,
+                notePositions = [],
+                chordNotes = [];
+
+            chord = parseChord(chord);
+            rootNotePosition = getNotePosition(chord.rootNote);
+            notePositions.push(rootNotePosition);
+
+            if (chord.isMinor) {
+                notePositions.push(rootNotePosition + getSemitoneDifference('minor 3rd'));
+            } else {
+                notePositions.push(rootNotePosition + getSemitoneDifference('major 3rd'));
+            }
+
+            notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
+
+            notePositions.forEach(function (position) {
+                chordNotes.push(notes[position]);
+            });
+
+            return chordNotes;
         };
 
         /*
