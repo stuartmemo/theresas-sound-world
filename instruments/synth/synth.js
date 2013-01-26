@@ -38,13 +38,18 @@
             return 440 * Math.pow(2, (keyNumber- 49) / 12);
         };
 
+        /*
+         * Play given note on synth
+         * @param {note} string Musical note to play
+         * @param {startTime} number Context time to play note (in seconds)
+         * @param {endTime} number Context time to end note (in seconds)
+         */
+
         Synth.prototype.playNote = function (note, startTime, endTime) {
             var gainNode = this.context.createGainNode(),
                 osc1 = this.context.createOscillator(),
                 osc2 = this.context.createOscillator(),
-                frequency;
-
-            frequency = getFrequency(note); 
+                frequency = getFrequency(note); 
 
             osc1.frequency.value = frequency;
             osc2.frequency.value = frequency;

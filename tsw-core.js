@@ -1,6 +1,7 @@
-/****************************
-* Theresa's Sound World
-* Audio effects library
+/*****************************
+* Theresa's Sound World - Core
+* tsw-core.js
+* Core library
 * Copyright 2013 Stuart Memo
 *****************************/
 
@@ -8,42 +9,55 @@
 
     var SoundWorld = (function () {
 
+        /*
+         * Creates a Sound World.
+         *
+         * @constructor
+         * @this {SoundWorld}
+         * @param {context} context The audio context to work with.
+         */
         var SoundWorld = function (context) {
             this.context = context;
             this.version = '0.0.1';
             this.speakers = context.destination;
         };
 
+        /*
+         * Gets the current time of the audio context
+         *
+         * @method now
+         * @return {number} Time since audio began.
+         */
         SoundWorld.prototype.now = function () {
             return this.context.currentTime;
         }.bind(this);
 
-        /***********************************
-        * chainNodes
-        * Connect an array of nodes in order
-        ************************************/
-
+        /*
+        * Connects an array of nodes together in order    
+        *
+        * @method chainNodes
+        * @param {array} nodes The nodes to chain together.
+        */ 
         var chainNodes = function (nodes) {
             var numberOfNodes = nodes.length - 1;
 
             for (var i = 0; i < numberOfNodes; i++) {
-                console.log('connecting: ' + nodes[i])
-                console.log(' to: ' + nodes[i + 1]);
                 nodes[i].connect(nodes[i + 1]);
             }
         };
 
-        /**************
-        * loadFiles
-        * Asset manager
-        ***************/
-
+        /*
+        * @method load
+        * @param files
+        * @param callback
+        */ 
         SoundWorld.prototype.load = function (files, callback) {
             var returnObj = {},
                 filesLoaded = 0,
                 numberOfFiles = 0,
                 that = this;
 
+            // Load a single file
             var loadFile = function (fileKey, filePath, returnObj, callback) {
                 var request = new XMLHttpRequest();
 
@@ -86,16 +100,22 @@
             }
         };
 
-        /**********************
-        * play
-        * Play preloaded buffer
-        **********************/
-
+        /*
+        * Play preloaded buffer.
+        *
+        * @method play
+        * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
+        */
         SoundWorld.prototype.play = function (buffer) {
-            console.log(buffer)
             buffer.start(0);
         };
 
+        /*
+         * Stop buffer if it's currently playing.
+         * 
+         * @method stop
+         * @param {AudioBuffer} buffer
+         */
         SoundWorld.prototype.stop = function (buffer) {
             buffer.stop(0);
         };
@@ -103,11 +123,13 @@
         SoundWorld.prototype.reverse = function (buffer) {
         };
 
-        /**********************
-        * createCompressor
-        * Creates compressor
-        ***********************/
-
+        /*
+         * Creates compressor node.
+         *
+         * @method createCompressor
+         * @param {object} settings Compressor settings.
+         * @return Created compressor node.
+         */
         SoundWorld.prototype.createCompressor = function (settings) {
 
             /**************************************************************
@@ -123,11 +145,8 @@
             **************************************************************/
 
             var mmNode = {},
+                config = {},
                 compressor = this.context.createDynamicsCompressor();
-
-            var config = {};     
-
-            // Set values
 
             settings = settings || {};
 
@@ -141,11 +160,13 @@
             return mmNode;
         };
 
-        /********************
-        * createDelay
-        * Creates delay effect
-        *********************/ 
-
+        /*
+         * Creates delay node.
+         *
+         * @method createDelay
+         * @param {object} settings Delay settings.
+         * @return {AudioNode} Created delay node.
+         */
         SoundWorld.prototype.createDelay = function (settings) {
 
             /*********************************************
@@ -175,13 +196,12 @@
             var delay = context.createDelay(),
                 feedback = context.createGain(),
                 effectLevel = context.createGain(),
-                mmNode = {};
-
-            var config = {
-                delayTime: 0.5,
-                feedback: 0.5,
-                effectLevel: 0.5,
-            };
+                mmNode = {},
+                config = {
+                    delayTime: 0.5,
+                    feedback: 0.5,
+                    effectLevel: 0.5,
+                };
 
             // Set values
             settings = settings || {};
@@ -222,12 +242,13 @@
             return mmNode;
         };
 
-
-        /****************************
-        * createDistortion 
-        * Creates a distortion effect
-        *****************************/
-
+        /*
+         * Creates a distortion node.
+         *
+         * @method createDistortion
+         * @param {object} settings
+         * @return Created distortion node.
+         */
         SoundWorld.prototype.createDistortion = function (settings) {
 
             /******************************************************
@@ -410,15 +431,16 @@
             return mmNode;
         };
 
-        /**********************
-        * createPhaser
-        * Creates phaser effect
-        ***********************/
-
+        /*
+         * Creates a phaser node.
+         *
+         * @method createPhaser
+         * @param {object} settings Phaser settings
+         * @return {AudioNode} Created phaser node.
+         */
         SoundWorld.prototype.createPhaser = function (settings) {
 
             /****************************
-
             Phaser
             ======
             +----------+     +-----------------+               +-----------------+
@@ -437,17 +459,15 @@
             Rate: The speed at which the filter changes
             Depth: The depth of the filter change
             Resonance: Strength of the filter effect
-
             *****************************/
 
             var mmNode = {},
                 allPassFilters = [],
-                feedback = this.context.createGain();
-
-            var config = {
-                rate: 8,
-                depth: 0.5
-            };
+                feedback = this.context.createGain(),
+                config = {
+                    rate: 8,
+                    depth: 0.5
+                };
 
             // Set values
             settings = settings || {};
@@ -478,16 +498,18 @@
                 for (var i = 0; i < allPassFilters.length; i++) {
                     // allPassFilters[i].frequency.value = c;
                 }
-            }
+            };
 
             return mmNode;
         };
 
-        /**********************
-        * createReverb
-        * Creates reverb effect
-        ***********************/
-
+        /*
+         * Create a reverb node.
+         *
+         * @method createReverb
+         * @param {object} settings Reverb settings.
+         * @return {AudioNode} The created reverb node.
+         */
         SoundWorld.prototype.createReverb = function (settings) {
 
             /***********************************
@@ -555,15 +577,16 @@
             return mmNode;
         };
 
-        /****************
-        * createTremolo
-        * Creates tremolo
-        ****************/
-
+        /*
+         * Creates tremolo node.
+         *
+         * @param {object} settings Tremolo settings.
+         * @return {AudioNode} Created tremolo node.
+         */
         SoundWorld.prototype.createTremolo = function (settings) {
 
             /******************************
-
+            
             Tremolo
             =======
             +---------+     +-------------+
@@ -574,13 +597,11 @@
             ******************************/
 
             var mmNode = {},
+                config = {},
                 tremolo = this.context.createGain(),
                 lfo = this.createLFO(),
                 that = this;
 
-            var config = {};
-
-            // Set values
             settings = settings || {};
 
             mmNode.input = this.context.createGain();

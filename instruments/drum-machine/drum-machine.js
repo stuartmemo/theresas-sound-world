@@ -12,7 +12,7 @@
             this.version = '0.0.1';
             this.output = outputNode || context.destination;
             this.bpm = 120;
-        };
+        };  
 
         var createPlayFunction = function (bufferName, buffer, that) {
             that[bufferName] = function (time) {

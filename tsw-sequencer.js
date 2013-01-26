@@ -1,12 +1,20 @@
-/*****************
-* Sequencer      *
-* by Stuart Memo *
-*****************/
+/*****************************************
+ * Theresa's Sound World - Sequencer
+ * tsw-sequencer.js
+ * Dependencies: tsw-core.js, tsw-music.js
+ * Copyright 2013 Stuart Memo
+ *****************************************/
 
 (function (window, undefined) {
 
     var Sequencer = (function () {
 
+        /*
+         * Creates instance of sequncer
+         *
+         * @constructor
+         * @param {AudioContext} Current audio context
+         */
         var Sequencer = function (context) {
             this.context = context;
             this.version = '0.0.1';
@@ -17,6 +25,13 @@
             this.schedule = [];
         };
 
+        /*
+         * Create a play function with given name.
+         *
+         * @param {string} bufferName Name of buffer
+         * @param {AudioBuffer} buffer Buffer to play in function
+         * @para {object} that Keep binding to original Sequenece
+         */
         var createPlayFunction = function (bufferName, buffer, that) {
             that[bufferName] = function (time) {
                 var source = context.createBufferSource();
@@ -26,6 +41,12 @@
             }
         };
 
+        /*
+         * Load files into buffers.
+         *
+         * @param {kit}
+         * @callback {function} Function to call once all files are loaded.
+         */
         Sequencer.prototype.loadFiles = function (kit, callback) {
             var returnObj = {},
                 filesLoaded = 0,
@@ -60,6 +81,17 @@
             }
         };
 
+        /*
+         * Turns beat position into seconds
+         *
+         * @method beatToTime
+         * @param {number} bar
+         * @param {number} beat
+         * @param {number} steps
+         * @param {number} bpm Number of beats per minute in current song.
+         * @param {number} beatsPerBar
+         * @return {number} Time to play in seconds.
+         */
         var beatToTime = function (bar, beat, steps, bpm, beatsPerBar) {
             var beatsPerSecond = bpm / 60,
                 secondsPerBeat = 1 / beatsPerSecond,
@@ -72,7 +104,6 @@
 
 
         var calculateNote = function (note) {
-
             if (note === '*') {
                 // repeat last played note
                 note = previousNote;    
@@ -83,6 +114,7 @@
         }
 
         // Replace '*' in patterns with previous note in array
+        
         var replaceStars = function (pattern, prevNote) {
             prevNote = prevNote || pattern[0];
 
@@ -181,7 +213,13 @@
 
         };
 
-        // Load song into sequencer object
+        /*
+         * Load song into sequencer object.
+         *
+         * @method loadSong
+         * @param {object} song Song to play.
+         * @param {function} callback Function to call to once song is loaded.
+         */
         Sequencer.prototype.loadSong = function (song, callback) {
             this.song = song;
             this.callback = callback;
@@ -189,6 +227,11 @@
             this.callback();
         };
 
+        /*
+         * Play song currently loaded into sequencer.
+         *
+         * @method playSong
+         */
         Sequencer.prototype.playSong = function () {
             playPatterns.call(this);
         };

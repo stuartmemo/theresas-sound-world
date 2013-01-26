@@ -66,7 +66,6 @@ var song = {
 
 drumMachine.loadKit(kit808, function () {
     sequencer.loadSong(song, function () {
-        document.getElementById()
         this.playSong();
     });
 });
