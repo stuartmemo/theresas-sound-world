@@ -45,15 +45,15 @@
          * @param {endTime} number Context time to end note (in seconds)
          */
 
-        Synth.prototype.playNote = function (note, startTime, endTime) {
+        Synth.prototype.playNote = function (noteObj) {
             var gainNode = this.context.createGainNode(),
                 osc1 = this.context.createOscillator(),
                 osc2 = this.context.createOscillator(),
-                frequency = getFrequency(note); 
+                frequency = getFrequency(noteObj.note); 
 
             osc1.frequency.value = frequency;
             osc2.frequency.value = frequency;
-            gainNode.gain.value = 0.5;
+            gainNode.gain.value = noteObj.volume;
 
             osc1.type = 1;
             osc2.type= 2;
@@ -64,11 +64,11 @@
 
             connectedNodes.push(osc1, osc2);
 
-            osc1.start(startTime);
-            osc2.start(startTime);
+            osc1.start(noteObj.startTime);
+            osc2.start(noteObj.startTime);
 
-            osc1.stop(endTime);
-            osc2.stop(endTime);
+            osc1.stop(noteObj.stopTime);
+            osc2.stop(noteObj.endTime);
         };
 
         return function (context, outputNode) {

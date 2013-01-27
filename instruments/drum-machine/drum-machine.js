@@ -15,16 +15,21 @@
         };  
 
         var createPlayFunction = function (bufferName, buffer, that) {
-            that[bufferName] = function (time) {
-                var source = context.createBufferSource();
-                    source.buffer = buffer;
-                    source.connect(context.destination);
-                    source.start(time);
+            that[bufferName] = function (time, volume) {
+                var source = context.createBufferSource(),
+                    gainNode = context.createGainNode();
+
+                source.buffer = buffer;
+                gainNode.gain.value = volume / 100;
+    
+                source.connect(gainNode);
+                gainNode.connect(context.destination);
+                source.start(time);
             }
         };
 
-        DrumMachine.prototype.playNote = function (note, time) {
-            this[note](time);
+        DrumMachine.prototype.playNote = function (noteObj) {
+            this[noteObj.note](noteObj.startTime, noteObj.volume);
         };
 
         DrumMachine.prototype.stopNote = function (note, time) {

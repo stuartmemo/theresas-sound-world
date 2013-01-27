@@ -136,19 +136,28 @@
          * @param {number} startTime Time to start note.
          * @param {number} stopTime Time to stop note.
          */
-        var play = function (instrument, note, startTime, stopTime) {
+        var play = function (instrument, note, startTime, stopTime, volume) {
+            var noteObj = {
+                note: note,
+                startTime: startTime,
+                stopTime: stopTime,
+                volume: volume
+            }; 
+
             if (note instanceof Array) {
                 note.forEach(function (n) {
-                    instrument.playNote(n, startTime, stopTime);
+                    noteObj.note = n;
+                    instrument.playNote(noteObj);
                 })
             } else {
-                instrument.playNote(note, startTime, stopTime);
+                instrument.playNote(noteObj);
             }
 
             if (this.music.isChord(note)) {
                 var chord = this.music.parseChord(note);
                 chord.notes.forEach(function (n) {
-                    instrument.playNote(n + chord.octave, startTime, stopTime);
+                    noteObj.note = n + chord.octave;
+                    instrument.playNote(noteObj);
                 });
             }
         }
@@ -166,7 +175,7 @@
         var calculateStartTime = function (bar, interval, steps, note) {
             var timeToPlay = beatToTime(bar,
                                         interval,
-                                        steps,
+                                        steps || 4,
                                         this.song.settings.bpm,
                                         this.song.settings.beatsPerBar);
             return timeToPlay;
@@ -182,21 +191,26 @@
          * @param {number} startTime
          * @param {number} noteLength
          */
-        var calculateStopTime = function (sequence, step, steps, startTime, noteLength) {
-            noteLength = noteLength || 1;
+        var calculateStopTime = function (sequence, step, steps, startTime) {
+
+            // Get length of bar in seconds
+            var beatsPerSecond = this.song.settings.bpm / 60,
+                barLengthInSeconds = beatsPerSecond / this.song.settings.beatsPerBar;
+
+            noteLength = barLengthInSeconds / steps;
 
             if (sequence instanceof Array) {
                   sequence.forEach(function (sq, index) {
                     if (sequence[index + 1] === '-') {
-                        noteLength++; 
+                        //noteLength++; 
                     }
-                    calculateStopTime(sq, step, steps, startTime, noteLength)
+                    calculateStopTime(sq, step, steps, startTime);
                 });
             } else {
-                stopTime = startTime + (noteLength)
+                stopTime = startTime + noteLength;
             }
 
-            return startTime + 1;
+            return stopTime;
         };
 
         /*
@@ -211,12 +225,16 @@
                 intervals = [],
                 steps,
                 previousNote,
+                volume = 50,
                 that = this;
-                
+
             for (var track in this.song.tracks) {
 
                 // Get instrument that should be used for track
                 instrument = this.song.tracks[track].instrument;
+
+                // Get the volume of track
+                volume = this.song.tracks[track].volume || volume;
 
                 for (var patternName in this.song.tracks[track].sequence) {
 
@@ -234,9 +252,9 @@
                                 if (note.length > 1) {
                                     var startTime = calculateStartTime(bar, step, steps, note),
                                         stopTime = calculateStopTime(sequence, step, steps, startTime);
- 
+
                                     // Start and stop instrument at specified time
-                                    play.call(that, instrument, note, startTime, stopTime);
+                                    play.call(that, instrument, note, startTime, stopTime, volume);
                                 }
                             });
                         })

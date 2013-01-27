@@ -14,7 +14,6 @@ var kit808 = {
         }
     };
 
-// Song
 var song = {
     meta: {
         title: 'My first song',
@@ -30,18 +29,19 @@ var song = {
             steps: 8,
             sequence: [
                 ['kick', '*', ['*', 'snare'], '*', '*', '*', ['*', 'snare'], 'kick'],
-                ['hiHat', 'hiHat', '*', '*', ['hiHat', 'clap'], '*', '*', ]
+                ['hiHat', 'hiHat', '*', '*', '*', '*', '*', '*', ]
             ]
         },
         drumVerse: {
-            sequence: [] 
+            sequence: [
+                ['kick', '*', '*', '*']
+            ] 
         },
         synthIntro: {
             length: 16,
-            steps: 4,
+            steps: 8,
             sequence: [
-                ['Cmaj3', 'A3' ,'.' ,'', '' ],
-                [['B2', 'C2'], '']
+                ['A2', 'B2','C3', 'D3' ]
             ]
         }
     },
@@ -50,16 +50,17 @@ var song = {
             instrument: drumMachine,
             pan: -23,
             sequence: {
-                drumIntro: [0, 1, 2],
-                drumVerse: [3]
-            }
+                drumIntro: [0, 1, 2, 3],
+                drumVerse: [4]
+            },
+            volume: 20
         },
         synth: {
             instrument: synth,
             pan: +24,
             sequence: {
-                synthIntro: [0, 1, 2]
-            }
+            },
+            volume: 50
         }
     }
 };

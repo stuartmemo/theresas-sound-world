@@ -114,6 +114,7 @@
             }
 
             notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
+            notePositions.push(rootNotePosition + getSemitoneDifference('octave'));
 
             notePositions.forEach(function (position) {
                 chordObj.notes.push(notes[position]);
