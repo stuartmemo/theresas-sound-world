@@ -78,19 +78,46 @@
          * @param {string} chord Name of chord to turn into object.
          * return {object} Detailed chord object.
          */
-        var parseChord = function (chord) {
-            var chordObj = {};
+        Music.prototype.parseChord = function (chord) {
+            var chordObj = {},
+                notePositions = [],
+                rootNotePosition = 0;
+
+            if (Array.isArray(chord)) {
+                return false;
+            }
 
             chord = chord.toLowerCase();
+
             chordObj.rootNote = chord[0].toUpperCase();
             chordObj.isMajor = (chord.indexOf('maj') > -1)
             chordObj.isMinor = !chordObj.isMajor && (chord.indexOf('m') > -1);
             chordObj.is7th = (chord.indexOf('7') > -1);
+            chordObj.notes = [];
+
+            if (!chordObj.is7th) {
+                chordObj.octave = chord.match(/\d/g);
+            }
 
             if (!chordObj.isMajor && !chordObj.isMinor) {
                 // Hey! This aint no chord that I've ever seen!
                 return false;
             }
+
+            rootNotePosition = getNotePosition(chordObj.rootNote);
+            notePositions.push(rootNotePosition);
+
+            if (chord.isMinor) {
+                notePositions.push(rootNotePosition + getSemitoneDifference('minor 3rd'));
+            } else {
+                notePositions.push(rootNotePosition + getSemitoneDifference('major 3rd'));
+            }
+
+            notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
+
+            notePositions.forEach(function (position) {
+                chordObj.notes.push(notes[position]);
+            });
 
             return chordObj;
         };
@@ -124,7 +151,7 @@
         };
 
         Music.prototype.isChord = function (str) {
-            return parseChord(str);
+            return this.parseChord(str);
         };
 
         /*
@@ -135,27 +162,9 @@
          * @return {array} List of notes in chord.
          */
         Music.prototype.chordToNotes = function (chord) {
-            var rootNotePosition = 0,
-                notePositions = [],
-                chordNotes = [];
+            chord = this.parseChord(chord);
 
-            chord = parseChord(chord);
-            rootNotePosition = getNotePosition(chord.rootNote);
-            notePositions.push(rootNotePosition);
-
-            if (chord.isMinor) {
-                notePositions.push(rootNotePosition + getSemitoneDifference('minor 3rd'));
-            } else {
-                notePositions.push(rootNotePosition + getSemitoneDifference('major 3rd'));
-            }
-
-            notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
-
-            notePositions.forEach(function (position) {
-                chordNotes.push(notes[position]);
-            });
-
-            return chordNotes;
+            return chord.notes;
         };
 
         /*

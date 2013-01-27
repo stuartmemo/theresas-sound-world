@@ -144,6 +144,13 @@
             } else {
                 instrument.playNote(note, startTime, stopTime);
             }
+
+            if (this.music.isChord(note)) {
+                var chord = this.music.parseChord(note);
+                chord.notes.forEach(function (n) {
+                    instrument.playNote(n + chord.octave, startTime, stopTime);
+                });
+            }
         }
 
         /*
@@ -203,8 +210,9 @@
                 bars = [],
                 intervals = [],
                 steps,
-                previousNote;
-
+                previousNote,
+                that = this;
+                
             for (var track in this.song.tracks) {
 
                 // Get instrument that should be used for track
@@ -228,7 +236,7 @@
                                         stopTime = calculateStopTime(sequence, step, steps, startTime);
  
                                     // Start and stop instrument at specified time
-                                    play(instrument, note, startTime, stopTime);
+                                    play.call(that, instrument, note, startTime, stopTime);
                                 }
                             });
                         })
