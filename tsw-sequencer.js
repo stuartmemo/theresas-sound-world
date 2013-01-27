@@ -44,47 +44,6 @@
         };
 
         /*
-         * Load files into audio buffers.
-         *
-         * @method loadFiles
-         * @param {kit}
-         * @callback {function} Function to call once all files are loaded.
-         */
-        Sequencer.prototype.loadFiles = function (kit, callback) {
-            var returnObj = {},
-                filesLoaded = 0,
-                numberOfFiles = Object.keys(kit).length,
-                path = kit.path || '',
-                that = this;
-
-            var loadFile = function (fileKey, filePath, returnObj, callback) {
-                var request = new XMLHttpRequest();
-
-                request.open('GET', path + filePath, true);
-                request.responseType = 'arraybuffer';
-
-                request.onload = function () {
-                    that.context.decodeAudioData(request.response, function (decodedBuffer) {
-                        filesLoaded++;
-                        returnObj[fileKey] = decodedBuffer;
-
-                        createPlayFunction(fileKey, returnObj[fileKey], that);
-
-                        if (filesLoaded === numberOfFiles) {
-                            callback(returnObj);
-                        }
-                    });
-                };
-
-                request.send();
-            };
-
-            for (var sample in kit.samples) {
-                loadFile(sample, kit.samples[sample], returnObj, callback);
-            }
-        };
-
-        /*
          * Turns beat position into seconds.
          *
          * @method beatToTime

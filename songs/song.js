@@ -51,16 +51,17 @@ var song = {
             pan: -23,
             sequence: {
                 drumIntro: [0, 1, 2, 3],
-                drumVerse: [4]
+                drumVerse: [4, 5]
             },
-            volume: 20
+            volume: 0.8 
         },
         synth: {
             instrument: synth,
             pan: +24,
             sequence: {
+                synthIntro: [2]
             },
-            volume: 50
+            volume: 0.2
         }
     }
 };
