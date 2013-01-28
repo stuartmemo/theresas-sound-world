@@ -8,7 +8,6 @@
  (function (window, undefined) {
 
    var Music = (function () {
-
         /*
          * Creates an instance of Music
          *
