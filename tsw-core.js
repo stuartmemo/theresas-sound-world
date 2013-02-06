@@ -46,6 +46,16 @@
         };
 
         /*
+         * Connects two nodes together.
+         * @method connect
+         * @param {AudioNode} nodeFrom
+         * @param {AudioNode} nodeTo
+         */
+        SoundWorld.prototype.connect = function (nodeFrom, nodeTo) {
+            nodeFrom.connect(noteTo);
+        };
+
+        /*
         * @method load
         * @param files
         * @param callback
@@ -72,7 +82,6 @@
                         returnObj[fileKey].buffer = decodedBuffer;
 
                         returnObj[fileKey].play = function () {
-                            console.log(this) 
                             that.play(this);
                         };
 
@@ -92,10 +101,17 @@
 
                 request.send();
             };
-
-            for (var file in files) {
-                numberOfFiles++;
+ 
+            if (typeof files === 'object') {
+                for (var file in files) {
+                    numberOfFiles++;
+                    loadFile(file, files[file], returnObj, callback);
+                }
+            } else if (typeof files === 'string') {
+                numberOfFiles = 1;
                 loadFile(file, files[file], returnObj, callback);
+            } else {
+                throw new Error('Files must be an array or a valid string.');
             }
         };
 

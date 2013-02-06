@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>TSW Test Suite</title>
+        <script src="tsw-core.js"></script>
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+    </head>
+    <body>
+        <h1>TSW Test Suite</h1>
+        <h2>Core</h2>
+        <h3>New SoundWorld</h3>
+        <pre>
+            var context = new webkitAudioContext(),
+                tsw = new SoundWorld(context);
+            // tsw is your new Sound World!
+        </pre>
+        <button id="new">New Sound World</button>
+        <script>
+            $('#new').click(function () {
+                var context = new webkitAudioContext(),
+                    tsw = new SoundWorld(context);
+
+               console.log('New Sound World created', tsw);
+            });
+        </script>
+
+        <h3>Load file</h3>
+        <pre>
+            tsw.load({
+                guitar: 'audio/guitar.ogg',
+                bass: 'audio/bass.wav'
+            }, function (buffers) {
+                // buffers are ready to play 
+            });
+        </pre>
+        <button id="load">Load files</button>
+        <script>
+            $('#load').click(function () {
+                var context = new webkitAudioContext(),
+                    tsw = new SoundWorld(context);
+
+                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                    console.log(buffers); 
+                });
+            });
+        </script>
+
+        <h3>Play file</h3>
+        <pre>
+            tsw.load({
+                guitar: 'audio/guitar.ogg'
+            }, function (buffers) {
+                var guitar = buffers.guitar;
+
+                tsw.connect(guitar, tsw.speakers);
+                tsw.play(guitar);
+            });
+        </pre>
+        <button id="play">Play</button>
+        <script>
+            $('#play').click(function () {
+                var context = new webkitAudioContext(),
+                    tsw = new SoundWorld(context);
+
+                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                    var guitar = buffers.guitar;
+
+                    tsw.connect(guitar, tsw.speakers);
+                    tsw.play(guitar);
+                });
+            });
+        </script>
+
+        <h3>Connect nodes</h3>
+        <pre>
+            var sineWave = tsw.createSineWave(),
+                distortion = tsw.createDistortion();
+
+            tsw.connect(sineWave, distortion, tsw.speakers);
+        </pre>
+        <button id="connect">Connect nodes</button>
+        <script>
+            $('#connect').click(function () {
+                var context = new webkitAudioContext(),
+                    tsw = new SoundWorld(context),
+                    sineWave = tsw.createSineWave(),
+                    distortion = tsw.createDistortion();
+
+                tsw.connect(sineWave, distortion, tsw.speakers);
+            });
+        </script>
+
+        <h3>Reverse</h3>
+        <pre>
+            var backwardGuitar = tsw.reverse(guitar);
+
+            tsw.play(backwardGuitar);
+        </pre>
+        <script>
+            $('#reverse').click(function () {
+                var backwardGuitar = tsw.reverse(guitar);
+
+                tsw.play(backwardGuitar);
+            });
+        </script>
+
+        <h3>Mute</h3>
+        <pre>
+            tsw.mute();
+        </pre>
+        <script>
+            $('#mute').click(function () {
+                var context = new webkitAudioContext();
+                    tsw = new SoundWorld(context);
+
+                tsw.mute();
+            });
+        </script>
+    </body>
+</html>
