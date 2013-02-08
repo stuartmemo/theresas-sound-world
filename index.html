@@ -11,17 +11,26 @@
         <h2>Core</h2>
         <h3>New SoundWorld</h3>
         <pre>
-            var context = new webkitAudioContext(),
-                tsw = new SoundWorld(context);
+            var tsw = new SoundWorld();
             // tsw is your new Sound World!
         </pre>
         <button id="new">New Sound World</button>
         <script>
             $('#new').click(function () {
-                var context = new webkitAudioContext(),
-                    tsw = new SoundWorld(context);
+                var tsw = new SoundWorld();
+                console.log('New Sound World created', tsw);
+            });
+        </script>
 
-               console.log('New Sound World created', tsw);
+        <h3>Context</h3>
+        <pre>
+            console.log(tsw.context);
+        </pre>
+        <button id="context">Context</button>
+        <script>
+            $('#context').click(function () {
+                var tsw = new SoundWorld();
+                console.log(tsw.context);
             });
         </script>
 
@@ -37,8 +46,7 @@
         <button id="load">Load files</button>
         <script>
             $('#load').click(function () {
-                var context = new webkitAudioContext(),
-                    tsw = new SoundWorld(context);
+                var tsw = new SoundWorld();
 
                 tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
                     console.log(buffers); 
@@ -74,27 +82,25 @@
 
         <h3>Connect nodes</h3>
         <pre>
-            var sineWave = tsw.createSineWave(),
-                distortion = tsw.createDistortion();
+            var sineWave = tsw.createSineWave();
 
-            tsw.connect(sineWave, distortion, tsw.speakers);
+            tsw.connect(sineWave, tsw.speakers);
         </pre>
         <button id="connect">Connect nodes</button>
         <script>
             $('#connect').click(function () {
                 var context = new webkitAudioContext(),
                     tsw = new SoundWorld(context),
-                    sineWave = tsw.createSineWave(),
-                    distortion = tsw.createDistortion();
+                    sineWave = tsw.createSineWave();
 
-                tsw.connect(sineWave, distortion, tsw.speakers);
+                tsw.connect(sineWave, tsw.speakers);
+                console.log('all connected');
             });
         </script>
 
         <h3>Reverse</h3>
         <pre>
             var backwardGuitar = tsw.reverse(guitar);
-
             tsw.play(backwardGuitar);
         </pre>
         <script>
@@ -105,16 +111,46 @@
             });
         </script>
 
+        <h3>Bring the noise!</h3>
+        <pre>
+            var whiteNoise= tsw.bringTheNoise('white');
+            whiteNoise.connect(tsw.speakers);
+        </pre>
+        <button id="noise">Bring the noise!</button>
+        <script>
+            $('#noise').click(function () {
+                var whiteNoise = tsw.bringTheNoise('white');
+
+                whiteNoise.connect(tsw.speakers);
+                whiteNoise.start();
+            });
+        </script>
+
         <h3>Mute</h3>
         <pre>
             tsw.mute();
         </pre>
         <script>
             $('#mute').click(function () {
-                var context = new webkitAudioContext();
-                    tsw = new SoundWorld(context);
-
+                var tsw = new SoundWorld();
                 tsw.mute();
+            });
+        </script>
+
+        <h2>Sound sources</h2> 
+        <h3>Sine Wave</h3>
+        <pre>
+            var sineWave = tsw.createSineWave(440);
+            sineWave.start();
+        </pre>
+        <button id="sine">Sine wave</button>
+        <script>
+            $('#sine').click(function () {
+                var tsw = new SoundWorld(),
+                    sineWave = tsw.createSineWave(440);
+
+                sineWave.connect(tsw.speakers);
+                sineWave.start();
             });
         </script>
     </body>

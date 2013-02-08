@@ -16,9 +16,9 @@
          * @param {context} context The audio context to work with.
          */
         var SoundWorld = function (context) {
-            this.context = context;
+            this.context = context || new webkitAudioContext();
             this.version = '0.0.1';
-            this.speakers = context.destination;
+            this.speakers = this.context.destination;
         };
 
         /*
@@ -51,8 +51,10 @@
          * @param {AudioNode} nodeFrom
          * @param {AudioNode} nodeTo
          */
-        SoundWorld.prototype.connect = function (nodeFrom, nodeTo) {
-            nodeFrom.connect(noteTo);
+        SoundWorld.prototype.connect = function () {
+            for (var i = 0; i < arguments.length - 1; i++) {
+                arguments[i].connect(arguments[i + 1]);
+            }
         };
 
         /*
@@ -142,15 +144,27 @@
          * Create oscillator node.
          *
          * @method createOscillator
+         * @param {string} waveType The type of wave form.
+         * @param {number} frequency The starting frequency of the oscillator.
          * @return Oscillator node of specified type.
          */
-        SoundWorld.prototype.createOscillator = function (waveType) {
+        SoundWorld.prototype.createOscillator = function (waveType, frequency) {
             var osc = this.context.createOscillator();
 
             waveType = waveType || 'SINE';
             waveType = waveType.toUpperCase();
 
             osc.type = osc[waveType];
+            osc.frequency.value = frequency || 440;
+
+            osc.start = (function (startTime) {
+                var originalStart = osc.start;
+
+                return function () {
+                    console.log(originalStart);
+                    originalStart(0);
+                };
+            })();
             
             return osc;
         };
@@ -159,40 +173,44 @@
          * Create Sine Wave node.
          *
          * @method createSineWave
+         * @param {number} frequency The starting frequency of the sine wave.
          * @return Sine wave node.
          */
-        SoundWorld.prototype.createSineWave = function () {
-            return this.createOscillator('SINE');
+        SoundWorld.prototype.createSineWave = function (frequency) {
+            return this.createOscillator('SINE', frequency);
         };
 
         /*
          * Create square wave node.
          *
          * @method createSquareWave
+         * @param {number} frequency The starting frequency of the square wave.
          * @return Square wave node.
          */
-        SoundWorld.prototype.createSquareWave = function () {
-            return this.createOscillator('SQUARE');
+        SoundWorld.prototype.createSquareWave = function (frequency) {
+            return this.createOscillator('SQUARE', frequency);
         };
 
         /*
          * Create sawtooth wave node.
          *
          * @method createSquareWave
+         * @param {number} frequency The starting frequency of the sawtooth wave.
          * @return Square wave node.
          */
-        SoundWorld.prototype.createSawtoothWave = function () {
-            return this.createOscillator('SAWTOOTH');
+        SoundWorld.prototype.createSawtoothWave = function (frequency) {
+            return this.createOscillator('SAWTOOTH', frequency);
         };
 
         /*
          * Create triangle wave node.
          *
          * @method createTriangleWave
+         * @param {number} frequency The starting frequency of the sawtooth wave.
          * @return Triangle wave node.
          */
-        SoundWorld.prototype.createTriangleWave = function () {
-            return this.createOscillator('TRIANGLE');
+        SoundWorld.prototype.createTriangleWave = function (triangle) {
+            return this.createOscillator('TRIANGLE', frequency);
         };
 
         /*
