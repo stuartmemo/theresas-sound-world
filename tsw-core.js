@@ -32,20 +32,6 @@
         }.bind(this);
 
         /*
-        * Connects an array of nodes together in order    
-        *
-        * @method chainNodes
-        * @param {array} nodes The nodes to chain together.
-        */ 
-        var chainNodes = function (nodes) {
-            var numberOfNodes = nodes.length - 1;
-
-            for (var i = 0; i < numberOfNodes; i++) {
-                nodes[i].connect(nodes[i + 1]);
-            }
-        };
-
-        /*
          * Connects two nodes together.
          * @method connect
          * @param {AudioNode} nodeFrom
@@ -235,20 +221,13 @@
             var mmNode = {},
                 lfo = this.context.createOscillator(),
                 depth = this.context.createGain(),
-                that = this;
+                that = this; 
 
-            var config = {};
-
-            // Set values
-            settings = settings || {
-                frequency: 10,
-                depth: 1,
-                waveType: 'TRIANGLE'
-            };
-
-            lfo.frequency.value = settings.frequency || config.frequency;
-            depth.gain.value = settings.depth || config.depth;
-            lfo.type = lfo[settings.waveType];
+            settings = settings || {};
+            lfo.frequency.value = settings.frequency || 10;
+            lfo.frequency.value = settings.frequency || 70;
+            depth.gain.value = settings.depth || 1;
+            lfo.type = lfo[settings.waveType] || lfo['TRIANGLE'];
 
             mmNode.input = this.context.createGain();
 

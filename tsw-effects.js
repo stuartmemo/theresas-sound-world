@@ -87,7 +87,7 @@
                 feedback = context.createGain(),
                 effectLevel = context.createGain(),
                 mmNode = {},
-                config = {
+                defaults = {
                     delayTime: 0.5,
                     feedback: 0.5,
                     effectLevel: 0.5,
@@ -95,9 +95,9 @@
 
             // Set values
             settings = settings || {};
-            delay.delayTime.value =  settings.delayTime || config.delayTime;
-            feedback.gain.value = settings.feedback || config.feedback;
-            effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+            delay.delayTime.value =  settings.delayTime || defaults.delayTime;
+            feedback.gain.value = settings.feedback || defaults.feedback;
+            effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
 
             mmNode.input = context.createGain();
 
@@ -112,9 +112,9 @@
 
             mmNode.setPreset = function (settings) {
                 settings = settings || {};
-                delay.delayTime.value =  settings.delayTime || config.delayTime;
-                feedback.gain.value = settings.feedback || config.feedback;
-                effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+                delay.delayTime.value =  settings.delayTime || defaults.delayTime;
+                feedback.gain.value = settings.feedback || defaults.feedback;
+                effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
             };
 
             mmNode.setDelayTime = function (dt) {
@@ -165,7 +165,7 @@
                 highpass = context.createBiquadFilter(),
                 mmNode = {};
 
-            var config = {
+            var defaults = {
                 distortionLevel: 0.5
             };
 
@@ -234,7 +234,7 @@
             | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
             +----------+     +-----------------+               +-----------------+
                   |                |      |                           |
-                  v                v      ÊŒ                           v 
+                  v                v      Ê                           v 
             +---------------+      |      |                     +----------+
             |     Output    |---<--+      +----------<----------| Feedback |
             | (Destination) |                                   |  (Gain)  |
@@ -250,15 +250,16 @@
             var mmNode = {},
                 allPassFilters = [],
                 feedback = this.context.createGain(),
-                config = {
+                defaults  = {
                     rate: 8,
-                    depth: 0.5
+                    depth: 0.5,
+                    feedback: 0.8
                 };
 
             // Set values
             settings = settings || {};
 
-            feedback.gain.value = 0.8;
+            feedback.gain.value = settings.gain || defaults.gain;
 
             for (var i = 0; i < config.rate; i++) {
                 allPassFilters[i] = this.context.createBiquadFilter();
@@ -327,7 +328,7 @@
                 effectLevel = context.createGain(),
                 mmNode = {};
 
-            var config = {
+            var defaults = {
                 effectLevel: 0.5,
                 reverbTime: 0.5,
                 reverbType: 'spring',
@@ -336,7 +337,7 @@
 
             // Set values
             settings = settings || {};
-            effectLevel.gain.value = settings.effectLevel || config.effectLevel;
+            effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
 
             this.load({
                 'hall': '/effects/reverb/responses/bright-hall.wav',
