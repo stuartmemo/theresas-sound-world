@@ -13,8 +13,9 @@
          *
          * @param {AudioContext} Current audio context
          */
-        var Effects = function (context) {
-            this.context = context;
+        var Effects = function (tsw) {
+            this.context = tsw.context;
+            this.tsw = tsw;
         };
 
         /*
@@ -24,7 +25,7 @@
          * @param {object} settings Compressor settings.
          * @return Created compressor node.
          */
-        SoundWorld.prototype.createCompressor = function (settings) {
+        Effects.prototype.createCompressor = function (settings) {
 
             /*
              *  Compressor 
@@ -35,20 +36,12 @@
              *  +----------+     +----------------------+     +---------------+
              */ 
 
-            var mmNode = {},
-                config = {},
+            var config = {},
                 compressor = this.context.createDynamicsCompressor();
 
             settings = settings || {};
 
-            mmNode.input = this.context.createGain()
-
-            mmNode.connect = function (output) {
-                mmNode.connect(compressor);
-                compressor.connect(output);
-            };
-
-            return mmNode;
+            return compressor;
         };
 
         /*
@@ -58,7 +51,7 @@
          * @param {object} settings Delay settings.
          * @return {AudioNode} Created delay node.
          */
-        SoundWorld.prototype.createDelay = function (settings) {
+        Effects.prototype.createDelay = function (settings) {
 
             /*
              *  Delay effect
@@ -86,6 +79,7 @@
             var delay = context.createDelay(),
                 feedback = context.createGain(),
                 effectLevel = context.createGain(),
+                gain = context.createGain(),
                 mmNode = {},
                 defaults = {
                     delayTime: 0.5,
@@ -99,16 +93,8 @@
             feedback.gain.value = settings.feedback || defaults.feedback;
             effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
 
-            mmNode.input = context.createGain();
-
-            mmNode.connect = function (output) {
-                delay.connect(feedback);
-                feedback.connect(delay);
-                delay.connect(effectLevel);
-                mmNode.input.connect(output);
-                mmNode.input.connect(delay);
-                effectLevel.connect(output);
-            };
+            tsw.connect(gain, delay, feedback, delay, effectLevel, output);
+            tsw.connect(gain, delay)
 
             mmNode.setPreset = function (settings) {
                 settings = settings || {};
@@ -139,7 +125,7 @@
          * @param {object} settings Distortion settings.
          * @return Created distortion node.
          */
-        SoundWorld.prototype.createDistortion = function (settings) {
+        Effects.prototype.createDistortion = function (settings) {
 
             /*
              *  Distortion
@@ -200,7 +186,7 @@
          * @param {object} settings Flanger settings.
          * @return
          */
-        SoundWorld.prototype.createFlanger = function (settings) {
+        Effects.prototype.createFlanger = function (settings) {
 
             /*
              *  Flanger 
@@ -224,7 +210,7 @@
          * @param {object} settings Phaser settings
          * @return {AudioNode} Created phaser node.
          */
-        SoundWorld.prototype.createPhaser = function (settings) {
+        Effects.prototype.createPhaser = function (settings) {
 
             /****************************
             Phaser
@@ -297,7 +283,7 @@
          * @param {object} settings Reverb settings.
          * @return {AudioNode} The created reverb node.
          */
-        SoundWorld.prototype.createReverb = function (settings) {
+        Effects.prototype.createReverb = function (settings) {
 
             /***********************************
 
@@ -370,7 +356,7 @@
          * @param {object} settings Tremolo settings.
          * @return {AudioNode} Created tremolo node.
          */
-        SoundWorld.prototype.createTremolo = function (settings) {
+        Effects.prototype.createTremolo = function (settings) {
 
             /******************************
             
@@ -415,6 +401,6 @@
         };
     })();
 
-    window.Effects = Effects;
+    window.tswEffects = Effects;
 
  })(window);

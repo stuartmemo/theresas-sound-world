@@ -19,6 +19,10 @@
             this.context = context || new webkitAudioContext();
             this.version = '0.0.1';
             this.speakers = this.context.destination;
+
+            if (hasEffectsLibLoaded()) {
+                this.fx = new tswEffects(this);
+            }
         };
 
         /*
@@ -31,14 +35,25 @@
             return this.context.currentTime;
         }.bind(this);
 
+
         /*
-         * Connects two nodes together.
+         * Checks if tsw effects library is loaded.
+         *
+         * @method hasEffectsLibLoaded
+         * @return {boolean} Has effects library been loaded.
+         */
+        var hasEffectsLibLoaded = function () {
+            return window.tswEffects ? true : false;
+        }
+
+        /*
+         * Connects multiple nodes together.
          * @method connect
-         * @param {AudioNode} nodeFrom
-         * @param {AudioNode} nodeTo
+         * @param {AudioNodes} arguments Nodes to connect in order.
          */
         SoundWorld.prototype.connect = function () {
             for (var i = 0; i < arguments.length - 1; i++) {
+                console.log(arguments[i]);
                 arguments[i].connect(arguments[i + 1]);
             }
         };

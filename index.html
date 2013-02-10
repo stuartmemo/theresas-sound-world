@@ -4,6 +4,7 @@
         <meta charset="utf-8"/>
         <title>TSW Test Suite</title>
         <script src="tsw-core.js"></script>
+        <script src="tsw-effects.js"></script>
         <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     </head>
     <body>
@@ -147,9 +148,12 @@
         <script>
             $('#sine').click(function () {
                 var tsw = new SoundWorld(),
-                    sineWave = tsw.createSineWave(440);
+                    sineWave = tsw.createSineWave(440),
+                    compressor = tsw.fx.createCompressor();
 
-                sineWave.connect(tsw.speakers);
+                console.log(compressor);
+
+                tsw.connect(sineWave, compressor,  tsw.speakers);
                 sineWave.start();
             });
         </script>
