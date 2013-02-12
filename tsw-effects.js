@@ -36,12 +36,16 @@
              *  +----------+     +----------------------+     +---------------+
              */ 
 
-            var config = {},
+            var effectObj = {},
                 compressor = this.context.createDynamicsCompressor();
 
-            settings = settings || {};
+            effectObj.input = this.context.createGain(),
+            effectObj.output = this.context.createGain(),
+            effectObj.settings = settings || {};
 
-            return compressor;
+            this.tsw.connect(effectObj.input, compressor, effectObj.output);
+
+           return effectObj;
         };
 
         /*
@@ -76,46 +80,30 @@
              *
              */
 
-            var delay = context.createDelay(),
-                feedback = context.createGain(),
-                effectLevel = context.createGain(),
-                gain = context.createGain(),
-                mmNode = {},
-                defaults = {
-                    delayTime: 0.5,
-                    feedback: 0.5,
-                    effectLevel: 0.5,
-                };
+            var effect = {},
+                delay = this.context.createDelay(),
+                feedback = this.context.createGain(),
+                effectLevel = this.context.createGain(),
+                gain = this.context.createGain();
+
+            effect.input = this.context.createGain();
+            effect.output = this.context.createGain();
+            effect.settings = {
+                delayTime: 0.5,
+                feedback: 0.5,
+                effectLevel: 0.5,
+            };
 
             // Set values
             settings = settings || {};
-            delay.delayTime.value =  settings.delayTime || defaults.delayTime;
-            feedback.gain.value = settings.feedback || defaults.feedback;
-            effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
+            delay.delayTime.value =  settings.delayTime || effect.settings.delayTime;
+            feedback.gain.value = settings.feedback || effect.settings.feedback;
+            effectLevel.gain.value = settings.effectLevel || effect.settings.effectLevel;
 
-            tsw.connect(gain, delay, feedback, delay, effectLevel, output);
-            tsw.connect(gain, delay)
+            this.tsw.connect(effect.input, gain, delay, feedback, delay, effectLevel, effect.output);
+            this.tsw.connect(gain, delay)
 
-            mmNode.setPreset = function (settings) {
-                settings = settings || {};
-                delay.delayTime.value =  settings.delayTime || defaults.delayTime;
-                feedback.gain.value = settings.feedback || defaults.feedback;
-                effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
-            };
-
-            mmNode.setDelayTime = function (dt) {
-                delay.delayTime.value = dt;
-            };
-
-            mmNode.setFeedback = function (fb) {
-                feedback.gain.value = fb;
-            };
-
-            mmNode.setEffectLevel = function (e) {
-                effectLevel.gain.value = e;
-            }
-
-            return mmNode;
+            return effect;
         };
 
         /*
@@ -146,37 +134,25 @@
              *               +---------------+
              *
              */ 
-            var distortion = context.createWaveShaper(),
-                lowpass = context.createBiquadFilter(),
-                highpass = context.createBiquadFilter(),
-                mmNode = {};
 
-            var defaults = {
+            var effect = {},
+                distortion = context.createWaveShaper(),
+                lowpass = context.createBiquadFilter(),
+                highpass = context.createBiquadFilter();
+
+            effect.settings = {
                 distortionLevel: 0.5
             };
 
             // Set values
             settings = settings || {};
 
-            mmNode.input = this.context.createGain();
+            effect.input = this.context.createGain();
+            effect.output = this.context.createGain();
 
-            mmNode.connect = function (output) {
-                mmNode.input.connect(distortion);
-                distortion.connect(lowpass);
-                distortion.connect(highpass);
-                lowpass.connect(output);
-                highpass.connect(output);
-            };
+            this.tsw.connect(effect.input, distortion, [lowpass, highpass], effect.output);
 
-            mmNode.setDistotionLevel = function (d) {
-
-            };
-
-            mmNode.setTone = function (t) {
-
-            };
-
-            return mmNode;
+            return effect;
         };
 
         /*
@@ -198,9 +174,9 @@
              *
              */
 
-            var mmNode = {};
+            var effect = {};
 
-            return mmNode;
+            return effect;
         };
         
         /*
@@ -233,7 +209,7 @@
             Resonance: Strength of the filter effect
             *****************************/
 
-            var mmNode = {},
+            var effect = {},
                 allPassFilters = [],
                 feedback = this.context.createGain(),
                 defaults  = {
@@ -253,27 +229,23 @@
                 allPassFilters[i].frequency.value = 100 * i;
             }
 
-            mmNode.input = this.context.createGain();
+            effect.input = this.context.createGain();
+            effect.output = this.context.createGain();
 
             for (var i = 0; i < allPassFilters.length - 1; i++) {
-                allPassFilters[i].connect(allPassFilters[i + 1]);
+                this.tsw.connect(allPassFilters[i], allPassFilters[i + 1]);
             }
 
-            mmNode.connect = function (output) {
-                mmNode.input.connect(output);
-                mmNode.input.connect(allPassFilters[0])
-                allPassFilters[allPassFilters.length - 1].connect(feedback);
-                allPassFilters[allPassFilters.length - 1].connect(output)
-                feedback.connect(allPassFilters[0]);
-            };
+            this.tsw.connect(effect.input, allPassFilters[0], allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
+            this.tsw.connect(allPassFilters[allPassFilters.length - 1], effect.output);
 
-            mmNode.setCutoff = function (c) {
+            effect.setCutoff = function (c) {
                 for (var i = 0; i < allPassFilters.length; i++) {
                     // allPassFilters[i].frequency.value = c;
                 }
             };
 
-            return mmNode;
+            return effect;
         };
 
         /*

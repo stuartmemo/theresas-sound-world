@@ -53,8 +53,19 @@
          */
         SoundWorld.prototype.connect = function () {
             for (var i = 0; i < arguments.length - 1; i++) {
-                console.log(arguments[i]);
-                arguments[i].connect(arguments[i + 1]);
+                if (arguments[i].hasOwnProperty('output')) {
+                    if (arguments[i + 1].hasOwnProperty('input')) {
+                        arguments[i].output.connect(arguments[i + 1].input);
+                    } else {
+                        arguments[i].output.connect(arguments[i + 1]);
+                    }
+                } else {
+                    if (arguments[i + 1].hasOwnProperty('input')) {
+                        arguments[i].connect(arguments[i + 1].input);
+                    } else {
+                        arguments[i].connect(arguments[i + 1]);
+                    }
+                }
             }
         };
 
@@ -158,15 +169,6 @@
             osc.type = osc[waveType];
             osc.frequency.value = frequency || 440;
 
-            osc.start = (function (startTime) {
-                var originalStart = osc.start;
-
-                return function () {
-                    console.log(originalStart);
-                    originalStart(0);
-                };
-            })();
-            
             return osc;
         };
 

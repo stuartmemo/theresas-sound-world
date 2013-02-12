@@ -70,12 +70,13 @@
         <script>
             $('#play').click(function () {
                 var context = new webkitAudioContext(),
-                    tsw = new SoundWorld(context);
+                    tsw = new SoundWorld(context),
+                    delay = tsw.fx.createDelay();
 
                 tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
                     var guitar = buffers.guitar;
 
-                    tsw.connect(guitar, tsw.speakers);
+                    tsw.connect(guitar, delay, tsw.speakers);
                     tsw.play(guitar);
                 });
             });
@@ -151,10 +152,8 @@
                     sineWave = tsw.createSineWave(440),
                     compressor = tsw.fx.createCompressor();
 
-                console.log(compressor);
-
                 tsw.connect(sineWave, compressor,  tsw.speakers);
-                sineWave.start();
+                sineWave.start(0);
             });
         </script>
     </body>
