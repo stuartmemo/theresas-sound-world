@@ -216,6 +216,43 @@
             return this.createOscillator('TRIANGLE', frequency);
         };
 
+
+        /*
+         * Create gain node.
+         *
+         * @method createGainNode
+         * @return Gain node.
+         */
+        SoundWorld.prototype.createGainNode = function () {
+            return this.context.createGainNode();
+        };
+
+        /*
+         * Create noise.
+         *
+         * @method createNoise
+         * @param {string} colour Type of noise.
+         */
+        SoundWorld.prototype.createNoise = function (colour) {
+            var noiseNode = this.context.createScriptProcessor(1024, 0, 1);
+
+            // white noise
+            noiseNode.onaudioprocess = function (e) {
+                for (var i = 0; i < 1024; i++) {
+                    e.outputBuffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
+                }
+            };
+
+            // this isn't right
+            if (colour === 'pink') {
+                var lowpassFilter = this.context.createBiquadFilter();
+                lowpassFilter.Q.value = 3;
+                noiseNode.connect(lowPassFilter);
+            }
+
+            return noiseNode;
+        };
+
         /*
          * Create LFO.
          *

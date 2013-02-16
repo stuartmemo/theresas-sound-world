@@ -5,15 +5,12 @@
 
 (function (window, undefined) {
 
-    var Synth = (function () {
+    var Synth = (function (tsw) {
 
-        var Synth = function (context, outputNode) {
-            this.context = context;
+        var Synth = function (outputNode) {
             this.version = '0.0.1';
-            this.output = outputNode || context.destination;
+            this.output = outputNode;
         };
-
-        var connectedNodes = [];
 
         var getFrequency = function (note) {
             var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
@@ -44,31 +41,18 @@
          * @param {startTime} number Context time to play note (in seconds)
          * @param {endTime} number Context time to end note (in seconds)
          */
-
         Synth.prototype.playNote = function (noteObj) {
-            var gainNode = this.context.createGainNode(),
-                osc1 = this.context.createOscillator(),
-                osc2 = this.context.createOscillator(),
+            var gainNode = tsw.createGainNode(0.5),
+                osc1 = tsw.createOscillator('triangle'),
+                osc2 = tsw.createOscillator('sawtooth'),
                 frequency = getFrequency(noteObj.note); 
 
             osc1.frequency.value = frequency;
             osc2.frequency.value = frequency;
             gainNode.gain.value = noteObj.volume;
 
-            osc1.type = 1;
-            osc2.type= 2;
-
-            osc1.connect(gainNode);
-            osc2.connect(gainNode);
-            gainNode.connect(this.context.destination);
-
-            connectedNodes.push(osc1, osc2);
-
-            osc1.start(noteObj.startTime);
-            osc2.start(noteObj.startTime);
-
-            osc1.stop(noteObj.stopTime);
-            osc2.stop(noteObj.endTime);
+            tsw.connect([osc1, osc2], gainNode, tsw.speakers);
+            tsw.play([osc1, osc2], noteObj.startTime, noteObj.stopTime);
         };
 
         return function (context, outputNode) {

@@ -113,21 +113,6 @@
             });
         </script>
 
-        <h3>Bring the noise!</h3>
-        <pre>
-            var whiteNoise= tsw.bringTheNoise('white');
-            whiteNoise.connect(tsw.speakers);
-        </pre>
-        <button id="noise">Bring the noise!</button>
-        <script>
-            $('#noise').click(function () {
-                var whiteNoise = tsw.bringTheNoise('white');
-
-                whiteNoise.connect(tsw.speakers);
-                whiteNoise.start();
-            });
-        </script>
-
         <h3>Mute</h3>
         <pre>
             tsw.mute();
@@ -156,5 +141,21 @@
                 sineWave.start(0);
             });
         </script>
+
+        <h3>Noise</h3>
+        <pre>
+            var whiteNoise = tsw.createNoise();
+            tsw.connect(whiteNoise, tsw.speakers);
+        </pre>
+        <button id="noise">Noise</button>
+        <script>
+            $('#noise').click(function () {
+                var tsw = new SoundWorld(),
+                    noise = tsw.createNoise();
+
+                tsw.connect(noise, tsw.speakers);
+            });
+        </script>
     </body>
+
 </html>
