@@ -5,6 +5,7 @@
         <title>TSW Test Suite</title>
         <script src="tsw-core.js"></script>
         <script src="tsw-effects.js"></script>
+        <script src="tsw-music.js"></script>
         <script src="instruments/synth/synth.js"></script>
         <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
         <style>
@@ -20,7 +21,7 @@
             <h2>Oscillator Bank</h2>
             <h3>Oscillator-1</h3>
             <label for="osc-1-range">Range</label>
-            <select>
+            <select name="osc-1-range" id="osc-1-range">
                 <option value="64">Low</option>
                 <option value="32">32</option>
                 <option value="16">16</option>
@@ -121,7 +122,6 @@
             <input type="range" from="0" to="10" default="5"/>
             <label for="contout">Amount of contour</label>
             <input type="range" from="0" to="10" default="5"/>
-
             <label for="sustain">Sustain level</label>
             <input type="range" from="0" to="10" default="5"/>
         </div>
@@ -130,9 +130,9 @@
         <script src="http://stuartmemo.com/qwerty-hancock/raphael-min.js"></script>
         <script src="http://stuartmemo.com/qwerty-hancock/qwerty-hancock.js"></script>
         <script>
-            var tsw = new SoundWorld(),
-                synth = new Synth(tsw),
-                keyboard = qwertyHancock('keyboard', null, 150, null, 'A3', 'white', 'black', 'yellow');
+                var tsw = new SoundWorld(),
+                    synth = new Synth(tsw),
+                    keyboard = qwertyHancock('keyboard', null, 150, null, 'A3', 'white', 'black', 'yellow');
 
                 keyboard.keyDown(function (note, frequency) {
                     synth.playNote(note);

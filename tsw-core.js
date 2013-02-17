@@ -22,6 +22,7 @@
 
             if (hasEffectsLibLoaded()) {
                 this.fx = new tswEffects(this);
+                this.music = new tswMusic(this);
             }
         };
 
@@ -67,6 +68,10 @@
                     }
                 }
             }
+        };
+
+        SoundWorld.prototype.disconnect = function (node) {
+            node.disconnect();
         };
 
         /*
@@ -215,7 +220,6 @@
         SoundWorld.prototype.createTriangleWave = function (triangle) {
             return this.createOscillator('TRIANGLE', frequency);
         };
-
 
         /*
          * Create gain node.

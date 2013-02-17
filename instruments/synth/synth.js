@@ -5,34 +5,107 @@
 
 (function (window, undefined) {
 
-    var Synth = (function (tsw) {
+    var Synth = (function () {
 
         var Synth = function (outputNode) {
             this.version = '0.0.1';
             this.output = outputNode;
+            init.call(this);
         };
 
-        var getFrequency = function (note) {
-            var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
-                octave,
-                keyNumber;
-         
-            if (note.length === 3) {
-                octave = note.charAt(2);
-            } else {
-                octave = note.charAt(1);
+        var init = function () {
+            this.activeOscillators = [];
+
+            this.oscillators = {
+                osc1: {
+                    range: 8,
+                    waveform: 'triangle',
+                    tuning: 0
+                },
+                osc2: {
+                    range: 4,
+                    waveform: 'triangle',
+                    tuning: 0
+                },
+                osc3: {
+                    range: 16,
+                    waveform: 'triangle',
+                    tuning: 0
+                }
             }
-         
-            keyNumber = notes.indexOf(note.slice(0, -1));
-         
-            if (keyNumber < 3) {
-                keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1; 
-            } else {
-                keyNumber = keyNumber + ((octave - 1) * 12) + 1; 
+
+            this.mixer = {
+                osc1: {
+                    node: tsw.createGainNode(),
+                    volume: 0.5,
+                    active: true
+                },
+                osc2: {
+                    node: tsw.createGainNode(),
+                    volume: 0.5,
+                    active: true
+                },
+                osc3: {
+                    node: tsw.createGainNode(),
+                    volume: 0.5,
+                    active: true
+                },
+                noise: {
+                    node: tsw.createNoise(),
+                    type: 'white',
+                    volume: 0.5,
+                    active: false
+                }
             }
-         
-            // Return frequency of note
-            return 440 * Math.pow(2, (keyNumber- 49) / 12);
+
+
+            this.volume = tsw.createGainNode();
+
+            this.mixer.osc2.node.gain = 0.2;
+            this.mixer.osc3.node.gain = 0.1;
+            this.volume.gain.value = 0.5;
+
+            tsw.connect(this.mixer.osc1.node, this.volume);
+            tsw.connect(this.mixer.osc2.node, this.volume);
+            tsw.connect(this.mixer.osc3.node, this.volume);
+
+            tsw.connect(this.volume, tsw.speakers);
+        };
+
+        var createOscillators = function (frequency) {
+            for (var i = 1; i < 4; i++) {
+                var oscillator = tsw.createOscillator('triangle');
+
+                var range = this.oscillators['osc' + i].range;
+
+                switch (range) {
+                    case 4:
+                        frequency = frequency * 2;
+                        break;
+                    case 16:
+                        frequency = frequency / 2;
+                        break;
+                    default:
+                        break;
+                };
+                oscillator.frequency.value = frequency;
+                tsw.connect(oscillator, this.mixer['osc' + i].node);
+                this.activeOscillators.push(oscillator);
+            }
+        };
+
+        var disconnectOscillators = function (frequency) {
+            frequency = Math.round(frequency);
+            for (var i = 0; i < this.activeOscillators.length; i++) {
+                if (frequency === Math.round(this.activeOscillators[i].frequency.value) ||
+                    frequency === Math.round(this.activeOscillators[i].frequency.value * 2) ||
+                    frequency === Math.round(this.activeOscillators[i].frequency.value / 2) 
+                ) {
+                    tsw.disconnect(this.activeOscillators[i]);
+                    this.activeOscillators.splice(i,1);
+                    i--;
+                }
+            }
         };
 
         /*
@@ -41,18 +114,16 @@
          * @param {startTime} number Context time to play note (in seconds)
          * @param {endTime} number Context time to end note (in seconds)
          */
-        Synth.prototype.playNote = function (noteObj) {
-            var gainNode = tsw.createGainNode(0.5),
-                osc1 = tsw.createOscillator('triangle'),
-                osc2 = tsw.createOscillator('sawtooth'),
-                frequency = getFrequency(noteObj.note); 
+        Synth.prototype.playNote = function (note) {
+            createOscillators.call(this, tsw.music.noteToFrequency(note));
 
-            osc1.frequency.value = frequency;
-            osc2.frequency.value = frequency;
-            gainNode.gain.value = noteObj.volume;
+            this.activeOscillators.forEach(function (oscillator) {
+                oscillator.start(0);
+            });
+        }
 
-            tsw.connect([osc1, osc2], gainNode, tsw.speakers);
-            tsw.play([osc1, osc2], noteObj.startTime, noteObj.stopTime);
+        Synth.prototype.stopNote = function (note) {
+            disconnectOscillators.call(this, tsw.music.noteToFrequency(note));
         };
 
         return function (context, outputNode) {
