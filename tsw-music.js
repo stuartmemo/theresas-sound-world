@@ -201,6 +201,6 @@
         };
     })();
 
-    window.tswMusic = Music;
+    window.tsw.music = new Music();
 
  })(window);

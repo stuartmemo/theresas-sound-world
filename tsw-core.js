@@ -22,6 +22,9 @@
 
             if (hasEffectsLibLoaded()) {
                 this.fx = new tswEffects(this);
+            }
+
+            if (hasMusicLibLoaded()) {
                 this.music = new tswMusic(this);
             }
         };
@@ -36,7 +39,6 @@
             return this.context.currentTime;
         }.bind(this);
 
-
         /*
          * Checks if tsw effects library is loaded.
          *
@@ -45,6 +47,16 @@
          */
         var hasEffectsLibLoaded = function () {
             return window.tswEffects ? true : false;
+        }
+        
+        /*
+         * Checks if tsw music library is loaded.
+         *
+         * @method hasMusicLibLoaded
+         * @return {boolean} Has music library been loaded.
+         */
+        var hasMusicLibLoaded = function () {
+            return window.tswMusic ? true : false;
         }
 
         /*
@@ -232,6 +244,22 @@
         };
 
         /*
+         * Create filter node.
+         *
+         * @createFilter
+         * @param {string} filterType Type of filter.
+         * @return FilterNode
+         */
+        SoundWorld.prototype.createFilter = function (filterType) {
+            var fType = filterType || 'lowpass';
+
+            var filter = this.context.createBiquadFilter();
+            filter.type = fType;
+
+            return filter;
+        };
+
+        /*
          * Create noise.
          *
          * @method createNoise
@@ -318,6 +346,6 @@
         };
     })();
 
-    window.SoundWorld = SoundWorld;
-
+    //window.SoundWorld = SoundWorld;
+    window.tsw = new SoundWorld();
 })(window);

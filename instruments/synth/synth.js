@@ -6,10 +6,8 @@
 (function (window, undefined) {
 
     var Synth = (function () {
-
-        var Synth = function (outputNode) {
+        var Synth = function (tsw) {
             this.version = '0.0.1';
-            this.output = outputNode;
             init.call(this);
         };
 
@@ -58,36 +56,66 @@
                 }
             }
 
+            this.filter = {
+                cutoffFrequency: 400,
+                emphasis: 1,
+                node: tsw.createFilter('lowpass'),
+            };
 
-            this.volume = tsw.createGainNode();
+            this.output = {
+                volume: 0.5,
+                node: tsw.createGainNode()
+            };
 
-            this.mixer.osc2.node.gain = 0.2;
-            this.mixer.osc3.node.gain = 0.1;
-            this.volume.gain.value = 0.5;
+            tsw.connect(this.mixer.osc1.node, this.filter.node);
+            tsw.connect(this.mixer.osc2.node, this.filter.node);
+            tsw.connect(this.mixer.osc3.node, this.filter.node);
 
-            tsw.connect(this.mixer.osc1.node, this.volume);
-            tsw.connect(this.mixer.osc2.node, this.volume);
-            tsw.connect(this.mixer.osc3.node, this.volume);
-
-            tsw.connect(this.volume, tsw.speakers);
+            tsw.connect(this.filter.node, this.output.node);
+            tsw.connect(this.output.node, tsw.speakers);
         };
 
-        var createOscillators = function (frequency) {
-            for (var i = 1; i < 4; i++) {
-                var oscillator = tsw.createOscillator('triangle');
+        Synth.prototype.updateMixer = function () {
+            this.mixer.osc1.node.gain.value = this.mixer.osc1.volume;
+            this.mixer.osc2.node.gain.value = this.mixer.osc2.volume;
+            this.mixer.osc3.node.gain.value = this.mixer.osc3.volume;
+        };
 
-                var range = this.oscillators['osc' + i].range;
+        Synth.prototype.updateFilter = function () {
+            this.filter.node.frequency.value = parseInt(this.filter.cutoffFrequency, 10);;
+            this.filter.node.Q.value = parseInt(this.filter.emphasis, 10);;
+        };
+
+        Synth.prototype.updateOutput = function () {
+            this.output.node.gain.value = this.output.volume;
+        };
+        
+        var createOscillators = function (frequency) {
+            var baseFrequency = frequency;
+            for (var i = 1; i < 4; i++) {
+                var oscillator = tsw.createOscillator(this.oscillators['osc' + i].waveform),
+                    range = this.oscillators['osc' + i].range;
 
                 switch (range) {
-                    case 4:
-                        frequency = frequency * 2;
+                    case '2':
+                        frequency = baseFrequency * 4;
                         break;
-                    case 16:
-                        frequency = frequency / 2;
+                    case '4':
+                        frequency = baseFrequency * 2;
+                        break;
+                    case '16':
+                        frequency = baseFrequency / 2;
+                        break;
+                    case '32':
+                        frequency = baseFrequency / 4;
+                        break;
+                    case '64':
+                        frequency = baseFrequency / 8;
                         break;
                     default:
                         break;
                 };
+
                 oscillator.frequency.value = frequency;
                 tsw.connect(oscillator, this.mixer['osc' + i].node);
                 this.activeOscillators.push(oscillator);
@@ -99,7 +127,9 @@
             for (var i = 0; i < this.activeOscillators.length; i++) {
                 if (frequency === Math.round(this.activeOscillators[i].frequency.value) ||
                     frequency === Math.round(this.activeOscillators[i].frequency.value * 2) ||
-                    frequency === Math.round(this.activeOscillators[i].frequency.value / 2) 
+                    frequency === Math.round(this.activeOscillators[i].frequency.value * 4) ||
+                    frequency === Math.round(this.activeOscillators[i].frequency.value / 2) ||
+                    frequency === Math.round(this.activeOscillators[i].frequency.value / 4) 
                 ) {
                     tsw.disconnect(this.activeOscillators[i]);
                     this.activeOscillators.splice(i,1);
@@ -126,8 +156,8 @@
             disconnectOscillators.call(this, tsw.music.noteToFrequency(note));
         };
 
-        return function (context, outputNode) {
-            return new Synth(context, outputNode);
+        return function (tsw) {
+            return new Synth(tsw);
         };
     })();
 
