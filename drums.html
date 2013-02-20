@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>TSW Test Suite</title>
+        <style>
+            .module {
+                width: 30%;
+                float: left;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Drum Machine</h1>
+        <button id="kick">Kick</button>
+        <button id="snare">Snare</button>
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <script src="tsw-core.js"></script>
+        <script src="tsw-effects.js"></script>
+        <script src="tsw-music.js"></script>
+        <script src="instruments/synth/synth.js"></script>
+        <script src="http://stuartmemo.com/qwerty-hancock/raphael-min.js"></script>
+        <script src="http://stuartmemo.com/qwerty-hancock/qwerty-hancock.js"></script>
+        <script>
+            $(function () {
+                $('#kick').click(function () {
+                    var kick = tsw.createOscillator(),
+                        lowpass = tsw.createFilter(),
+                        gain = tsw.createGainNode(); 
+
+                    tsw.connect(kick, gain, tsw.speakers);
+
+                    kick.frequency.value = 45;
+                    gain.gain.value = 0;
+                    gain.gain.linearRampToValueAtTime(0.8, tsw.context.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, tsw.context.currentTime + 0.3);
+                    kick.start(tsw.context.currentTime);
+                    kick.stop(tsw.context.currentTime + 6);
+                });
+
+                $('#snare').click(function () {
+                    var snare = tsw.createNoise(),
+                        lowpass = tsw.createFilter(),
+                        gain = tsw.createGainNode();
+
+                    gain.gain.value = 0;
+                    lowpass.frequency.value = 2200;
+
+                    tsw.connect(snare, gain, lowpass, tsw.speakers);
+
+                    gain.gain.linearRampToValueAtTime(0.8, tsw.context.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, tsw.context.currentTime + 0.15);
+
+                });
+            });
+        </script>
+    </body>
+</html>
