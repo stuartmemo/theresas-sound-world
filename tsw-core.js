@@ -37,7 +37,7 @@
          */
         SoundWorld.prototype.now = function () {
             return this.context.currentTime;
-        }.bind(this);
+        };
 
         /*
          * Checks if tsw effects library is loaded.
@@ -239,8 +239,8 @@
          * @method createGainNode
          * @return Gain node.
          */
-        SoundWorld.prototype.createGainNode = function () {
-            return this.context.createGainNode();
+        SoundWorld.prototype.createGain = function () {
+            return this.context.createGain();
         };
 
         /*
@@ -257,6 +257,34 @@
             filter.type = fType;
 
             return filter;
+        };
+
+        /*
+         * Create envelope.
+         *
+         * @createEnvelope
+         * @param {object} envelopeParams Envelope parameters.
+         * @return Envelope filter
+         */
+        SoundWorld.prototype.createEnvelope = function (settings) {
+            var effectObj = {},
+                volume = this.context.createGain();
+
+            effectObj.input = this.context.createGain(),
+            effectObj.output = this.context.createGain(),
+            effectObj.settings = settings || {
+                attack: 0,
+                decay: 0,
+                sustain: 0,
+                release: 0
+            };
+
+            this.tsw.connect(effectObj.input, volume, effectObj.output);
+
+            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
+            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
+
+            return effectObj;
         };
 
         /*

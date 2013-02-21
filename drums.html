@@ -30,10 +30,10 @@
 
                     tsw.connect(kick, gain, tsw.speakers);
 
-                    kick.frequency.value = 45;
-                    gain.gain.value = 0;
+                    kick.frequency.value = 52;
+                    gain.gain.value = 0.5;
                     gain.gain.linearRampToValueAtTime(0.8, tsw.context.currentTime);
-                    gain.gain.linearRampToValueAtTime(0, tsw.context.currentTime + 0.3);
+                    gain.gain.linearRampToValueAtTime(0, tsw.context.currentTime + 0.2);
                     kick.start(tsw.context.currentTime);
                     kick.stop(tsw.context.currentTime + 6);
                 });
@@ -41,14 +41,16 @@
                 $('#snare').click(function () {
                     var snare = tsw.createNoise(),
                         lowpass = tsw.createFilter(),
-                        gain = tsw.createGainNode();
+                        gain = tsw.createGain(),
+                        reverb = tsw.fx.createReverb();
 
                     gain.gain.value = 0;
                     lowpass.frequency.value = 2200;
 
-                    tsw.connect(snare, gain, lowpass, tsw.speakers);
+                    console.log('reverb', reverb);
+                    tsw.connect(snare, gain, lowpass, reverb, tsw.speakers);
 
-                    gain.gain.linearRampToValueAtTime(0.8, tsw.context.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.5, tsw.context.currentTime);
                     gain.gain.linearRampToValueAtTime(0, tsw.context.currentTime + 0.15);
 
                 });
