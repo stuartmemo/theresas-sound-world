@@ -47,7 +47,6 @@
                     gain.gain.value = 0;
                     lowpass.frequency.value = 2200;
 
-                    console.log('reverb', reverb);
                     tsw.connect(snare, gain, lowpass, reverb, tsw.speakers);
 
                     gain.gain.linearRampToValueAtTime(0.5, tsw.context.currentTime);

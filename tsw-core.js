@@ -61,6 +61,7 @@
 
         /*
          * Connects multiple nodes together.
+         *
          * @method connect
          * @param {AudioNodes} arguments Nodes to connect in order.
          */
@@ -82,8 +83,27 @@
             }
         };
 
+        /*
+         * Disconnects a node from everything it's connected to.
+         *
+         * @method disconnect
+         */
         SoundWorld.prototype.disconnect = function (node) {
             node.disconnect();
+        };
+
+        SoundWorld.prototype.createScriptProcessor = function (bs, callback) {
+            var bufferSize = bs || 1024,
+                processor =  tsw.context.createScriptProcessor(bufferSize, 1, 1);
+
+            if (callback) {
+                processor.onaudioprocess = function (e) {
+                    callback(e); 
+                };
+            }
+
+
+            return processor;
         };
 
         /*
@@ -166,7 +186,14 @@
             buffer.stop(0);
         };
 
+        /*
+         * Reverse a buffer
+         *
+         * @method reverse
+         * @param {AudioBuffer} buffer
+         */
         SoundWorld.prototype.reverse = function (buffer) {
+
         };
 
         /*
@@ -246,9 +273,9 @@
         /*
          * Create filter node.
          *
-         * @createFilter
+         * @method createFilter
          * @param {string} filterType Type of filter.
-         * @return FilterNode
+         * @return Filter node.
          */
         SoundWorld.prototype.createFilter = function (filterType) {
             var fType = filterType || 'lowpass';
@@ -260,29 +287,41 @@
         };
 
         /*
+         * Create analyser node.
+         *
+         * @method createAnalyser
+         * @return Analyser node.
+         */
+        SoundWorld.prototype.createAnalyser = function () {
+            return this.context.createAnalyser();
+        };
+
+        /*
          * Create envelope.
          *
-         * @createEnvelope
+         * @method createEnvelope
          * @param {object} envelopeParams Envelope parameters.
-         * @return Envelope filter
+         * @return Envelope filter.
          */
         SoundWorld.prototype.createEnvelope = function (settings) {
             var effectObj = {},
-                volume = this.context.createGain();
+                volume = this.createGain(),
+                analyser = this.createAnalyser();
 
-            effectObj.input = this.context.createGain(),
-            effectObj.output = this.context.createGain(),
+            effectObj.input = this.createGain();
+            effectObj.output = this.createGain();
+
             effectObj.settings = settings || {
-                attack: 0,
-                decay: 0,
-                sustain: 0,
+                attack: 1,
+                decay: 1,
+                sustain: 0.5,
                 release: 0
             };
 
-            this.tsw.connect(effectObj.input, volume, effectObj.output);
+            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
+            volume.gain.linearRampToValueAtTime(effectObj.settings.sustain, this.context.currentTime + effectObj.settings.attack + effectObj.settings.decay);
 
-            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
-            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
+            this.connect(effectObj.input, analyser, effectObj.output);
 
             return effectObj;
         };
@@ -292,6 +331,7 @@
          *
          * @method createNoise
          * @param {string} colour Type of noise.
+         * @return Noise generating node.
          */
         SoundWorld.prototype.createNoise = function (colour) {
             var noiseNode = this.context.createScriptProcessor(1024, 0, 1);
@@ -374,6 +414,5 @@
         };
     })();
 
-    //window.SoundWorld = SoundWorld;
     window.tsw = new SoundWorld();
 })(window);

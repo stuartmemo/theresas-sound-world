@@ -145,9 +145,7 @@
                 var synth = new Synth(),
                     keyboard = qwertyHancock('keyboard', null, 150, null, 'A3', 'white', 'black', 'yellow');
 
-                synth.updateMixer();
-                synth.updateFilter();
-                synth.updateOutput();
+                synth.update();
 
                 keyboard.keyDown(function (note, frequency) {
                     synth.playNote(note);
@@ -180,18 +178,23 @@
                         attr = whatAttribute($(this));
 
                     synth.mixer[osc][attr] = $(this).val();
-                    synth.updateMixer();
                 });
 
                 $('.filter input').change(function () {
                     var attr = $(this).attr('name');
                     synth.filter[attr] = $(this).val();
-                    synth.updateFilter();
                 });
 
                 $('.output input').change(function () {
                     synth.output.volume = $(this).val();
-                    synth.updateOutput();
+                });
+
+                $('input').change(function () {
+                    synth.update();
+                });
+
+                $('select').change(function () {
+                    synth.update();
                 });
             });
         </script>
