@@ -20,6 +20,9 @@
             this.version = '0.0.1';
             this.speakers = this.context.destination;
 
+            // ScriptProcessor nodes need to be added to global object to avoid garbage collection.
+            this.processors = [];
+
             if (hasEffectsLibLoaded()) {
                 this.fx = new tswEffects(this);
             }
@@ -90,20 +93,6 @@
          */
         SoundWorld.prototype.disconnect = function (node) {
             node.disconnect();
-        };
-
-        SoundWorld.prototype.createScriptProcessor = function (bs, callback) {
-            var bufferSize = bs || 1024,
-                processor =  tsw.context.createScriptProcessor(bufferSize, 1, 1);
-
-            if (callback) {
-                processor.onaudioprocess = function (e) {
-                    callback(e); 
-                };
-            }
-
-
-            return processor;
         };
 
         /*
@@ -297,6 +286,25 @@
         };
 
         /*
+         * Create processor node.
+         *
+         * @method createProcesor
+         * @return Script Processor node.
+         */
+        SoundWorld.prototype.createProcessor = function (bs, callback) {
+            var bufferSize = bs || 1024,
+                processor =  tsw.context.createScriptProcessor(bufferSize, 1, 1);
+
+            if (typeof callback === 'function') {
+                processor.onaudioprocess = function (e) {
+                    callback(e); 
+                };
+            }
+
+            return processor;
+        };
+
+        /*
          * Create envelope.
          *
          * @method createEnvelope
@@ -305,23 +313,40 @@
          */
         SoundWorld.prototype.createEnvelope = function (settings) {
             var effectObj = {},
-                volume = this.createGain(),
-                analyser = this.createAnalyser();
+                isSound = false;
+            
+            effectObj.input = tsw.context.createGain();
+            effectObj.output = tsw.context.createGain();
+            effectObj.input.gain.value = 0.1;
+            effectObj.output.gain.value = 0.1;
+            effectObj.active = false;
 
-            effectObj.input = this.createGain();
-            effectObj.output = this.createGain();
+            var processor = tsw.createProcessor(256, function (e) {
+                // This loop gets called no matter what.
 
-            effectObj.settings = settings || {
-                attack: 1,
-                decay: 1,
-                sustain: 0.5,
-                release: 0
-            };
+                for (var i = 0; i < 10; i++) {
+                    if (e.inputBuffer.getChannelData(0)[i] !== 0) {
+                        // Sound begins!
+                        isSound = true;
+                    }
+                }
 
-            volume.gain.linearRampToValueAtTime(1, this.context.currentTime + effectObj.settings.attack);
-            volume.gain.linearRampToValueAtTime(effectObj.settings.sustain, this.context.currentTime + effectObj.settings.attack + effectObj.settings.decay);
+                if (!effectObj.active && isSound) {
+                    console.log('called');
+                    effectObj.input.gain.value = 0.1;
+                    effectObj.input.gain.setValueAtTime(0.1, tsw.now());
+                    effectObj.input.gain.linearRampToValueAtTime(1, tsw.now() + 2);
+                    effectObj.input.gain.linearRampToValueAtTime(0.1, tsw.now() + 4);
+                    effectObj.active = true;
+                    isSound = false;
+                } 
+            });
 
-            this.connect(effectObj.input, analyser, effectObj.output);
+            // Add to global object to avoid webkit garbage collection bug.
+            this.processors.push(processor);
+
+            tsw.connect(effectObj.input, processor, effectObj.output);
+            tsw.connect(effectObj.input, effectObj.output);
 
             return effectObj;
         };
