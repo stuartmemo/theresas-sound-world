@@ -63,6 +63,32 @@
         }
 
         /*
+         * Applies the attributes of one objet to another.
+         *
+         * @method applyObject
+         * @return {object} A newly merged object.
+         */
+        var applyObject = function (obj1, obj2) {
+            for (attr in obj2) {
+                obj1[attr] = obj2[attr];
+            }
+
+            return obj1;
+        };
+
+        /*
+         * Applies the settings object ot a node.
+         *
+         * @method applySettings
+         * @return {AudioNode} Node with settings applied.
+         */
+        SoundWorld.prototype.applySettings = function (node, settings) {
+            for (setting in settings) {
+                node[setting].value = settings[setting];
+            }
+        };
+
+        /*
          * Connects multiple nodes together.
          *
          * @method connect
@@ -230,7 +256,7 @@
         /*
          * Create sawtooth wave node.
          *
-         * @method createSquareWave
+         * @method createSawtoothWave
          * @param {number} frequency The starting frequency of the sawtooth wave.
          * @return Square wave node.
          */
@@ -286,6 +312,28 @@
         };
 
         /*
+         * Create compressor node.
+         *
+         * @method createCompressor
+         * @return Compressor node.
+         */
+        SoundWorld.prototype.createCompressor = function (settings) {
+            var compressor = this.context.createDynamicsCompressor(),
+                defaults = {
+                    threshold: -24,     // dbs (min: -100, max: 0)
+                    knee: 30,           // dbs (min: 0, max: 40)
+                    ratio: 12,          // ratio (min: 1, max: 20)
+                    attack: 0.003,      // seconds (min: 0, max: 1)
+                    release: 0.25       // seconds (min: 0, max: 1)
+                };
+   
+            settings = applyObject(defaults, settings);
+            this.applySettings(compressor, settings);
+ 
+            return compressor;
+        };
+
+        /*
          * Create processor node.
          *
          * @method createProcesor
@@ -305,6 +353,28 @@
         };
 
         /*
+         * Create waveshaper.
+         *
+         * @method createWaveShaper
+         */
+        SoundWorld.prototype.createWaveShaper = function () {
+            var curve = new Float32Array(65536)
+
+            for (var i = 0; i < 65536 / 2; i++) {
+                if (i < 30000) {
+                    curve[i] = 0.1;
+                } else {
+                    curve[i] = -1;
+                }
+            }
+
+            var waveShaper = this.context.createWaveShaper();
+            waveShaper.curve = curve;
+
+            return waveShaper;
+        };
+
+        /*
          * Create envelope.
          *
          * @method createEnvelope
@@ -312,34 +382,53 @@
          * @return Envelope filter.
          */
         SoundWorld.prototype.createEnvelope = function (settings) {
-            var effectObj = {},
-                isSound = false;
-            
+            var effectObj = {};
+                
             effectObj.input = tsw.context.createGain();
             effectObj.output = tsw.context.createGain();
-            effectObj.input.gain.value = 0.1;
-            effectObj.output.gain.value = 0.1;
             effectObj.active = false;
+
+            effectObj.settings =  {
+                attackTime: 1,
+                decayTime: 1,
+                sustainLevel: 0.5,
+                releaseTime: 1
+            };
+
+            effectObj.startRelease = function () {
+                effectObj.input.gain.setValueAtTime(effectObj.settings.sustainLevel, tsw.now());
+                effectObj.input.gain.linearRampToValueAtTime(0, tsw.now() + effectObj.settings.releaseTime);
+            };
+
+            effectObj.input.gain.value = 0.01;
 
             var processor = tsw.createProcessor(256, function (e) {
                 // This loop gets called no matter what.
+                var isSound = false; 
 
                 for (var i = 0; i < 10; i++) {
                     if (e.inputBuffer.getChannelData(0)[i] !== 0) {
                         // Sound begins!
                         isSound = true;
+                    } else {
+                        isSound = false;
+                        effectObj.input.gain.cancelScheduledValues(0);
+                        effectObj.input.gain.value = 0.01;
+                        effectObj.active = false;
                     }
                 }
 
                 if (!effectObj.active && isSound) {
-                    console.log('called');
-                    effectObj.input.gain.value = 0.1;
-                    effectObj.input.gain.setValueAtTime(0.1, tsw.now());
-                    effectObj.input.gain.linearRampToValueAtTime(1, tsw.now() + 2);
-                    effectObj.input.gain.linearRampToValueAtTime(0.1, tsw.now() + 4);
+                    effectObj.input.gain.setValueAtTime(0.001, tsw.now());
+
+                    // Attack
+                    effectObj.input.gain.linearRampToValueAtTime(1, tsw.now() + effectObj.settings.attackTime);
+
+                    // Decay
+                    effectObj.input.gain.linearRampToValueAtTime(0.5, tsw.now() + effectObj.settings.attackTime + effectObj.settings.decayTime);
+
                     effectObj.active = true;
-                    isSound = false;
-                } 
+                }
             });
 
             // Add to global object to avoid webkit garbage collection bug.

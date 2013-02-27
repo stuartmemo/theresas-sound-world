@@ -63,7 +63,7 @@
             this.oscillators = {
                 osc1: {
                     range: 8,
-                    waveform: 'triangle',
+                    waveform: 'square',
                     tuning: 0
                 },
                 osc2: {
@@ -117,7 +117,7 @@
                 attack: 0,
                 decay: 0,
                 sustain: 0,
-                release: 0,
+                release: 1,
                 node: tsw.createEnvelope()
             };
 
@@ -212,7 +212,7 @@
          *
          * @method disconnectOscillators
          */
-        var disconnectOscillators = function (frequency) {
+        var stopOscillators = function (frequency) {
 
             frequency = Math.round(frequency);
 
@@ -223,7 +223,8 @@
                     frequency === Math.round(this.activeOscillators[i].frequency.value / 2) ||
                     frequency === Math.round(this.activeOscillators[i].frequency.value / 4) 
                 ) {
-                    tsw.disconnect(this.activeOscillators[i]);
+                    this.adsr.node.startRelease();
+                    this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
                     this.activeOscillators.splice(i,1);
                     i--;
                 }
@@ -253,7 +254,8 @@
          * @param {note} string Musical note to stop playing.
          */
         Synth.prototype.stopNote = function (note) {
-            disconnectOscillators.call(this, tsw.music.noteToFrequency(note));
+            stopOscillators.call(this, tsw.music.noteToFrequency(note));
+
         };
 
         return function (tsw) {
