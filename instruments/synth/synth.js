@@ -127,28 +127,11 @@
                 node: tsw.createGain()
             };
 
-            wireUp.call(this);
-        };
-
-        /*
-         * Wire up all the connections need for the synth.
-         *
-         * @method wireUp
-         */
-        var wireUp = function () {
             // Connect mixer to filter.
-            tsw.connect(this.mixer.osc1.node, this.filter.node);
-            tsw.connect(this.mixer.osc2.node, this.filter.node);
-            tsw.connect(this.mixer.osc3.node, this.filter.node);
+            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node);
 
-            // Connect filter to ADSR envelope.
-            tsw.connect(this.filter.node, this.adsr.node);
-
-            // Connect ADSR envelope to volume.
-            tsw.connect(this.adsr.node, this.output.node);
-
-            // Connect volume to speakers.
-            tsw.connect(this.output.node, tsw.speakers);
+            // Connect filter to ADSR envelope and out to speakers.
+            tsw.connect(this.filter.node, this.output.node, tsw.speakers);
         };
 
         /*
@@ -174,7 +157,8 @@
          */
         var createOscillators = function (frequency) {
 
-            var baseFrequency = frequency;
+            var baseFrequency = frequency,
+                noteOscillators = [];
 
             for (var i = 1; i < 4; i++) {
                 var oscillator = tsw.createOscillator(this.oscillators['osc' + i].waveform),
@@ -201,30 +185,27 @@
                 };
 
                 oscillator.frequency.value = frequency;
-
-                tsw.connect(oscillator, this.mixer['osc' + i].node);
-                this.activeOscillators.push(oscillator);
+                noteOscillators.push(oscillator);
             }
+
+            return noteOscillators;
         };
 
         /*
-         * Disconnect all oscillators.
+         * Stop all oscillators.
          *
-         * @method disconnectOscillators
+         * @method stopOscillators
          */
         var stopOscillators = function (frequency) {
 
             frequency = Math.round(frequency);
 
             for (var i = 0; i < this.activeOscillators.length; i++) {
-                if (frequency === Math.round(this.activeOscillators[i].frequency.value) ||
-                    frequency === Math.round(this.activeOscillators[i].frequency.value * 2) ||
-                    frequency === Math.round(this.activeOscillators[i].frequency.value * 4) ||
-                    frequency === Math.round(this.activeOscillators[i].frequency.value / 2) ||
-                    frequency === Math.round(this.activeOscillators[i].frequency.value / 4) 
-                ) {
-                    this.adsr.node.startRelease();
-                    this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
+                if (frequency === Math.round(this.activeOscillators[i].frequency.value)) {
+                    //this.adsr.node.startRelease();
+                    //this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
+       
+                    this.activeOscillators[i].stop(tsw.now());
                     this.activeOscillators.splice(i,1);
                     i--;
                 }
@@ -240,9 +221,13 @@
          * @param {endTime} number Context time to end note (in seconds)
          */
         Synth.prototype.playNote = function (note) {
-            createOscillators.call(this, tsw.music.noteToFrequency(note));
+            var noteOscillators = createOscillators.call(this, tsw.music.noteToFrequency(note)),
+                that = this;
 
-            this.activeOscillators.forEach(function (oscillator) {
+            noteOscillators.forEach(function (oscillator, index) {
+                index++;
+                tsw.connect(oscillator, that.mixer['osc' + index].node);
+                that.activeOscillators.push(oscillator);
                 oscillator.start(0);
             });
         }

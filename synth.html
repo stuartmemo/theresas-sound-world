@@ -4,135 +4,169 @@
         <meta charset="utf-8"/>
         <title>TSW Test Suite</title>
         <style>
+            body {
+                font-family: Helvetica Neue, arial;
+                background: #f0f0f0;
+            }
+
+            h1 {
+                margin-bottom: 0.2em;
+            }
+
+            h2 {
+                margin: 0;
+            }
+
+            h3 {
+                margin: 0.5em 0;
+            }
+
+            label {
+                display: block;
+            }
+
+            .synth {
+                width: 800px;
+                margin: 0 auto;
+            }
+
             .module {
                 width: 30%;
                 float: left;
+                border: 4px solid #0C0C0C;
+                padding: 1em;
+                height: 330px;
+                border-left-width: 0px;
+            }
+
+            #keyboard {
+                border: 4px solid #0C0C0C;
+                width: 744px;
+                background: #FFE976;
+            }
+
+            .oscillators {
+                background: #FFE976;
+                border-left-width: 4px;
+            }
+
+            .mixer {
+                background: #9DBEAE;
+                width: 200px;
+            }
+
+            .filter {
+                background: #E25D34; 
+                height: 190px;
+                width: 200px;
+            }
+
+            .output {
+                background: #0099cc;
+                height: 104px;
+                width: 200px;
+                border-top: none;
             }
         </style>
     </head>
     <body>
-        <h1>Synth (based on Minimoog)</h1>
-        <div class="module oscillators">
-            <h2>Oscillator Bank</h2>
-            <div class="osc1">
+        <div class="synth">
+            <h1>Basic Synth</h1>
+            <div class="module oscillators">
+                <h2>Oscillators</h2>
+                <div class="osc1">
+                    <h3>Oscillator-1</h3>
+                    <label for="osc1-range">Range</label>
+                    <select name="osc1-range" class="range">
+                        <option value="64">Low</option>
+                        <option value="32">32</option>
+                        <option value="16">16</option>
+                        <option value="8" selected>8</option>
+                        <option value="4">4</option>
+                        <option value="2">2</option>
+                    </select>
+                    <label for="osc1-waveform">Waveform</label>
+                    <select name="osc1-waveform" class="waveform">
+                        <option value="triangle">Triangle</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="square" selected>Square</option>
+                    </select>
+                </div>
+
+                <div class="osc2">
+                    <h3>Oscillator-2</h3>
+                    <label for="osc2-range">Range</label>
+                    <select name="osc2-range" class="range">
+                        <option value="64">Low</option>
+                        <option value="32">32</option>
+                        <option value="16">16</option>
+                        <option value="8" selected>8</option>
+                        <option value="4">4</option>
+                        <option value="2">2</option>
+                    </select>
+                    <label for="osc2-tuning">Tuning</label>
+                    <input type="range" min="-7" max="7" step="1" default="0"/>
+                    <label for="osc2-waveform">Waveform</label>
+                    <select name="osc2-waveform">
+                        <option value="triangle">Triangle</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="square">Square</option>
+                    </select>
+                </div>
+
+                <div class="osc3">
+                    <h3>Oscillator-3</h3>
+                    <label for="osc3-range">Range</label>
+                    <select name="osc3-range">
+                        <option value="64">Low</option>
+                        <option value="32">32</option>
+                        <option value="16">16</option>
+                        <option value="8" selected>8</option>
+                        <option value="4">4</option>
+                        <option value="2">2</option>
+                    </select>
+                    <label for="osc3-tuning">Tuning</label>
+                    <input type="range" min="-7" max="7" step="1" default="0"/>
+                    <label for="osc3-waveform">Waveform</label>
+                    <select name="osc3-waveform">
+                        <option value="triangle">Triangle</option>
+                        <option value="sawtooth">Sawtooth</option>
+                        <option value="square">Square</option>
+                    </select>
+                </div>
+            </div>
+            <div class="module mixer">
+                <h2>Mixer</h2>
                 <h3>Oscillator-1</h3>
-                <label for="osc1-range">Range</label>
-                <select name="osc1-range" class="range">
-                    <option value="64">Low</option>
-                    <option value="32">32</option>
-                    <option value="16">16</option>
-                    <option value="8" selected>8</option>
-                    <option value="4">4</option>
-                    <option value="2">2</option>
-                </select>
-                <label for="osc1-waveform">Waveform</label>
-                <select name="osc1-waveform" class="waveform">
-                    <option value="triangle">Triangle</option>
-                    <option value="reverse-sawtooth">Reverse Sawtooth</option>
-                    <option value="sawtooth">Sawtooth</option>
-                    <option value="square" selected>Square</option>
-                    <option value="pulse-1">Pulse-1</option>
-                    <option value="pulse-2">Pulse-2</option>
-                </select>
-            </div>
-
-            <div class="osc2">
+                <label for="osc1-volume">Volume</label>
+                <input name="osc1-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
+                
                 <h3>Oscillator-2</h3>
-                <label for="osc2-range">Range</label>
-                <select name="osc2-range" class="range">
-                    <option value="64">Low</option>
-                    <option value="32">32</option>
-                    <option value="16">16</option>
-                    <option value="8" selected>8</option>
-                    <option value="4">4</option>
-                    <option value="2">2</option>
-                </select>
-                <label for="osc2-tuning">Tuning</label>
-                <input type="range" min="-7" max="7" step="1" default="0"/>
-                <label for="osc2-waveform">Waveform</label>
-                <select name="osc2-waveform">
-                    <option value="triangle">Triangle</option>
-                    <option value="reverse-sawtooth">Reverse Sawtooth</option>
-                    <option value="sawtooth">Sawtooth</option>
-                    <option value="square">Square</option>
-                    <option value="pulse-1">Pulse-1</option>
-                    <option value="pulse-2">Pulse-2</option>
-                </select>
-            </div>
-
-            <div class="osc3">
+                <label for="osc2-volume">Volume</label>
+                <input name="osc2-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
+                
                 <h3>Oscillator-3</h3>
-                <label for="osc3-range">Range</label>
-                <select name="osc3-range">
-                    <option value="64">Low</option>
-                    <option value="32">32</option>
-                    <option value="16">16</option>
-                    <option value="8" selected>8</option>
-                    <option value="4">4</option>
-                    <option value="2">2</option>
-                </select>
-                <label for="osc3-tuning">Tuning</label>
-                <input type="range" min="-7" max="7" step="1" default="0"/>
-                <label for="osc3-waveform">Waveform</label>
-                <select name="osc3-waveform">
-                    <option value="triangle">Triangle</option>
-                    <option value="reverse-sawtooth">Reverse Sawtooth</option>
-                    <option value="sawtooth">Sawtooth</option>
-                    <option value="square">Square</option>
-                    <option value="pulse-1">Pulse-1</option>
-                    <option value="pulse-2">Pulse-2</option>
-                </select>
+                <label for="osc3-volume">Volume</label>
+                <input name="osc3-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
             </div>
+            <div class="module filter">
+                <h2>Filter</h2>
+                <label for="cutoffFrequency">Cutoff frequency</label>
+                <input name="cutoffFrequency" type="range" min="0" max="1000" step="1" default="400"/>
+                <label for="emphasis">Emphasis</label>
+                <input name="emphasis" type="range" from="0" to="10" default="5"/>
+                <label for="contout">Amount of contour</label>
+                <input type="range" from="0" to="10" default="5"/>
+                <label for="sustain">Sustain level</label>
+                <input type="range" from="0" to="10" default="5"/>
+            </div>
+            <div class="module output">
+                <h2>Output</h2>
+                <label for="volume">Volume</label>
+                <input name="volume" type="range" min="0" max="1" step="0.1"/>
+            </div>
+            <div id="keyboard"></div>
         </div>
-        <div class="module mixer">
-            <h2>Mixer</h2>
-            <h3>Oscillator-1</h3>
-            <label for="osc1-volume">Volume</label>
-            <input name="osc1-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
-            <label for="osc-1-active">On</label>
-            <input name="osc1-active" type="checkbox"/>
-            
-            <h3>Oscillator-2</h3>
-            <label for="osc2-volume">Volume</label>
-            <input name="osc2-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
-            <label for="osc-2-active">On</label>
-            <input name="osc2-active" type="checkbox"/>
-            
-            <h3>Oscillator-3</h3>
-            <label for="osc3-volume">Volume</label>
-            <input name="osc3-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
-            <label for="osc3-active">On</label>
-            <input type="checkbox"/>
-
-            <h3>Noise</h3>
-            <label for="noise-volume">Volume</label>
-            <input type="range" from="0" to="1" default="0.5"/>
-            <label for="noise-active">On</label>
-            <input type="checkbox"/>
-            <label for="noise-type">Noise type</label>
-            <select>
-                <option value="white" selected>White</option>
-                <option value="pink">Pink</option>
-            </select>
-        </div>
-        <div class="module filter">
-            <h2>Filter</h2>
-            <label for="cutoffFrequency">Cutoff frequency</label>
-            <input name="cutoffFrequency" type="range" min="0" max="1000" step="1" default="400"/>
-            <label for="emphasis">Emphasis</label>
-            <input name="emphasis" type="range" from="0" to="10" default="5"/>
-            <label for="contout">Amount of contour</label>
-            <input type="range" from="0" to="10" default="5"/>
-            <label for="sustain">Sustain level</label>
-            <input type="range" from="0" to="10" default="5"/>
-
-        </div>
-        <div class="output">
-            <h2>Output</h2>
-            <label for="volume">Volume</label>
-            <input name="volume" type="range" min="0" max="1" step="0.1"/>
-        </div>
-        <div id="keyboard"></div>
         <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
         <script src="tsw-core.js"></script>
         <script src="tsw-effects.js"></script>
@@ -143,7 +177,7 @@
         <script>
             $(function () {
                 var synth = new Synth(),
-                    keyboard = qwertyHancock('keyboard', null, 150, null, 'A3', 'white', 'black', 'yellow');
+                keyboard = qwertyHancock('keyboard', 744, 150, null, 'A3', 'white', 'black', '#FFE976');
 
                 synth.update();
 

@@ -96,7 +96,11 @@
          */
         SoundWorld.prototype.connect = function () {
             for (var i = 0; i < arguments.length - 1; i++) {
-                if (arguments[i].hasOwnProperty('output')) {
+                if (Array.isArray(arguments[i])) {
+                    for (var j = 0; j < arguments[i].length; j++) {
+                        this.connect(arguments[i][j], arguments[i + 1]); 
+                    }
+                } else if (arguments[i].hasOwnProperty('output')) {
                     if (arguments[i + 1].hasOwnProperty('input')) {
                         arguments[i].output.connect(arguments[i + 1].input);
                     } else {
