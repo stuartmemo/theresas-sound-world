@@ -195,8 +195,6 @@
                 noteOscillators.push(oscillator);
             }
 
-            console.log(noteOscillators);
-
             return noteOscillators;
         };
 
@@ -233,10 +231,8 @@
                 match = false;
 
             for (var i = 0; i < this.activeOscillators.length; i++) {
-
                 for (oscillator in this.oscillators) {
                     if (this.oscillators[oscillator].waveform === this.activeOscillators[i].type) {
-                        console.log(this.oscillators[oscillator].range);
                         if (Math.round(rangeToFrequency(frequency, this.oscillators[oscillator].range)) === Math.round(this.activeOscillators[i].frequency.value)) {
                             match = true;
                         }
