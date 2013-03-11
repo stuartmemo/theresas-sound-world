@@ -15,6 +15,7 @@
 
             h2 {
                 margin: 0;
+                margin-bottom: 0.3em;
             }
 
             h3 {
@@ -41,8 +42,9 @@
 
             #keyboard {
                 border: 4px solid #0C0C0C;
+                border-bottom-width: 3px;
                 width: 744px;
-                background: #FFE976;
+                background: black;
             }
 
             .oscillators {
@@ -57,13 +59,13 @@
 
             .filter {
                 background: #E25D34; 
-                height: 190px;
+                height: 220px;
                 width: 200px;
             }
 
             .output {
                 background: #0099cc;
-                height: 104px;
+                height: 74px;
                 width: 200px;
                 border-top: none;
             }
@@ -80,8 +82,8 @@
                     <select name="osc1-range" class="range">
                         <option value="64">Low</option>
                         <option value="32">32</option>
-                        <option value="16">16</option>
-                        <option value="8" selected>8</option>
+                        <option value="16" selected>16</option>
+                        <option value="8">8</option>
                         <option value="4">4</option>
                         <option value="2">2</option>
                     </select>
@@ -150,9 +152,9 @@
                 <input name="osc3-volume" type="range" min="0" max="1" step="0.1" default="0.5"/>
             </div>
             <div class="module filter">
-                <h2>Filter</h2>
+                <h2>Volume filter</h2>
                 <label for="cutoffFrequency">Cutoff frequency</label>
-                <input name="cutoffFrequency" type="range" min="0" max="1000" step="1" default="400"/>
+                <input name="cutoffFrequency" type="range" min="0" max="2000" step="10" default="100"/>
                 <label for="emphasis">Emphasis</label>
                 <input name="emphasis" type="range" from="0" to="10" default="5"/>
                 <label for="contout">Amount of contour</label>
@@ -177,7 +179,13 @@
         <script>
             $(function () {
                 var synth = new Synth(),
-                keyboard = qwertyHancock('keyboard', 744, 150, null, 'A3', 'white', 'black', '#FFE976');
+                keyboard = qwertyHancock({
+                    id: 'keyboard',
+                    width: 745,
+                    height: 150,
+                    startKey: 'A3',
+                    hoverColour: '#FFE976'
+                });
 
                 synth.update();
 

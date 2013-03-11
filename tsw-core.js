@@ -285,8 +285,12 @@
          * @method createGainNode
          * @return Gain node.
          */
-        SoundWorld.prototype.createGain = function () {
-            return this.context.createGain();
+        SoundWorld.prototype.createGain = function (volume) {
+            var gainNode = this.context.createGain();
+
+            gainNode.gain.value = volume || 1;
+
+            return gainNode;
         };
 
         /*

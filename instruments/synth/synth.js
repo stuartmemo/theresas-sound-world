@@ -58,6 +58,7 @@
          */
         var init = function () {
             this.activeOscillators = [];
+            this.keysDown = [];
 
             // Settings for the 3 oscillators.
             this.oscillators = {
@@ -107,7 +108,7 @@
             // Filter settings.
             // Node is created here too as it doesn't need to be destroyed.
             this.filter = {
-                cutoffFrequency: 400,
+                cutoffFrequency: 500,
                 emphasis: 1,
                 node: tsw.createFilter('lowpass'),
             };
@@ -127,11 +128,13 @@
                 node: tsw.createGain()
             };
 
+            var limiter = tsw.createCompressor();
+
             // Connect mixer to filter.
             tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node);
 
             // Connect filter to ADSR envelope and out to speakers.
-            tsw.connect(this.filter.node, this.output.node, tsw.speakers);
+            tsw.connect(this.filter.node, this.output.node, limiter, tsw.speakers);
         };
 
         /*
@@ -150,66 +153,49 @@
             this.output.node.gain.value = this.output.volume;
         };
 
+        var rangeToFrequency = function (baseFrequency, range) {
+            var frequency = baseFrequency;
+
+            switch (range) {
+                case '2':
+                    frequency = baseFrequency * 4;
+                    break;
+                case '4':
+                    frequency = baseFrequency * 2;
+                    break;
+                case '16':
+                    frequency = baseFrequency / 2;
+                    break;
+                case '32':
+                    frequency = baseFrequency / 4;
+                    break;
+                case '64':
+                    frequency = baseFrequency / 8;
+                    break;
+                default:
+                    break;
+            };
+             
+             return frequency;
+        };
+
         /*
          * Create the oscillators that generate basic sounds.
          *
          * @method createOscillators
          */
         var createOscillators = function (frequency) {
-
-            var baseFrequency = frequency,
-                noteOscillators = [];
+            var noteOscillators = [];
 
             for (var i = 1; i < 4; i++) {
                 var oscillator = tsw.createOscillator(this.oscillators['osc' + i].waveform),
                     range = this.oscillators['osc' + i].range;
 
-                switch (range) {
-                    case '2':
-                        frequency = baseFrequency * 4;
-                        break;
-                    case '4':
-                        frequency = baseFrequency * 2;
-                        break;
-                    case '16':
-                        frequency = baseFrequency / 2;
-                        break;
-                    case '32':
-                        frequency = baseFrequency / 4;
-                        break;
-                    case '64':
-                        frequency = baseFrequency / 8;
-                        break;
-                    default:
-                        break;
-                };
-
-                oscillator.frequency.value = frequency;
+                oscillator.frequency.value = rangeToFrequency(frequency, range);
                 noteOscillators.push(oscillator);
             }
 
             return noteOscillators;
-        };
-
-        /*
-         * Stop all oscillators.
-         *
-         * @method stopOscillators
-         */
-        var stopOscillators = function (frequency) {
-
-            frequency = Math.round(frequency);
-
-            for (var i = 0; i < this.activeOscillators.length; i++) {
-                if (frequency === Math.round(this.activeOscillators[i].frequency.value)) {
-                    //this.adsr.node.startRelease();
-                    //this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
-       
-                    this.activeOscillators[i].stop(tsw.now());
-                    this.activeOscillators.splice(i,1);
-                    i--;
-                }
-            }
         };
 
         /*
@@ -223,6 +209,8 @@
         Synth.prototype.playNote = function (note) {
             var noteOscillators = createOscillators.call(this, tsw.music.noteToFrequency(note)),
                 that = this;
+
+            this.keysDown.push(note);
 
             noteOscillators.forEach(function (oscillator, index) {
                 index++;
@@ -239,8 +227,30 @@
          * @param {note} string Musical note to stop playing.
          */
         Synth.prototype.stopNote = function (note) {
-            stopOscillators.call(this, tsw.music.noteToFrequency(note));
+            var frequency = Math.round(tsw.music.noteToFrequency(note)),
+                match = false;
 
+            for (var i = 0; i < this.activeOscillators.length; i++) {
+
+                for (oscillator in this.oscillators) {
+                    if (this.oscillators[oscillator].waveform === this.activeOscillators[i].type) {
+                        if (Math.round(rangeToFrequency(frequency, this.oscillators[oscillator].range)) === Math.round(this.activeOscillators[i].frequency.value)) {
+                            match = true;
+                        }
+                    }
+                }
+
+                if (match) {
+                    //this.adsr.node.startRelease();
+                    //this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
+       
+                    this.activeOscillators[i].stop(tsw.now());
+                    this.activeOscillators.splice(i,1);
+                    i--;
+                }
+
+                match = false;
+            }
         };
 
         return function (tsw) {
