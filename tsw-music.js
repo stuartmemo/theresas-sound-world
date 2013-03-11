@@ -5,9 +5,9 @@
  * Copyright 2013 Stuart Memo
  ********************************/
 
- (function (window, undefined) {
+(function (window, undefined) {
 
-   var Music = (function () {
+    var Music = (function () {
         /*
          * Creates an instance of Music
          *
@@ -193,7 +193,7 @@
             }
          
             // Return frequency of note
-            return 440 * Math.pow(2, (keyNumber- 49) / 12);
+            return Math.round(440 * Math.pow(2, (keyNumber- 49) / 12));
         };
 
         return function (context) {

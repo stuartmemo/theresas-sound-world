@@ -367,4 +367,4 @@
 
     window.tsw.fx = new Effects();
 
- })(window);
+})(window);

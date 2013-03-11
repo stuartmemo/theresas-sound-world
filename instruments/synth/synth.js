@@ -77,7 +77,7 @@
                     waveform: 'square',
                     tuning: 0
                 }
-            }
+            };
 
             // Mixer settings.
             // Nodes are created here too as they don't need to be destroyed.
@@ -146,7 +146,7 @@
             this.mixer.osc1.node.gain.value = this.mixer.osc1.volume;
             this.mixer.osc2.node.gain.value = this.mixer.osc2.volume;
             this.mixer.osc3.node.gain.value = this.mixer.osc3.volume;
-            
+
             this.filter.node.frequency.value = parseInt(this.filter.cutoffFrequency, 10);
             this.filter.node.Q.value = parseInt(this.filter.emphasis, 10);
             
@@ -195,6 +195,8 @@
                 noteOscillators.push(oscillator);
             }
 
+            console.log(noteOscillators);
+
             return noteOscillators;
         };
 
@@ -234,6 +236,7 @@
 
                 for (oscillator in this.oscillators) {
                     if (this.oscillators[oscillator].waveform === this.activeOscillators[i].type) {
+                        console.log(this.oscillators[oscillator].range);
                         if (Math.round(rangeToFrequency(frequency, this.oscillators[oscillator].range)) === Math.round(this.activeOscillators[i].frequency.value)) {
                             match = true;
                         }

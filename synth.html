@@ -156,11 +156,11 @@
                 <label for="cutoffFrequency">Cutoff frequency</label>
                 <input name="cutoffFrequency" type="range" min="0" max="2000" step="10" default="100"/>
                 <label for="emphasis">Emphasis</label>
-                <input name="emphasis" type="range" from="0" to="10" default="5"/>
-                <label for="contout">Amount of contour</label>
-                <input type="range" from="0" to="10" default="5"/>
+                <input name="emphasis" type="range" min="0" max="10" default="0"/>
+                <label for="contour">Amount of contour</label>
+                <input name="contour" type="range" min="0" max="10" default="5"/>
                 <label for="sustain">Sustain level</label>
-                <input type="range" from="0" to="10" default="5"/>
+                <input name="sustain" type="range" min="0" max="10" default="5"/>
             </div>
             <div class="module output">
                 <h2>Output</h2>
@@ -179,15 +179,14 @@
         <script>
             $(function () {
                 var synth = new Synth(),
-                keyboard = qwertyHancock({
-                    id: 'keyboard',
-                    width: 745,
-                    height: 150,
-                    startKey: 'A3',
-                    hoverColour: '#FFE976'
-                });
+                    keyboard = qwertyHancock({
+                        id: 'keyboard',
+                        width: 745,
+                        height: 150,
+                        startKey: 'A3',
+                        hoverColour: '#FFE976'
+                    });
 
-                synth.update();
 
                 keyboard.keyDown(function (note, frequency) {
                     synth.playNote(note);
@@ -205,9 +204,29 @@
                     return $obj.attr('name').substr(5, 99);
                 };
 
+                $('.oscillators select').each(function () {
+                    var osc = whatOscillator($(this)),
+                        attr = whatAttribute($(this));
+
+                    synth.oscillators[osc][attr] = $(this).val();
+                });
+
+                $('.filter input').each(function () {
+                    var attr = $(this).attr('name');
+                    synth.filter[attr] = $(this).val();
+                });
+
+                $('.mixer input').each(function () {
+                    var osc = whatOscillator($(this)),
+                        attr = whatAttribute($(this));
+
+                    synth.mixer[osc][attr] = $(this).val();
+                });
+
                 $('.oscillators select').change(function () {
                     var osc = whatOscillator($(this)),
                         attr = whatAttribute($(this));
+
                     synth.oscillators[osc][attr] = $(this).val();
                 });
 
@@ -218,6 +237,8 @@
                 $('.mixer input').change(function () {
                     var osc = whatOscillator($(this)),
                         attr = whatAttribute($(this));
+
+                    console.log('mixer', $(this));
 
                     synth.mixer[osc][attr] = $(this).val();
                 });
@@ -238,6 +259,8 @@
                 $('select').change(function () {
                     synth.update();
                 });
+                
+                synth.update();
             });
         </script>
     </body>
