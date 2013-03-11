@@ -23,6 +23,12 @@
             // ScriptProcessor nodes need to be added to global object to avoid garbage collection.
             this.processors = [];
 
+            try {
+                this.context.createGain();
+            } catch (e) {
+                throw new Error('Sorry, your browser doesn\'t support the Web Audio API.');
+            };
+
             if (hasEffectsLibLoaded()) {
                 this.fx = new tswEffects(this);
             }
