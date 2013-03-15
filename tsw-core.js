@@ -396,62 +396,38 @@
          * @return Envelope filter.
          */
         SoundWorld.prototype.createEnvelope = function (settings) {
-            var effectObj = {};
-                
-            effectObj.input = tsw.context.createGain();
-            effectObj.output = tsw.context.createGain();
-            effectObj.active = false;
+            var envelope = {};
 
-            effectObj.settings =  {
-                attackTime: 1,
-                decayTime: 1,
-                sustainLevel: 0.5,
-                releaseTime: 1
+            envelope.attackTime = settings.attackTime || 1;
+            envelope.decayTime = settings.decayTime || 1;
+            envelope.sustainLevel = settings.sustainLevel || 0.5;
+            envelope.releaseTime = settings.releaseTime || 1;
+            envelope.startValue = settings.startValue || 0;
+            envelope.param = settings.param;
+            envelope.active = false;
+
+            envelope.param.value = envelope.startValue;
+
+            envelope.start = function () {
+                if (!envelope.active) {
+                    envelope.active = true;
+                    envelope.param.cancelScheduledValues(tsw.now());
+                    envelope.param.setValueAtTime(envelope.startValue, tsw.now());
+                    envelope.param.linearRampToValueAtTime(1, tsw.now() + envelope.attackTime);
+                    envelope.param.linearRampToValueAtTime(envelope.sustainLevel, tsw.now() + envelope.attackTime + envelope.decayTime);
+                }
             };
 
-            effectObj.startRelease = function () {
-                effectObj.input.gain.setValueAtTime(effectObj.settings.sustainLevel, tsw.now());
-                effectObj.input.gain.linearRampToValueAtTime(0, tsw.now() + effectObj.settings.releaseTime);
+            envelope.stop = function () {
+                if (!envelope.active) {
+                    envelope.active = false;
+                    envelope.param.cancelScheduledValues(tsw.now());
+                    envelope.param.setValueAtTime(envelope.sustainLevel, tsw.now());
+                    envelope.param.linearRampToValueAtTime(envelope.startValue, tsw.now() + envelope.releaseTime);
+                }
             };
 
-            effectObj.input.gain.value = 0.01;
-
-            var processor = tsw.createProcessor(256, function (e) {
-                // This loop gets called no matter what.
-                var isSound = false; 
-
-                for (var i = 0; i < 10; i++) {
-                    if (e.inputBuffer.getChannelData(0)[i] !== 0) {
-                        // Sound begins!
-                        isSound = true;
-                    } else {
-                        isSound = false;
-                        effectObj.input.gain.cancelScheduledValues(0);
-                        effectObj.input.gain.value = 0.01;
-                        effectObj.active = false;
-                    }
-                }
-
-                if (!effectObj.active && isSound) {
-                    effectObj.input.gain.setValueAtTime(0.001, tsw.now());
-
-                    // Attack
-                    effectObj.input.gain.linearRampToValueAtTime(1, tsw.now() + effectObj.settings.attackTime);
-
-                    // Decay
-                    effectObj.input.gain.linearRampToValueAtTime(0.5, tsw.now() + effectObj.settings.attackTime + effectObj.settings.decayTime);
-
-                    effectObj.active = true;
-                }
-            });
-
-            // Add to global object to avoid webkit garbage collection bug.
-            this.processors.push(processor);
-
-            tsw.connect(effectObj.input, processor, effectObj.output);
-            tsw.connect(effectObj.input, effectObj.output);
-
-            return effectObj;
+            return envelope;
         };
 
         /*

@@ -113,14 +113,19 @@
                 node: tsw.createFilter('lowpass'),
             };
 
+            var gainForEnvelope = tsw.createGain();
+
             // ADSR settings.
-            this.adsr = {
-                attack: 0,
-                decay: 0,
-                sustain: 0,
-                release: 1,
-                node: tsw.createEnvelope()
+            var adsrSettings = {
+                attackTime: 2,
+                decayTime: 1,
+                sustainLevel: 0.2,
+                releaseTime: 1,
+                param: gainForEnvelope.gain,
+                startValue: 0
             };
+
+            this.volumeEnvelope = tsw.createEnvelope(adsrSettings);
 
             // Output settings.
             this.output = {
@@ -131,10 +136,10 @@
             var limiter = tsw.createCompressor();
 
             // Connect mixer to filter.
-            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node);
+            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node, gainForEnvelope);
 
             // Connect filter to ADSR envelope and out to speakers.
-            tsw.connect(this.filter.node, this.output.node, limiter, tsw.speakers);
+            tsw.connect(gainForEnvelope, this.output.node, limiter, tsw.speakers);
         };
 
         /*
@@ -211,12 +216,13 @@
                 that = this;
 
             this.keysDown.push(note);
+            this.volumeEnvelope.start();
 
             noteOscillators.forEach(function (oscillator, index) {
                 index++;
                 tsw.connect(oscillator, that.mixer['osc' + index].node);
                 that.activeOscillators.push(oscillator);
-                oscillator.start(0);
+                oscillator.start(tsw.now());
             });
         }
 
@@ -240,16 +246,15 @@
                 }
 
                 if (match) {
-                    //this.adsr.node.startRelease();
-                    //this.activeOscillators[i].stop(tsw.now() + this.adsr.release);
-       
-                    this.activeOscillators[i].stop(tsw.now());
+                    this.activeOscillators[i].stop(tsw.now() + this.volumeEnvelope.releaseTime);
                     this.activeOscillators.splice(i,1);
                     i--;
                 }
 
                 match = false;
             }
+
+            this.volumeEnvelope.stop();
         };
 
         return function (tsw) {
