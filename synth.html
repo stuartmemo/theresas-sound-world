@@ -25,6 +25,22 @@
             label {
                 display: block;
             }
+            
+            input[type="range"] {
+                -webkit-appearance: none;
+                width: 200px;
+                height: 10px;
+                background: white;
+                border: 1px solid grey;
+            }
+
+            input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                background: black;
+                width: 6px;
+                height: 10px;
+                opacity: 1;
+            }
 
             .controls {
                 display: -webkit-box;
@@ -32,6 +48,7 @@
                 -webkit-box-orient: horizontal;
                 box-orient: horizontal;
             }
+
 
             .controls > .col {
                 -webkit-box-flex: 2;
@@ -72,7 +89,10 @@
                 background: #9DBEAE;
                 -webkit-box-flex: 0;
             }
-            
+
+            .mixer input[type="range"] {
+                background: #B3C7BD;
+            } 
             .filter {
                 background: #D1769E;
                 border-top: none;

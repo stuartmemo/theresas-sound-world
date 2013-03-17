@@ -398,33 +398,28 @@
         SoundWorld.prototype.createEnvelope = function (settings) {
             var envelope = {};
 
-            envelope.attackTime = settings.attackTime || 1;
-            envelope.decayTime = settings.decayTime || 1;
+            envelope.attackTime = settings.attackTime || 0;
+            envelope.decayTime = settings.decayTime || 0;
             envelope.sustainLevel = settings.sustainLevel || 0.5;
             envelope.releaseTime = settings.releaseTime || 1;
             envelope.startValue = settings.startValue || 0;
+            envelope.maxValue = settings.maxValue || 1;
             envelope.param = settings.param;
-            envelope.active = false;
-
             envelope.param.value = envelope.startValue;
 
             envelope.start = function () {
-                if (!envelope.active) {
-                    envelope.active = true;
-                    envelope.param.cancelScheduledValues(tsw.now());
-                    envelope.param.setValueAtTime(envelope.startValue, tsw.now());
-                    envelope.param.linearRampToValueAtTime(1, tsw.now() + envelope.attackTime);
-                    envelope.param.linearRampToValueAtTime(envelope.sustainLevel, tsw.now() + envelope.attackTime + envelope.decayTime);
-                }
+                envelope.active = true;
+                envelope.param.cancelScheduledValues(tsw.now());
+                envelope.param.setValueAtTime(envelope.startValue, tsw.now());
+                envelope.param.linearRampToValueAtTime(envelope.maxValue, tsw.now() + envelope.attackTime);
+                envelope.param.linearRampToValueAtTime(envelope.sustainLevel, tsw.now() + envelope.attackTime + envelope.decayTime);
             };
 
             envelope.stop = function () {
-                if (!envelope.active) {
-                    envelope.active = false;
-                    envelope.param.cancelScheduledValues(tsw.now());
-                    envelope.param.setValueAtTime(envelope.sustainLevel, tsw.now());
-                    envelope.param.linearRampToValueAtTime(envelope.startValue, tsw.now() + envelope.releaseTime);
-                }
+                envelope.active = false;
+                envelope.param.cancelScheduledValues(tsw.now());
+                envelope.param.setValueAtTime(envelope.sustainLevel, tsw.now());
+                envelope.param.linearRampToValueAtTime(envelope.startValue, tsw.now() + envelope.releaseTime);
             };
 
             return envelope;

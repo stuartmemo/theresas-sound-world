@@ -58,6 +58,7 @@
          */
         var init = function () {
             this.activeOscillators = [];
+            this.activeVolumeEnvelopes = [];
             this.keysDown = [];
 
             // Settings for the 3 oscillators.
@@ -113,19 +114,14 @@
                 node: tsw.createFilter('lowpass'),
             };
 
-            var gainForEnvelope = tsw.createGain();
-
-            // ADSR settings.
-            var adsrSettings = {
-                attackTime: 2,
-                decayTime: 1,
-                sustainLevel: 0.2,
+            // Volume Envelope Settings
+            this.volumeEnvelopeSettings = {
+                attackTime: 0.1,
+                decayTime: 0.5,
+                sustainLevel: 0.4,
                 releaseTime: 1,
-                param: gainForEnvelope.gain,
                 startValue: 0
             };
-
-            this.volumeEnvelope = tsw.createEnvelope(adsrSettings);
 
             // Output settings.
             this.output = {
@@ -136,10 +132,10 @@
             var limiter = tsw.createCompressor();
 
             // Connect mixer to filter.
-            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node, gainForEnvelope);
+            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node);
 
             // Connect filter to ADSR envelope and out to speakers.
-            tsw.connect(gainForEnvelope, this.output.node, limiter, tsw.speakers);
+            tsw.connect(this.filter.node, this.output.node, limiter, tsw.speakers);
         };
 
         /*
@@ -216,13 +212,20 @@
                 that = this;
 
             this.keysDown.push(note);
-            this.volumeEnvelope.start();
 
             noteOscillators.forEach(function (oscillator, index) {
                 index++;
-                tsw.connect(oscillator, that.mixer['osc' + index].node);
+                var gainForEnvelope = tsw.createGain();
+                that.volumeEnvelopeSettings.param = gainForEnvelope.gain;
+
+                var volEnvelope = tsw.createEnvelope(that.volumeEnvelopeSettings);
+
+                tsw.connect(oscillator, gainForEnvelope, that.mixer['osc' + index].node);
                 that.activeOscillators.push(oscillator);
+                that.activeVolumeEnvelopes.push(volEnvelope);
+
                 oscillator.start(tsw.now());
+                volEnvelope.start();
             });
         }
 
@@ -246,15 +249,16 @@
                 }
 
                 if (match) {
-                    this.activeOscillators[i].stop(tsw.now() + this.volumeEnvelope.releaseTime);
+                    this.activeOscillators[i].stop(tsw.now() + this.volumeEnvelopeSettings.releaseTime)
                     this.activeOscillators.splice(i,1);
+                    this.activeVolumeEnvelopes[i].stop();
+                    this.activeVolumeEnvelopes.splice(i,1);
                     i--;
                 }
 
                 match = false;
             }
 
-            this.volumeEnvelope.stop();
         };
 
         return function (tsw) {
