@@ -59,6 +59,7 @@
         var init = function () {
             this.activeOscillators = [];
             this.activeVolumeEnvelopes = [];
+            this.activeFilterEnvelopes = [];
             this.keysDown = [];
 
             // Settings for the 3 oscillators.
@@ -66,17 +67,17 @@
                 osc1: {
                     range: 8,
                     waveform: 'square',
-                    tuning: 0
+                    detune: 0
                 },
                 osc2: {
                     range: 4,
                     waveform: 'sawtooth',
-                    tuning: 0
+                    detune: 0
                 },
                 osc3: {
                     range: 16,
                     waveform: 'square',
-                    tuning: 0
+                    detune: 0
                 }
             };
 
@@ -106,12 +107,13 @@
                 }
             };
 
-            // Filter settings.
-            // Node is created here too as it doesn't need to be destroyed.
-            this.filter = {
-                cutoffFrequency: 500,
-                emphasis: 1,
-                node: tsw.createFilter('lowpass'),
+            // Filter Envelope Settings
+            this.filterEnvelopeSettings = {
+                attackTime: 0.1,
+                decayTime: 0.5,
+                sustainLevel: 5000,
+                releaseTime: 1,
+                startValue: 10000
             };
 
             // Volume Envelope Settings
@@ -132,26 +134,7 @@
             var limiter = tsw.createCompressor();
 
             // Connect mixer to filter.
-            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.filter.node);
-
-            // Connect filter to ADSR envelope and out to speakers.
-            tsw.connect(this.filter.node, this.output.node, limiter, tsw.speakers);
-        };
-
-        /*
-         * Apply settings to the synth.
-         *
-         * @method update
-         */
-        Synth.prototype.update = function () {
-            this.mixer.osc1.node.gain.value = this.mixer.osc1.volume;
-            this.mixer.osc2.node.gain.value = this.mixer.osc2.volume;
-            this.mixer.osc3.node.gain.value = this.mixer.osc3.volume;
-
-            this.filter.node.frequency.value = parseInt(this.filter.cutoffFrequency, 10);
-            this.filter.node.Q.value = parseInt(this.filter.emphasis, 10);
-            
-            this.output.node.gain.value = this.output.volume;
+            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.output.node, limiter, tsw.speakers);
         };
 
         var rangeToFrequency = function (baseFrequency, range) {
@@ -190,9 +173,11 @@
 
             for (var i = 1; i < 4; i++) {
                 var oscillator = tsw.createOscillator(this.oscillators['osc' + i].waveform),
-                    range = this.oscillators['osc' + i].range;
+                    range = this.oscillators['osc' + i].range,
+                    detune = this.oscillators['osc' + i].detune;
 
                 oscillator.frequency.value = rangeToFrequency(frequency, range);
+                oscillator.detune.value = detune;
                 noteOscillators.push(oscillator);
             }
 
@@ -214,20 +199,30 @@
             this.keysDown.push(note);
 
             noteOscillators.forEach(function (oscillator, index) {
+                var gainForEnvelope = tsw.createGain(),
+                    filter = tsw.createFilter('lowpass'),
+                    volEnvelope,
+                    filterEnvelope;
+
                 index++;
-                var gainForEnvelope = tsw.createGain();
+
                 that.volumeEnvelopeSettings.param = gainForEnvelope.gain;
+                that.filterEnvelopeSettings.param = filter.frequency;
 
-                var volEnvelope = tsw.createEnvelope(that.volumeEnvelopeSettings);
+                volEnvelope = tsw.createEnvelope(that.volumeEnvelopeSettings);
+                filterEnvelope = tsw.createEnvelope(that.filterEnvelopeSettings);
 
-                tsw.connect(oscillator, gainForEnvelope, that.mixer['osc' + index].node);
-                that.activeOscillators.push(oscillator);
-                that.activeVolumeEnvelopes.push(volEnvelope);
+                tsw.connect(oscillator, gainForEnvelope, filter, that.mixer['osc' + index].node);
 
                 oscillator.start(tsw.now());
                 volEnvelope.start();
+                filterEnvelope.start();
+
+                that.activeOscillators.push(oscillator);
+                that.activeVolumeEnvelopes.push(volEnvelope);
+                that.activeFilterEnvelopes.push(filterEnvelope);
             });
-        }
+        };
 
         /*
          * Stop given note from playing.
@@ -253,12 +248,13 @@
                     this.activeOscillators.splice(i,1);
                     this.activeVolumeEnvelopes[i].stop();
                     this.activeVolumeEnvelopes.splice(i,1);
+                    this.activeFilterEnvelopes[i].stop();
+                    this.activeFilterEnvelopes.splice(i,1);
                     i--;
                 }
 
                 match = false;
             }
-
         };
 
         return function (tsw) {

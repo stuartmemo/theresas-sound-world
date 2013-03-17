@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>Synth</title>
+        <meta name="description" content="An analogue synth made with the Web Audio API"/>
+        <meta name="author" content="Stuart Memo"/>
+        <link rel="stylesheet" media="screen, projection" href="synth.css"/>
+    </head>
+    <body>
+        <div class="synth">
+            <h1>Basic Synth</h1>
+            <div class="controls">
+                <div class="col">
+                    <div class="module oscillators">
+                        <h2>Oscillators</h2>
+                        <div class="osc1">
+                            <h3>Oscillator-1</h3>
+                            <label for="osc1-range">Range</label>
+                            <select data-oscillator="osc1" data-param="range" name="osc1-range" class="range">
+                                <option value="64">Low</option>
+                                <option value="32">32</option>
+                                <option value="16" selected>16</option>
+                                <option value="8" >8</option>
+                                <option value="4">4</option>
+                                <option value="2">2</option>
+                            </select>
+                            <label for="osc1-waveform">Waveform</label>
+                            <select data-oscillator="osc1" data-param="waveform" name="osc1-waveform" class="waveform">
+                                <option value="triangle">Triangle</option>
+                                <option value="sawtooth">Sawtooth</option>
+                                <option value="square" selected>Square</option>
+                            </select>
+                        </div>
+                        <div class="osc2">
+                            <h3>Oscillator-2</h3>
+                            <label for="osc2-range">Range</label>
+                            <select data-oscillator="osc2" data-param="range" name="osc2-range" class="range">
+                                <option value="64">Low</option>
+                                <option value="32">32</option>
+                                <option value="16">16</option>
+                                <option value="8" selected>8</option>
+                                <option value="4">4</option>
+                                <option value="2">2</option>
+                            </select>
+                            <label for="osc2-detune">Tuning</label>
+                            <input data-oscillator="osc2" data-param="detune" type="range" min="-50" max="50" step="1" value="-10"/>
+                            <label for="osc2-waveform">Waveform</label>
+                            <select data-oscillator="osc2" data-param="waveform" name="osc2-waveform">
+                                <option value="triangle" >Triangle</option>
+                                <option value="sawtooth" selected>Sawtooth</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </div>
+                        <div class="osc3">
+                            <h3>Oscillator-3</h3>
+                            <label for="osc3-range">Range</label>
+                            <select data-oscillator="osc3" data-param="range" name="osc3-range">
+                                <option value="64">Low</option>
+                                <option value="32">32</option>
+                                <option value="16">16</option>
+                                <option value="8">8</option>
+                                <option value="4" selected>4</option>
+                                <option value="2">2</option>
+                            </select>
+
+                            <label for="osc3-detune">Tuning</label>
+                            <input name="osc3-detune" data-oscillator="osc3" data-param="detune" type="range" min="-50" max="50" step="1" value="10"/>
+
+                            <label for="osc3-waveform">Waveform</label>
+                            <select data-oscillator="osc3" data-param="waveform" name="osc3-waveform">
+                                <option value="triangle" selected>Triangle</option>
+                                <option value="sawtooth">Sawtooth</option>
+                                <option value="square">Square</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+
+                    <!-- Mixer -->
+                    <div class="module mixer">
+                        <h2>Mixer</h2>
+                        <label for="osc1-volume">Osc #1 Volume</label>
+                        <input name="osc1-volume" data-oscillator="osc1" data-param="mixer" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                        
+                        <label for="osc2-volume">Osc #2 Volume</label>
+                        <input name="osc2-volume" data-oscillator="osc2" data-param="mixer" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                        
+                        <label for="osc3-volume">Osc #3 Volume</label>
+                        <input name="osc3-volume" data-oscillator="osc3" data-param="mixer" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                    </div>
+
+                    <!-- Filter -->
+                    <div class="module filter">
+                        <h2>Filter</h2>
+                        <label for="cutoffFrequency">Cutoff frequency</label>
+                        <input name="cutoffFrequency" data-param="filter" type="range" min="20" max="20000" step="500" value="20"/>
+
+                        <label for="emphasis">Emphasis</label>
+                        <input name="emphasis" data-param="filter" type="range" min="0" max="10" value="5"/>
+
+                        <label for="contour">Contour</label>
+                        <input name="contour" data-param="filter" type="range" min="0" max="10" value="5"/>
+                        
+                        <label for="filter-attack">Attack</label>
+                        <input name="filter-attack" type="range" min="0" max="25" value="5"/>
+                        
+                        <label for="filter-decay">Decay</label>
+                        <input name="filter-decay" type="range" min="0" max="25" value="5"/>
+
+                        <label for="filter-sustain">Sustain</label>
+                        <input name="filter-sustain" type="range" min="0" max="10" value="5"/>
+
+                        <label for="filter-release">Release</label>
+                        <input name="filter-release" type="range" min="0" max="10" value="5"/>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="module volume-filter">
+                        <h2>Volume Filter</h2>
+                        <label for="attackTime">Attack</label>
+                        <input name="attackTime" data-param="volume-filter" type="range" min="0" max="2" step="0.1" value="0"/>
+
+                        <label for="decayTime">Decay</label>
+                        <input name="decayTime" data-param="volume-filter" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                        
+                        <label for="sustainLevel">Sustain</label>
+                        <input name="sustainLevel" data-param="volume-filter" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                        
+                        <label for="releaseTime">Release</label>
+                        <input name="releaseTime" data-param="volume-filter" type="range" min="0" max="1" step="0.1" value="0.5"/>
+                    </div>
+                    <div class="module output">
+                        <h2>Output</h2>
+                        <label for="volume">Volume</label>
+                        <input name="volume" data-param="volume" type="range" min="0" max="1" step="0.1"/>
+                    </div>
+                </div>
+            </div>
+            <div id="keyboard"></div>
+        </div>
+        <script src="../../tsw-core.js"></script>
+        <script src="../../tsw-effects.js"></script>
+        <script src="../../tsw-music.js"></script>
+        <script src="synth.js"></script>
+        <script src="http://stuartmemo.com/qwerty-hancock/raphael-min.js"></script>
+        <script src="http://stuartmemo.com/qwerty-hancock/qwerty-hancock.js"></script>
+        <script>
+            var synth = new Synth(),
+                keyboard = qwertyHancock({
+                    id: 'keyboard',
+                    width: 794,
+                    height: 150,
+                    startKey: 'A3',
+                    hoverColour: '#FFE976'
+                });
+
+            var inputs = document.getElementsByTagName('input'),
+                selects = document.getElementsByTagName('select');
+
+            // Turn NodeLists into Arrays
+            inputs = Array.prototype.slice.call(inputs);
+            selects = Array.prototype.slice.call(selects);
+
+            inputs = inputs.concat(selects);
+
+            var updateSettings = function () {
+                var osc = this.getAttribute('data-oscillator'),
+                    param = this.getAttribute('data-param');
+
+                switch (param) {
+                    case 'range':
+                        synth.oscillators[osc][param] = this.value;
+                        break;
+                    case 'waveform':
+                        synth.oscillators[osc][param] = this.value;
+                        break;
+                    case 'detune':
+                        synth.oscillators[osc][param] = this.value;
+                        synth.activeOscillators.forEach(function (oscillator) {
+                            oscillator.detune.value = synth.oscillators[osc][param];
+                        });
+                        break;
+                    case 'filter':
+                        switch (this.name) {
+                            case 'cutoffFrequency':
+                                synth.filterEnvelopeSettings.startValue = parseInt(this.value, 10);
+                                break; 
+                            case 'emphasis':
+                                //synth.filter.node.Q.value = parseInt(this.filter.emphasis, 10);
+                                break;
+                            default:
+                                break;
+                        };
+                        break;
+                    case 'volume-filter':
+                        synth.volumeEnvelopeSettings[this.name] = parseFloat(this.value, 10);
+                        break;
+                    case 'mixer':
+                        synth.mixer[osc].node.gain.value = this.value;
+                        break;
+                    case 'volume':
+                        synth.output.node.gain.value = this.value;
+                        break;
+                    default:
+                        break;
+                };
+            };
+            
+            for (var i = 0; i < inputs.length; i++) {
+                inputs[i].addEventListener('change', function () {
+                    updateSettings.call(this);
+                });
+
+                updateSettings.call(inputs[i]);
+            }
+            
+            keyboard.keyDown(function (note, frequency) {
+                synth.playNote(note);
+            });
+
+            keyboard.keyUp(function (note, frequency) {
+                synth.stopNote(note);
+            });
+        </script>
+    </body>
+</html>
