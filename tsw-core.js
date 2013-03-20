@@ -485,6 +485,7 @@
             mmNode.input = this.context.createGain();
 
             mmNode.modulate = function (target) {
+                console.log(target); 
                 lfo.connect(depth);
                 depth.connect(target);
             };

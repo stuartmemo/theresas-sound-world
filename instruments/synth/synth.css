@@ -1,10 +1,14 @@
 body {
-    font-family: Helvetica Neue, arial;
-    background: #f0f0f0;
+    font-family: Helvetica Neue, arial, sans-serif;
+    background: #273e49;
 }
 
 h1 {
-    margin-bottom: 0.2em;
+    font-size: 58px;
+    font-weight: 400;
+    font-style: normal;
+    color: #f2ed63;
+    margin-bottom: 3px;
 }
 
 h2 {
@@ -85,11 +89,17 @@ input[type="range"]::-webkit-slider-thumb {
 
 .mixer input[type="range"] {
     background: #B3C7BD;
-} 
+}
+
 .filter {
     background: #DB9AB7;
     border-top: none;
     -webkit-box-flex: 1;
+}
+
+.lfo {
+    background: #89BD79; 
+    border-top: none;
 }
 
 .volume-filter {

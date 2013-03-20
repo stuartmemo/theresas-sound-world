@@ -61,6 +61,7 @@
             this.activeVolumeEnvelopes = [];
             this.activeFilterEnvelopes = [];
             this.keysDown = [];
+            this.allNodes = [];
 
             // Settings for the 3 oscillators.
             this.oscillators = {
@@ -116,7 +117,7 @@
                 startValue: 10000
             };
 
-            // Volume Envelope Settings
+            // Volume Envelope settings.
             this.volumeEnvelopeSettings = {
                 attackTime: 0.1,
                 decayTime: 0.5,
@@ -132,6 +133,9 @@
             };
 
             var limiter = tsw.createCompressor();
+        
+            // Start garbage collector for nodes no longer needed.
+            this.garbageCollection(this);
 
             // Connect mixer to filter.
             tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.output.node, limiter, tsw.speakers);
@@ -221,6 +225,8 @@
                 that.activeOscillators.push(oscillator);
                 that.activeVolumeEnvelopes.push(volEnvelope);
                 that.activeFilterEnvelopes.push(filterEnvelope);
+
+                that.allNodes.push(oscillator);
             });
         };
 
@@ -256,6 +262,27 @@
                 match = false;
             }
         };
+
+        /*
+         * Disconnect oscillators no longer in use.
+         *
+         * @method garbageCollection
+         * @param {synth} Current instance of the synth
+         */
+        Synth.prototype.garbageCollection = function (synth) {
+
+            // Remove the ghosts of dead oscillators
+            for (var i = 0; i < synth.allNodes.length; i++) {
+                if (synth.allNodes[i].playbackState === 3) {
+                    synth.allNodes[i].disconnect();
+                }
+                synth.allNodes.splice(i, 1);
+                i--;
+
+            }
+            setTimeout(function () { synth.garbageCollection(synth) }, 1000);
+        };
+
 
         return function (tsw) {
             return new Synth(tsw);
