@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <title>TSW Test Suite</title>
+        <style>
+            .module {
+                width: 30%;
+                float: left;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Drum Machine</h1>
+        <button name="kick">Kick</button>
+        <button name="snare">Snare</button>
+        <button name="hihatClosed">Hihat - closed</button>
+        <button name="hihatOpen">Hihat - open</button>
+        <button name="clap">clap</button>
+        <button name="cowbell">cowbell</button>
+        <button name="tom">tom</button>
+        <script src="../../tsw-core.js"></script>
+        <script src="../../tsw-effects.js"></script>
+        <script src="../../tsw-music.js"></script>
+        <script src="../../tsw-sequencer.js"></script>
+        <script src="drum-machine.js"></script>
+        <script>
+            var drumMachine = new DrumMachine(),
+                buttons = document.getElementsByTagName('button'),
+                noButtons = buttons.length;
+
+            for (var i = 0; i < noButtons; i++) {
+                buttons[i].addEventListener('click', function () {
+                    drumMachine.drums[this.name].play();
+                });
+            }
+        </script>
+    </body>
+</html>
