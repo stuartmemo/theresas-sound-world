@@ -1,0 +1,160 @@
+body {
+    font-family: Helvetica Neue, arial, sans-serif;
+    background: #273e49;
+}
+
+h1 {
+    font-size: 58px;
+    font-weight: 400;
+    font-style: normal;
+    color: #f2ed63;
+    margin-bottom: 3px;
+}
+
+h2 {
+    margin: 0 0 0.3em;
+    line-height: 1em;
+}
+
+h3 {
+    margin: 0.2em 0;
+}
+
+label {
+    display: block;
+}
+
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 50px;
+    height: 10px;
+    background: white;
+    border: 1px solid grey;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    background: black;
+    width: 6px;
+    height: 10px;
+    opacity: 1;
+}
+
+thead {
+    float: left;
+    height: 280px;
+    background: #FFE976;
+    border: 4px solid #0C0C0C;
+}
+
+thead th {
+    display: block;
+    height: 29px;
+    margin: 11px 0;
+    text-align: left;
+    padding: 0 10px;
+}
+
+tbody {
+    float: right;
+}
+
+.controls {
+    background: #0099cc;
+    border: 4px solid #0C0C0C;
+    border-top: 0;
+    width: 746px;
+}
+
+.drum-machine {
+    width: 754px;
+    margin: 0 auto;
+}
+
+.play-controls, .sound-controls {
+    padding: 1em;
+    display: inline-block;
+    border: 4px solid #0C0C0C;
+    border-width: 0 0 0 4px;
+}
+
+.sound-controls {
+    border: none;
+    height: 36px;
+    width: 500px;
+    float: left;
+}
+
+table {
+    border-spacing: 0;
+}
+
+td {
+    padding: 0;
+}
+
+td button {
+    margin: 10px;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    background-color: #A4A2C4;
+}
+
+td button:hover {
+    cursor: pointer;
+}
+
+tbody {
+    background: #273E49; 
+    border: 4px solid #0C0C0C;
+    border-left-width: 0;
+}
+
+.odd-col {
+    background-color: #2E4C5A;
+}
+
+.mixer input[type="range"] {
+    background: #B3C7BD;
+}
+
+.filter {
+    background: #DB9AB7;
+    border-top: none;
+    -webkit-box-flex: 1;
+}
+
+.lfo {
+    background: #89BD79; 
+    border-top: none;
+}
+
+.volume-filter {
+    background: #E25D34; 
+    -webkit-box-flex: 0;
+}
+
+.volume-filter input[type="range"] {
+    background: #fe8864;
+}
+
+.filter input[type="range"] {
+    background: #ecc5d6;
+}
+
+.output input[type="range"] {
+    background: #49bce2;
+}
+
+.oscillators input[type="range"] {
+    background: #fbefb3;
+}
+
+.output {
+    background: #0099cc;
+    border-top: none;
+    -webkit-box-flex: 1;
+}
+
