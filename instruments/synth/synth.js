@@ -114,7 +114,8 @@
                 decayTime: 0.5,
                 sustainLevel: 5000,
                 releaseTime: 1,
-                startValue: 10000
+                maxLevel: 10000,
+                autoStop: false
             };
 
             // Volume Envelope settings.
@@ -123,7 +124,7 @@
                 decayTime: 0.5,
                 sustainLevel: 0.4,
                 releaseTime: 1,
-                startValue: 0
+                autoStop: false
             };
 
             // Output settings.

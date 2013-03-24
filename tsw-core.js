@@ -398,28 +398,61 @@
         SoundWorld.prototype.createEnvelope = function (settings) {
             var envelope = {};
 
+            console.log(settings);
+
+            // Initial levels
+            envelope.startLevel = settings.startLevel || 0;
+            envelope.maxLevel = settings.maxLevel || 1;
+            envelope.minLevel = settings.minLevel || 0;
+
+            // Envelope values
             envelope.attackTime = settings.attackTime || 0;
             envelope.decayTime = settings.decayTime || 0;
-            envelope.sustainLevel = settings.sustainLevel || 0.5;
-            envelope.releaseTime = settings.releaseTime || 1;
-            envelope.startValue = settings.startValue || 0;
-            envelope.maxValue = settings.maxValue || 1;
+            envelope.sustainLevel = settings.sustainLevel || 0;
+            envelope.releaseTime = settings.releaseTime || 0;
+            
+            // Automation parameters 
             envelope.param = settings.param;
-            envelope.param.value = envelope.startValue;
+            envelope.param.value = envelope.startLevel;
+
+            // Should the release kick-in automatically
+            settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
 
             envelope.start = function () {
-                envelope.active = true;
-                envelope.param.cancelScheduledValues(tsw.now());
-                envelope.param.setValueAtTime(envelope.startValue, tsw.now());
-                envelope.param.linearRampToValueAtTime(envelope.maxValue, tsw.now() + envelope.attackTime);
-                envelope.param.linearRampToValueAtTime(envelope.sustainLevel, tsw.now() + envelope.attackTime + envelope.decayTime);
+                // Calculate levels
+                this.maxLevel = this.startLevel + this.maxLevel;
+                this.sustainLevel = this.startLevel + this.sustainLevel;
+
+                // Calculate times
+                this.startTime = tsw.now();
+                this.attackTime = this.startTime + this.attackTime;
+                this.decayTime = this.attackTime + this.decayTime;
+
+                // Initialise
+                this.param.cancelScheduledValues(this.startTime);
+                this.param.setValueAtTime(this.startLevel, this.startTime);
+
+                // Attack
+                this.param.linearRampToValueAtTime(this.maxLevel, this.attackTime);
+
+                // Decay
+                this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, this.decayTime); 
+
+                // Sustain
+                if (this.autoStop) {
+                    this.stop(this.decayTime);
+                }
             };
 
-            envelope.stop = function () {
-                envelope.active = false;
-                envelope.param.cancelScheduledValues(tsw.now());
-                envelope.param.setValueAtTime(envelope.sustainLevel, tsw.now());
-                envelope.param.linearRampToValueAtTime(envelope.startValue, tsw.now() + envelope.releaseTime);
+            envelope.stop = function (timeToStop) {
+                timeToStop = timeToStop || tsw.now();
+                //this.param.cancelScheduledValues(timeToStop);
+                
+                timeToStop += this.releaseTime;
+                //this.param.setValueAtTime(this.sustainLevel, timeToStop);
+  
+                // Release
+                this.param.linearRampToValueAtTime(this.startLevel, timeToStop);
             };
 
             return envelope;
