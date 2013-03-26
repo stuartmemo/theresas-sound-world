@@ -8,6 +8,7 @@
 (function (window, undefined) {
 
     var SoundWorld = (function () {
+
         /*
          * Creates a Sound World.
          *
@@ -217,8 +218,12 @@
          * @method reverse
          * @param {AudioBuffer} buffer
          */
-        SoundWorld.prototype.reverse = function (buffer) {
-
+        SoundWorld.prototype.reverse = function (sourceNode) {
+            // Reverse the array of each channel
+            for (var i = 0; i < sourceNode.buffer.numberOfChannels; i++) {
+                Array.prototype.reverse.call(sourceNode.buffer.getChannelData(i));
+            }
+            return sourceNode;
         };
 
         /*

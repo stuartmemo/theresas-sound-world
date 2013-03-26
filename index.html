@@ -69,9 +69,7 @@
         <button id="play">Play</button>
         <script>
             $('#play').click(function () {
-                var context = new webkitAudioContext(),
-                    tsw = new SoundWorld(context),
-                    delay = tsw.fx.createDelay();
+                var delay = tsw.fx.createDelay();
 
                 tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
                     var guitar = buffers.guitar;
@@ -105,11 +103,16 @@
             var backwardGuitar = tsw.reverse(guitar);
             tsw.play(backwardGuitar);
         </pre>
+        <button id="reverse">Reverse</button>
         <script>
             $('#reverse').click(function () {
-                var backwardGuitar = tsw.reverse(guitar);
+                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                    var guitar = buffers.guitar,
+                        reversedGuitar = tsw.reverse(guitar);
 
-                tsw.play(backwardGuitar);
+                    tsw.connect(reversedGuitar, tsw.speakers);
+                    tsw.play(reversedGuitar);
+                });
             });
         </script>
 

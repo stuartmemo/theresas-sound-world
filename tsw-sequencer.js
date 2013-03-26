@@ -10,7 +10,7 @@
     var Sequencer = (function () {
 
         /*
-         * Creates instance of sequncer
+         * Creates instance of sequencer
          *
          * @constructor
          * @param {AudioContext} Current audio context
