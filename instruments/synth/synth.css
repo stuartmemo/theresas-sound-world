@@ -4,11 +4,13 @@ body {
 }
 
 h1 {
-    font-size: 42px;
+    font-size: 22px;
     font-style: normal;
-    color: #f2ed63;
-    text-shadow: 1px 1px 1px black;
+    color: white;
     margin-bottom: 0px;
+    background: black;
+    width: 900px;
+    padding: 4px 8px;
 }
 
 h2 {
@@ -49,6 +51,7 @@ h2:after {
     color: #A5A5DA;
 }
 
+
 h3 {
     clear: both;
     margin: 0.2em 0;
@@ -64,7 +67,7 @@ input[type="range"] {
     width: 200px;
     height: 10px;
     background: white;
-    border: 1px solid grey;
+    border: none;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -182,12 +185,31 @@ select {
     width: 145px;
 }
 
+.noise h2 {
+    color: #A981C0;
+}
+
+.noise input[type="range"] {
+    background-color: #A981C0;
+    border-color: black;
+    width: 145px;
+}
+
+.noise {
+    background: #A25CA5;
+    border-top: none;
+    display: inline-block;
+    width: 150px;
+    height: 82px;
+    border-left: none;
+}
+
 .output {
     background: #0099cc;
     border-top: none;
     display: inline-block;
     width: 150px;
-    height: 201px;
+    height: 82px;
     border-left: none;
     border-bottom: none;
 }

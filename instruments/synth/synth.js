@@ -100,12 +100,6 @@
                     node: tsw.createGain(),
                     volume: 0.5,
                     active: true
-                },
-                noise: {
-                    node: tsw.createNoise(),
-                    type: 'white',
-                    volume: 0.5,
-                    active: false
                 }
             };
 
@@ -138,19 +132,30 @@
 
             // LFO settings.
             this.lfoSettings = {
-                frequency: 1,
-                depth: 10,
+                frequency: 0,
+                depth: 5,
                 waveType: 'triangle',
                 target: that.gainForLFOSettings.node.gain,
                 autoStart: true,
                 node: null
             };
 
+            var limiterSettings = {
+                threshold: -50,
+                release: 0.1
+            };
+
+            var limiter = tsw.createCompressor(limiterSettings);
+
             this.masterVolume = tsw.createGain();
-
-            var limiter = tsw.createCompressor();
-
             this.lfoSettings.node = tsw.createLFO(this.lfoSettings);
+
+            // Noise
+            var noise = tsw.createNoise();
+            this.noiseGate = tsw.createGain();
+            this.noiseLevel = tsw.createGain();
+            this.noiseFrequency = tsw.createFilter('bandpass');
+            this.noiseGate.gain.value = 0;
 
             // Start garbage collector for nodes no longer needed.
             this.garbageCollection(this);
@@ -161,6 +166,8 @@
                         this.masterVolume,
                         limiter,
                         tsw.speakers);
+
+            tsw.connect(noise, this.noiseFrequency, this.noiseLevel, this.noiseGate, this.gainForLFOSettings.node);
         };
 
         var rangeToFrequency = function (baseFrequency, range) {
@@ -225,6 +232,9 @@
 
             this.keysDown.push(note);
 
+            that.noiseFrequency.frequency = tsw.music.noteToFrequency(note);
+            that.noiseGate.gain.value = 1;
+
             noteOscillators.forEach(function (oscillator, index) {
                 var gainForEnvelope = tsw.createGain(),
                     filter = tsw.createFilter('lowpass'),
@@ -283,6 +293,8 @@
                     this.activeFilterEnvelopes.splice(i,1);
                     i--;
                 }
+
+                that.noiseGate.gain.value = 0;
 
                 match = false;
             }

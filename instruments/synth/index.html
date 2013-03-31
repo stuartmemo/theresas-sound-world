@@ -11,7 +11,7 @@
     </head>
     <body class="tk-futura-pt">
         <div class="synth">
-            <h1>Synthi Lauper</h1>
+            <h1>Synthesizer</h1>
             <div class="controls">
                 <div class="module oscillators">
 
@@ -38,7 +38,7 @@
                             </select>
                         </div>
                         <label for="osc1-detune">Tuning</label>
-                        <input data-oscillator="osc1" data-param="detune" type="range" min="-50" max="50" step="1" value="-10"/>
+                        <input data-oscillator="osc1" data-param="detune" type="range" min="-50" max="50" step="1" value="-6"/>
                         <label for="osc1-volume">Osc #1 Volume</label>
                         <input name="osc1-volume" data-oscillator="osc1" data-param="mixer" type="range" min="0" max="1" step="0.05" value="0.5"/>
                     </div>
@@ -113,7 +113,7 @@
                     <input data-param="lfo" name="lfo-frequency" type="range" min="0" max="30" step="1" value="0"/>
 
                     <label for="lfo-depth">Depth</label>
-                    <input data-param="lfo" name="lfo-depth" type="range" min="1" max="20" step="1" value="10"/>
+                    <input data-param="lfo" name="lfo-depth" type="range" min="1" max="10" step="1" value="1"/>
                 </div>
 
                 <!-- Filter -->
@@ -121,7 +121,7 @@
                     <h2>Filter</h2>
                     <div class="left-half">
                         <label for="filter-attack">Attack</label>
-                        <input name="filter-attack" data-param="filter" type="range" min="0" max="25" value="5"/>
+                        <input name="filter-attack" data-param="filter" type="range" min="0" max="10" value="2"/>
 
                         <label for="filter-decay">Decay</label>
                         <input name="filter-decay" type="range" data-param="filter" min="0" max="25" value="5"/>
@@ -155,7 +155,12 @@
                     <input name="sustainLevel" data-param="volume-filter" type="range" min="0" max="1" step="0.1" value="0.5"/>
                     
                     <label for="releaseTime">Release</label>
-                    <input name="releaseTime" data-param="volume-filter" type="range" min="0" max="4" step="0.1" value="1"/>
+                    <input name="releaseTime" data-param="volume-filter" type="range" min="0" max="2" step="0.05" value="0.2"/>
+                </div>
+                <div class="module noise">
+                    <h2>Noise</h2>
+                    <label for="level">Level</label>
+                    <input name="level" data-param="noise" type="range" min="0" max="1" step="0.1" value="0"/>
                 </div>
                 <div class="module output">
                     <h2>Output</h2>
@@ -170,7 +175,7 @@
         <script src="../../tsw-music.js"></script>
         <script src="synth.js"></script>
         <script src="http://stuartmemo.com/qwerty-hancock/raphael-min.js"></script>
-        <script src="http://stuartmemo.com/qwerty-hancock/qwerty-hancock.js"></script>
+        <script src="qwerty-hancock.min.js"></script>
         <script>
             var synth = new Synth(),
                 keyboard = qwertyHancock({
@@ -258,6 +263,9 @@
                         synth.masterVolume.gain.value = this.value;
                         break;
                     default:
+                        break;
+                    case 'noise':
+                        synth.noiseLevel.gain.value = this.value;
                         break;
                 };
             };

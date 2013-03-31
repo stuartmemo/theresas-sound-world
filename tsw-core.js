@@ -459,7 +459,7 @@
                 defaults = {
                     frequency: 0,
                     waveType: 'triangle',
-                    depth: 0.01,
+                    depth: 1,
                     target: null,
                     autoStart: false
                 };
@@ -471,6 +471,7 @@
 
             depth.gain.value = settings.depth;
             lfo.frequency.value = settings.frequency;
+
 
             if (settings.autoStart) {
                 lfo.start(tsw.now());
