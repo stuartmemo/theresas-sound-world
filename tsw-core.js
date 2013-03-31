@@ -27,7 +27,7 @@
             try {
                 this.context.createGain();
             } catch (e) {
-                throw new Error('Sorry, your browser doesn\'t support the Web Audio API.');
+                throw new Error('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
             };
 
             if (hasEffectsLibLoaded()) {
@@ -253,7 +253,13 @@
          * @return Gain node.
          */
         SoundWorld.prototype.createGain = function (volume) {
-            var gainNode = this.context.createGain();
+            var gainNode;
+
+            if (typeof this.context.createGain === 'function') {
+                gainNode = this.context.createGain();
+            } else {
+                gainNode = this.context.createGainNode();
+            }
 
             gainNode.gain.value = volume || 1;
 
@@ -455,7 +461,7 @@
 
             var effectObj = {},
                 lfo = tsw.createOscillator(),
-                depth = this.context.createGain(),
+                depth = this.createGain(),
                 defaults = {
                     frequency: 0,
                     waveType: 'triangle',
@@ -471,7 +477,6 @@
 
             depth.gain.value = settings.depth;
             lfo.frequency.value = settings.frequency;
-
 
             if (settings.autoStart) {
                 lfo.start(tsw.now());
