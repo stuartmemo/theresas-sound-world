@@ -60,6 +60,8 @@ h3 {
 label {
     display: block;
     clear: both;
+    position: relative;
+    top: 2px;
 }
 
 input[type="range"] {
