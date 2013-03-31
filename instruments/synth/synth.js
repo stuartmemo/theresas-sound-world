@@ -61,7 +61,8 @@
             this.activeVolumeEnvelopes = [];
             this.activeFilterEnvelopes = [];
             this.keysDown = [];
-            this.allNodes = [];
+            this.allNodes = [],
+            that = this;
 
             // Settings for the 3 oscillators.
             this.oscillators = {
@@ -113,6 +114,7 @@
                 attackTime: 0.1,
                 decayTime: 0.5,
                 sustainLevel: 5000,
+                Q: 5,
                 releaseTime: 1,
                 maxLevel: 10000,
                 autoStop: false
@@ -120,26 +122,45 @@
 
             // Volume Envelope settings.
             this.volumeEnvelopeSettings = {
-                attackTime: 0.1,
+                attackTime: 1.0,
                 decayTime: 0.5,
                 sustainLevel: 0.4,
-                releaseTime: 1,
+                releaseTime: 2,
+                startLevel: 0,
                 autoStop: false
             };
 
             // Output settings.
-            this.output = {
+            this.gainForLFOSettings= {
                 volume: 0.5,
                 node: tsw.createGain()
             };
 
+            // LFO settings.
+            this.lfoSettings = {
+                frequency: 1,
+                depth: 10,
+                waveType: 'triangle',
+                target: that.gainForLFOSettings.node.gain,
+                autoStart: true,
+                node: null
+            };
+
+            this.masterVolume = tsw.createGain();
+
             var limiter = tsw.createCompressor();
-        
+
+            this.lfoSettings.node = tsw.createLFO(this.lfoSettings);
+
             // Start garbage collector for nodes no longer needed.
             this.garbageCollection(this);
 
-            // Connect mixer to filter.
-            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node], this.output.node, limiter, tsw.speakers);
+            // Connect mixer to output.
+            tsw.connect([this.mixer.osc1.node, this.mixer.osc2.node, this.mixer.osc3.node],
+                        this.gainForLFOSettings.node,
+                        this.masterVolume,
+                        limiter,
+                        tsw.speakers);
         };
 
         var rangeToFrequency = function (baseFrequency, range) {
@@ -195,6 +216,7 @@
          * @method playNote
          * @param {note} string Musical note to play
          * @param {startTime} number Context time to play note (in seconds)
+         *
          * @param {endTime} number Context time to end note (in seconds)
          */
         Synth.prototype.playNote = function (note) {
@@ -253,8 +275,10 @@
                 if (match) {
                     this.activeOscillators[i].stop(tsw.now() + this.volumeEnvelopeSettings.releaseTime)
                     this.activeOscillators.splice(i,1);
+
                     this.activeVolumeEnvelopes[i].stop();
                     this.activeVolumeEnvelopes.splice(i,1);
+
                     this.activeFilterEnvelopes[i].stop();
                     this.activeFilterEnvelopes.splice(i,1);
                     i--;
@@ -281,6 +305,7 @@
                 i--;
 
             }
+
             setTimeout(function () { synth.garbageCollection(synth) }, 1000);
         };
 

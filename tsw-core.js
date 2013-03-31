@@ -247,50 +247,6 @@
         };
 
         /*
-         * Create Sine Wave node.
-         *
-         * @method createSineWave
-         * @param {number} frequency The starting frequency of the sine wave.
-         * @return Sine wave node.
-         */
-        SoundWorld.prototype.createSineWave = function (frequency) {
-            return this.createOscillator('SINE', frequency);
-        };
-
-        /*
-         * Create square wave node.
-         *
-         * @method createSquareWave
-         * @param {number} frequency The starting frequency of the square wave.
-         * @return Square wave node.
-         */
-        SoundWorld.prototype.createSquareWave = function (frequency) {
-            return this.createOscillator('SQUARE', frequency);
-        };
-
-        /*
-         * Create sawtooth wave node.
-         *
-         * @method createSawtoothWave
-         * @param {number} frequency The starting frequency of the sawtooth wave.
-         * @return Square wave node.
-         */
-        SoundWorld.prototype.createSawtoothWave = function (frequency) {
-            return this.createOscillator('SAWTOOTH', frequency);
-        };
-
-        /*
-         * Create triangle wave node.
-         *
-         * @method createTriangleWave
-         * @param {number} frequency The starting frequency of the sawtooth wave.
-         * @return Triangle wave node.
-         */
-        SoundWorld.prototype.createTriangleWave = function (triangle) {
-            return this.createOscillator('TRIANGLE', frequency);
-        };
-
-        /*
          * Create gain node.
          *
          * @method createGainNode
@@ -403,8 +359,6 @@
         SoundWorld.prototype.createEnvelope = function (settings) {
             var envelope = {};
 
-            console.log(settings);
-
             // Initial levels
             envelope.startLevel = settings.startLevel || 0;
             envelope.maxLevel = settings.maxLevel || 1;
@@ -451,11 +405,8 @@
 
             envelope.stop = function (timeToStop) {
                 timeToStop = timeToStop || tsw.now();
-                //this.param.cancelScheduledValues(timeToStop);
-                
                 timeToStop += this.releaseTime;
-                //this.param.setValueAtTime(this.sustainLevel, timeToStop);
-  
+
                 // Release
                 this.param.linearRampToValueAtTime(this.startLevel, timeToStop);
             };
@@ -473,19 +424,12 @@
         SoundWorld.prototype.createNoise = function (colour) {
             var noiseNode = this.context.createScriptProcessor(1024, 0, 1);
 
-            // white noise
+            // White noise
             noiseNode.onaudioprocess = function (e) {
                 for (var i = 0; i < 1024; i++) {
                     e.outputBuffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
                 }
             };
-
-            // this isn't right
-            if (colour === 'pink') {
-                var lowpassFilter = this.context.createBiquadFilter();
-                lowpassFilter.Q.value = 3;
-                noiseNode.connect(lowPassFilter);
-            }
 
             return noiseNode;
         };
@@ -509,42 +453,49 @@
 
             *********************************/
 
-            var mmNode = {},
-                lfo = this.context.createOscillator(),
+            var effectObj = {},
+                lfo = tsw.createOscillator(),
                 depth = this.context.createGain(),
-                that = this; 
+                defaults = {
+                    frequency: 0,
+                    waveType: 'triangle',
+                    depth: 0.01,
+                    target: null,
+                    autoStart: false
+                };
 
-            settings = settings || {};
-            lfo.frequency.value = settings.frequency || 10;
-            lfo.frequency.value = settings.frequency || 70;
-            depth.gain.value = settings.depth || 1;
+            // Merge passed settings with defaults
+            settings = applyObject(defaults, settings);
+
             lfo.type = lfo[settings.waveType] || lfo['TRIANGLE'];
 
-            mmNode.input = this.context.createGain();
+            depth.gain.value = settings.depth;
+            lfo.frequency.value = settings.frequency;
 
-            mmNode.modulate = function (target) {
-                console.log(target); 
-                lfo.connect(depth);
+            if (settings.autoStart) {
+                lfo.start(tsw.now());
+            }
+
+            lfo.modulate = function (target) {
+                this.connect(depth);
                 depth.connect(target);
             };
 
-            mmNode.setFrequency = function (f) {
+            lfo.setWaveType = function (waveType) {
+                lfo.type = lfo[waveType.toUpperCase()];
+            };
+
+            lfo.setFrequency = function (f) {
                 lfo.frequency.value = f;
             };
 
-            mmNode.setDepth = function (d) {
+            lfo.setDepth = function (d) {
                 depth.gain.value = d;
             };
+            
+            lfo.modulate(settings.target);
 
-            mmNode.start = function () {
-                lfo.start(that.now());
-            };
-
-            mmNode.stop = function () {
-                lfo.stop(this.context.now());
-            };
-
-            return mmNode;
+            return lfo;
         };
 
         return function (context) {
