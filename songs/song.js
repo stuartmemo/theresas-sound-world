@@ -1,7 +1,6 @@
-var context = new webkitAudioContext(),
-    drumMachine = new DrumMachine(context),
-    synth = new Synth(context),
-    sequencer = new Sequencer(context);
+var drumMachine = new DrumMachine(tsw.context),
+    synth = new Synth(tsw.context),
+    sequencer = new Sequencer(tsw.context);
 
 var kit808 = {
         kitName: '808',

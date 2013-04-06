@@ -177,7 +177,7 @@
         Music.prototype.noteToFrequency = function (note) {
             var octave,
                 keyNumber;
-         
+
             if (note.length === 3) {
                 octave = note.charAt(2);
             } else {

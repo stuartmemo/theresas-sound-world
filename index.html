@@ -4,7 +4,7 @@
         <meta charset="utf-8"/>
         <title>TSW Test Suite</title>
         <script src="tsw-core.js"></script>
-        <script src="tsw-effects.js"></script>
+        <script src="instruments/sampler/sampler.js"></script>
         <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     </head>
     <body>
@@ -47,10 +47,31 @@
         <button id="load">Load files</button>
         <script>
             $('#load').click(function () {
-                var tsw = new SoundWorld();
+            var cap1 = tsw.fx.createDelay(0.047),
+                r1 = tsw.createGain(0.02),
+                cap2 = tsw.fx.createDelay(0.001), 
+                tran1 = tsw.createGain(7),
+                r2 = tsw.createGain(0.22),
+                cap3 = tsw.createGain(0.047),
+                r3 = tsw.createGain(0.1);
+  
+            tsw.connect(cap1, r1);
+            tsw.connect(cap1, cap2); 
+            tsw.connect(r1,  tran1);
+
+            tsw.connect(r1, r2, cap3);
+            tsw.connect(r2, r3);
+
+            tsw.connect(cap3, tsw.speakers);
+            tsw.connect(r3, tsw.speakers);
+
+            tsw.connect(tran1, tsw.speakers);
 
                 tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
                     console.log(buffers); 
+                    var guitar = buffers.guitar;
+                    tsw.connect(guitar, cap1);
+                    tsw.play(guitar);
                 });
             });
         </script>
