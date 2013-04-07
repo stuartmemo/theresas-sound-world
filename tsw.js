@@ -17,6 +17,18 @@
          * @param {context} context The audio context to work with.
          */
         var SoundWorld = function (context) {
+
+            // Check if the Web Audio API is supported.
+            if (typeof webkitAudioContext.prototype.createGain === 'undefined') {
+                if (typeof webkitAudioContext.prototype.createGainNode === 'undefined') {
+                    throw new Error('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
+                } else {
+                    // Using older version of API.
+                    webkitAudioContext.prototype.createGain  = webkitAudioContext.prototype.createGainNode;
+                    webkitAudioContext.prototype.createScriptProcessor = webkitAudioContext.prototype.createJavaScriptNode;
+                }
+            }
+
             this.context = context || new webkitAudioContext();
             this.version = '0.0.1';
             this.speakers = this.context.destination;
@@ -26,11 +38,9 @@
 
             this.context.createGain = this.context.createGainNode;
 
-            // Check if recent version of Web Audio API is supported.
             try {
                 this.context.createGain();
             } catch (e) {
-                throw new Error('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
             };
 
             // Check if music library has been loaded.
@@ -236,10 +246,16 @@
         SoundWorld.prototype.createOscillator = function (waveType, frequency) {
             var osc = this.context.createOscillator();
 
+            if (typeof osc.start === 'undefined') {
+                osc.start = osc.noteOn;
+                osc.stop = osc.noteOff;
+            };
+
             waveType = waveType || 'SINE';
             waveType = waveType.toUpperCase();
 
             osc.type = osc[waveType];
+            osc.safariType = waveType.toLowerCase();
             osc.frequency.value = frequency || 440;
 
             return osc;
@@ -564,7 +580,7 @@
             effect.settings = {
                 delayTime: 0.5,
                 feedback: 0.5,
-                effectLevel: 0.5,
+                effectLevel: 0.5
             };
 
             // Set values
@@ -622,7 +638,7 @@
             effect.settings = {
                 delayTime: 0.5,
                 feedback: 0.5,
-                effectLevel: 0.5,
+                effectLevel: 0.5
             };
 
             // Set values
