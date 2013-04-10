@@ -3,25 +3,14 @@
     <head>
         <meta charset="utf-8"/>
         <title>TSW Test Suite</title>
-        <script src="tsw-core.js"></script>
-        <script src="instruments/sampler/sampler.js"></script>
+        <script src="../src/tsw-core.js"></script>
+        <script src="../src/tsw-effects.js"></script>
+        <script src="../src/tsw-music.js"></script>
         <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     </head>
     <body>
         <h1>TSW Test Suite</h1>
         <h2>Core</h2>
-        <h3>New SoundWorld</h3>
-        <pre>
-            var tsw = new SoundWorld();
-            // tsw is your new Sound World!
-        </pre>
-        <button id="new">New Sound World</button>
-        <script>
-            $('#new').click(function () {
-                var tsw = new SoundWorld();
-                console.log('New Sound World created', tsw);
-            });
-        </script>
 
         <h3>Context</h3>
         <pre>
@@ -30,7 +19,6 @@
         <button id="context">Context</button>
         <script>
             $('#context').click(function () {
-                var tsw = new SoundWorld();
                 console.log(tsw.context);
             });
         </script>

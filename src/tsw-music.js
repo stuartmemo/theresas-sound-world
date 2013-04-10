@@ -13,8 +13,8 @@
          *
          * @param {AudioContext} Current audio context
          */
-        var Music = function (context) {
-            this.context = context;
+        var Music = function () {
+            this.context = tsw.context;
         };
         
         var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
@@ -196,9 +196,7 @@
             return Math.round(440 * Math.pow(2, (keyNumber- 49) / 12));
         };
 
-        return function (context) {
-            return new Music(context);
-        };
+         return Music;
     })();
 
     window.tsw.music = new Music();

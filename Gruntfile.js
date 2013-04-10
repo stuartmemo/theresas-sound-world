@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         uglify: {
             all: {
                 files: {
-                    'build/tsw.min.js': ['src/tsw.js']
+                    'build/tsw.min.js': ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js']
                 },
                 options: {
                     banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2013 Stuart Memo %> */\n'
