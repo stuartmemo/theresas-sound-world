@@ -11,7 +11,7 @@ module.exports = function (grunt) {
                     'build/tsw.min.js': ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js']
                 },
                 options: {
-                    banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2013 Stuart Memo %> */\n'
+                    banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2013 Stuart Memo */\n'
                 }
             }
         }
