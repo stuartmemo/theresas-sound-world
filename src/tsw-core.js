@@ -249,6 +249,29 @@
         };
 
         /*
+         * Create buffer node.
+         *
+         * @method createBuffer
+         * @return Buffer node.
+         */
+        SoundWorld.prototype.createBuffer = function () {
+            var bufferNode = this.context.createBuffer(1, 65536, 44100);
+            return bufferNode;
+        };
+        
+        /*
+         * Create buffer source node.
+         *
+         * @method createBufferSource
+         * @return BufferSource node.
+         */
+        SoundWorld.prototype.createBufferSource = function (buff) {
+            var source = this.context.createBufferSource();
+            source.buffer = buff;
+            return source;
+        };
+
+        /*
          * Create filter node.
          *
          * @method createFilter
@@ -419,14 +442,15 @@
          * @return Noise generating node.
          */
         SoundWorld.prototype.createNoise = function (colour) {
-            var noiseNode = this.context.createScriptProcessor(1024, 0, 1);
+            var noiseBuffer = this.createBuffer(),
+                noiseNode;
 
-            // White noise
-            noiseNode.onaudioprocess = function (e) {
-                for (var i = 0; i < 1024; i++) {
-                    e.outputBuffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
-                }
-            };
+            for (var i = 0; i < 65536; i++) {
+                noiseBuffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
+            }
+
+            noiseNode = this.createBufferSource(noiseBuffer);
+            noiseNode.loop = true;
 
             return noiseNode;
         };
