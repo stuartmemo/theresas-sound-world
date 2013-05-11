@@ -395,7 +395,7 @@
             envelope.param.value = envelope.startLevel;
 
             // Should the release kick-in automatically
-            settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
+            settings.autoRelease === undefined ? envelope.autoRelease = true : envelope.autoRelease = settings.autoRelease;
 
             envelope.start = function (timeToStart) {
                 // Calculate levels
@@ -406,6 +406,7 @@
                 this.startTime = timeToStart || tsw.now();
                 this.attackTime = this.startTime + this.attackTime;
                 this.decayTime = this.attackTime + this.decayTime;
+                this.releaseTime = this.decayTime + this.releaseTime;
 
                 // Initialise
                 this.param.cancelScheduledValues(this.startTime);
@@ -417,9 +418,10 @@
                 // Decay
                 this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, this.decayTime); 
 
-                // Sustain
-                if (this.autoStop) {
-                    this.stop(this.decayTime);
+                // Release
+                if (this.autoRelease) {
+                    this.param.linearRampToValueAtTime(this.minLevel, this.releaseTime); 
+                    this.stop(this.releaseTime);
                 }
             };
 
@@ -428,7 +430,9 @@
                 timeToStop += this.releaseTime;
 
                 // Release
-                this.param.linearRampToValueAtTime(this.startLevel, timeToStop);
+                if (!this.autoRelease) {
+                    this.param.linearRampToValueAtTime(this.startLevel, timeToStop);
+                }
             };
 
             return envelope;
