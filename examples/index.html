@@ -3,171 +3,145 @@
     <head>
         <meta charset="utf-8"/>
         <title>TSW Test Suite</title>
-        <script src="../src/tsw-core.js"></script>
-        <script src="../src/tsw-effects.js"></script>
-        <script src="../src/tsw-music.js"></script>
-        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
     </head>
     <body>
         <h1>TSW Test Suite</h1>
+
+        <!--
+        Tests
+        =====
+        1. Core
+        - - - -
+        1.1 isCompatible
+        1.2 context
+        1.3 load
+        1.4 play
+        1.5 
+        1.6 Reverse buffer
+        
+        2. Effects
+        - - - - - -
+        
+        3. Music
+        - - - - -
+
+        -->
+
         <h2>Core</h2>
 
-        <h3>Context</h3>
-        <pre>
-            console.log(tsw.context);
-        </pre>
-        <button id="context">Context</button>
+        <!-- 1.1 isCompatible -->
+        <h3>1.1 isCompatible</h3>
+        <button name="isCompatible">Check</button>
+
+        <!-- 1.2 context -->
+        <h3>1.2 context</h3>
+        <button name="context">Check</button>
+
+        <!-- 1.3 load -->
+        <div name="load">
+            <h3>1.3 load</h3>
+            <button name="load">Check</button>
+        </div>
+
+        <!-- 1.4 play -->
+        <div name="play">
+            <h3>1.3 play</h3>
+            <button>Check</button>
+        </div>
+
+        <!-- 1.5 Connecting nodes --> 
+        <div name="connecting-nodes">
+            <h3>1.4 Connecting nodes</h3>
+            <button>Check</button>
+        </div>
+
+        <!-- 1.6 reverse -->
+        <div name="reverse">
+            <h3>1.6 Reverse</h3>
+            <button>Check</button>
+        </div>
+
+        <!-- 1.7 createOscillator -->
+        <div name="createOscillator">
+            <h3>1.7 createOscillator</h3>
+            <button>Check</button>
+        </div>
+
+        <!-- 1.8 createOscillator -->
+        <div name="createNoise">
+            <h3>1.8 createNoise</h3>
+            <button>Check</button>
+        </div>
+
+        <script src="../src/tsw-core.js"></script>
+        <script src="../src/tsw-effects.js"></script>
+        <script src="../src/tsw-music.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.min.js"></script>
         <script>
-            $('#context').click(function () {
-                console.log(tsw.context);
-            });
-        </script>
-
-        <h3>Load file</h3>
-        <pre>
-            tsw.load({
-                guitar: 'audio/guitar.ogg',
-                bass: 'audio/bass.wav'
-            }, function (buffers) {
-                // buffers are ready to play 
-            });
-        </pre>
-        <button id="load">Load files</button>
-        <script>
-            $('#load').click(function () {
-            var cap1 = tsw.fx.createDelay(0.047),
-                r1 = tsw.createGain(0.02),
-                cap2 = tsw.fx.createDelay(0.001), 
-                tran1 = tsw.createGain(7),
-                r2 = tsw.createGain(0.22),
-                cap3 = tsw.createGain(0.047),
-                r3 = tsw.createGain(0.1);
-  
-            tsw.connect(cap1, r1);
-            tsw.connect(cap1, cap2); 
-            tsw.connect(r1,  tran1);
-
-            tsw.connect(r1, r2, cap3);
-            tsw.connect(r2, r3);
-
-            tsw.connect(cap3, tsw.speakers);
-            tsw.connect(r3, tsw.speakers);
-
-            tsw.connect(tran1, tsw.speakers);
-
-                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
-                    console.log(buffers); 
-                    var guitar = buffers.guitar;
-                    tsw.connect(guitar, cap1);
-                    tsw.play(guitar);
+            $(function () {
+                // 1.1 Context
+                $('#context button').click(function () {
+                    console.log(tsw.context);
                 });
-            });
-        </script>
 
-        <h3>Play file</h3>
-        <pre>
-            tsw.load({
-                guitar: 'audio/guitar.ogg'
-            }, function (buffers) {
-                var guitar = buffers.guitar;
-
-                tsw.connect(guitar, tsw.speakers);
-                tsw.play(guitar);
-            });
-        </pre>
-        <button id="play">Play</button>
-        <script>
-            $('#play').click(function () {
-                var delay = tsw.fx.createDelay();
-
-                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
-                    var guitar = buffers.guitar;
-
-                    tsw.connect(guitar, delay, tsw.speakers);
-                    tsw.play(guitar);
+                // 1.2 Load files
+                $('#loading-files button').click(function () {
+                    tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                        console.log('Buffers loaded.', buffers)
+                    });
                 });
-            });
-        </script>
 
-        <h3>Connect nodes</h3>
-        <pre>
-            var sineWave = tsw.createSineWave();
+                // 1.3 Play file
+                $('#play-file button').click(function () {
+                    tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                        var guitar = buffers.guitar;
 
-            tsw.connect(sineWave, tsw.speakers);
-        </pre>
-        <button id="connect">Connect nodes</button>
-        <script>
-            $('#connect').click(function () {
-                var context = new webkitAudioContext(),
-                    tsw = new SoundWorld(context),
-                    sineWave = tsw.createSineWave();
-
-                tsw.connect(sineWave, tsw.speakers);
-                console.log('all connected');
-            });
-        </script>
-
-        <h3>Reverse</h3>
-        <pre>
-            var backwardGuitar = tsw.reverse(guitar);
-            tsw.play(backwardGuitar);
-        </pre>
-        <button id="reverse">Reverse</button>
-        <script>
-            $('#reverse').click(function () {
-                tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
-                    var guitar = buffers.guitar,
-                        reversedGuitar = tsw.reverse(guitar);
-
-                    tsw.connect(reversedGuitar, tsw.speakers);
-                    tsw.play(reversedGuitar);
+                        tsw.connect(guitar, tsw.speakers);
+                        tsw.play(guitar);
+                    });
                 });
-            });
-        </script>
 
-        <h3>Mute</h3>
-        <pre>
-            tsw.mute();
-        </pre>
-        <script>
-            $('#mute').click(function () {
-                var tsw = new SoundWorld();
-                tsw.mute();
-            });
-        </script>
+                // 1.4 Connecting nodes
+                $('#connecting-nodes button').click(function () {
+                    var sineWave = tsw.createOscillator();
+                    tsw.connect(sineWave, tsw.speakers);
+                    console.log('all connected');
+                });
 
-        <h2>Sound sources</h2> 
-        <h3>Sine Wave</h3>
-        <pre>
-            var sineWave = tsw.createSineWave(440);
-            sineWave.start();
-        </pre>
-        <button id="sine">Sine wave</button>
-        <script>
-            $('#sine').click(function () {
-                var tsw = new SoundWorld(),
-                    sineWave = tsw.createSineWave(440),
-                    compressor = tsw.fx.createCompressor();
+                // 1.5 Reverse buffer
+                $('#reverse').click(function () {
+                    tsw.load({guitar: 'audio/guitar.ogg'}, function (buffers) {
+                        var guitar = buffers.guitar,
+                            reversedGuitar = tsw.reverse(guitar);
 
-                tsw.connect(sineWave, compressor,  tsw.speakers);
-                sineWave.start(0);
-            });
-        </script>
+                        tsw.connect(reversedGuitar, tsw.speakers);
+                        tsw.play(reversedGuitar);
+                    });
+                });
 
-        <h3>Noise</h3>
-        <pre>
-            var whiteNoise = tsw.createNoise();
-            tsw.connect(whiteNoise, tsw.speakers);
-        </pre>
-        <button id="noise">Noise</button>
-        <script>
-            $('#noise').click(function () {
-                var tsw = new SoundWorld(),
-                    noise = tsw.createNoise();
+                // 1.6 Mute
+                $('#mute').click(function () {
+                    tsw.mute();
+                });
 
-                tsw.connect(noise, tsw.speakers);
+                // 1.7 Sine wave
+                $('#sine').click(function () {
+                    var tsw = new SoundWorld(),
+                        sineWave = tsw.createSineWave(440),
+                        compressor = tsw.fx.createCompressor();
+
+                    tsw.connect(sineWave, compressor,  tsw.speakers);
+                    sineWave.start(0);
+                });
+
+                // 1.8 Noise
+                $('#noise').click(function () {
+                    var tsw = new SoundWorld(),
+                        noise = tsw.createNoise();
+
+                    tsw.connect(noise, tsw.speakers);
+                });
             });
         </script>
     </body>
-
 </html>

@@ -71,13 +71,36 @@
         };
 
         /*
+         * Returns minor scale of given root note
+         * 
+         * @method getMinorScale
+         * @param {string} rootNote Root note of the scale
+         * @return {array} List of notes in scale
+         */
+        var getMinorScale = function (rootNote) {
+            var scale = [],
+                positionOnScale = getNotePosition(rootNote);
+            
+            scale.push(notes[positionOnScale]);
+            scale.push(notes[positionOnScale + 2]);
+            scale.push(notes[positionOnScale + 3]);
+            scale.push(notes[positionOnScale + 5]);
+            scale.push(notes[positionOnScale + 7]);
+            scale.push(notes[positionOnScale + 8]);
+            scale.push(notes[positionOnScale + 10]);
+            scale.push(notes[positionOnScale + 12]);
+
+            return scale;
+        };
+
+        /*
          * Parses a chord name into a detailed object.
          *
          * @method parseChord 
          * @param {string} chord Name of chord to turn into object.
          * return {object} Detailed chord object.
          */
-        Music.prototype.parseChord = function (chord) {
+        Music.parseChord = function (chord) {
             var chordObj = {},
                 notePositions = [],
                 rootNotePosition = 0;
@@ -119,7 +142,7 @@
                 chordObj.notes.push(notes[position]);
             });
 
-            return chordObj;
+            return chordObj.notes;
         };
 
         /*
@@ -129,8 +152,12 @@
          * @param {string} rootNote Root note to base scale on.
          * @return {array} List of notes in scale.
          */
-        Music.prototype.getScale = function (rootNote) {
-            return getMajorScale(rootNote);
+        Music.getScale = function (rootNote, scaleType) {
+            if (scaleType === 'minor') {
+                return getMinorScale(rootNote);
+            } else {
+                return getMajorScale(rootNote);
+            }
         };
 
         /*
@@ -150,7 +177,7 @@
             }
         };
 
-        Music.prototype.isChord = function (str) {
+        Music.isChord = function (str) {
             return this.parseChord(str);
         };
 
@@ -161,7 +188,7 @@
          * @param {string} chord Name of chord to turn into string.
          * @return {array} List of notes in chord.
          */
-        Music.prototype.chordToNotes = function (chord) {
+        Music.chordToNotes = function (chord) {
             chord = this.parseChord(chord);
 
             return chord.notes;

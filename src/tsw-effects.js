@@ -24,7 +24,7 @@
          * @param {object} settings Compressor settings.
          * @return Created compressor node.
          */
-        Effects.prototype.createCompressor = function (settings) {
+        Effects.createCompressor = function (settings) {
 
             /*
              *  Compressor 
@@ -54,7 +54,7 @@
          * @param {object} settings Delay settings.
          * @return {AudioNode} Created delay node.
          */
-        Effects.prototype.createDelay = function (settings) {
+        Effects.createDelay = function (settings) {
 
             /*
              *  Delay effect
@@ -76,7 +76,6 @@
              *  Delay Time: Number of seconds to delay signal
              *  Feedback: Volume of signal fed back into delay node
              *  Effect Level: Volume of effect mixed back into signal
-             *
              */
 
             var effect = {},
@@ -112,7 +111,7 @@
          * @param {object} settings Distortion settings.
          * @return Created distortion node.
          */
-        Effects.prototype.createDistortion = function (settings) {
+        Effects.createDistortion = function (settings) {
 
             /*
              *  Distortion
@@ -161,7 +160,7 @@
          * @param {object} settings Flanger settings.
          * @return
          */
-        Effects.prototype.createFlanger = function (settings) {
+        Effects.createFlanger = function (settings) {
 
             /*
              *  Flanger 
@@ -185,7 +184,7 @@
          * @param {object} settings Phaser settings
          * @return {AudioNode} Created phaser node.
          */
-        Effects.prototype.createPhaser = function (settings) {
+        Effects.createPhaser = function (settings) {
 
             /****************************
             Phaser
@@ -254,7 +253,7 @@
          * @param {object} settings Reverb settings.
          * @return {AudioNode} The created reverb node.
          */
-        Effects.prototype.createReverb = function (settings) {
+        Effects.createReverb = function (settings) {
 
             /***********************************
 
@@ -320,7 +319,7 @@
          * @param {object} settings Tremolo settings.
          * @return {AudioNode} Created tremolo node.
          */
-        Effects.prototype.createTremolo = function (settings) {
+        Effects.createTremolo = function (settings) {
 
             /******************************
             

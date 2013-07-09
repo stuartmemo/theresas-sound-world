@@ -111,7 +111,7 @@
                 Q: 5,
                 releaseTime: 1,
                 maxLevel: 10000,
-                autoStop: false
+                autoRelease: false
             };
 
             // Volume Envelope settings.
@@ -121,7 +121,7 @@
                 sustainLevel: 0.4,
                 releaseTime: 2,
                 startLevel: 0,
-                autoStop: false
+                autoRelease: false
             };
 
             // Output settings.
