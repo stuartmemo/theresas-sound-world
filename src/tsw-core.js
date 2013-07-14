@@ -31,7 +31,6 @@ window.tsw = (function (window, undefined) {
 
     /*
      * Applies the settings object to a node.
-     *
      * @method applySettings
      * @return {AudioNode} Node with settings applied.
      */
@@ -39,6 +38,46 @@ window.tsw = (function (window, undefined) {
         for (setting in settings) {
             node[setting].value = settings[setting];
         }
+    };
+
+    /*
+     * Is a variable an array?
+     * @param thing Variable to check if it's an array.
+     */
+     var isArray = function (thing) {
+        return Array.isArray(thing);
+     };
+
+    /*
+     * Is a variable an object?
+     * @param thing Variable to check if it's an object.
+     */
+     var isObjectWithNode = function (thing) {
+        var is_object_with_node = false;
+
+        if (Object(thing)) {
+            if ('node' in thing) {
+                is_object_with_node = true;
+            }
+        }
+
+        return is_object_with_node;
+     };
+
+    /*
+     * Is variable a native node?
+     * @parm thing Variable to check if it's a native node.
+     */
+    var isNativeNode = function (thing) {
+        return (thing.hasOwnProperty('context'));
+    };
+
+    /*
+     * Is variable a tsw node?
+     * @parm thing Variable to check if it's a tsw node.
+     */
+    var isTswNode = function (thing) {
+        return (thing.hasOwnProperty('input') || thing.hasOwnProperty('output'));
     };
 
     /***************
@@ -78,7 +117,7 @@ window.tsw = (function (window, undefined) {
             }
         }
 
-        // All is good, contiune;
+        // All is good, continue;
         tsw.isBrowserCompatible = true;
         success();
     };
@@ -98,28 +137,133 @@ window.tsw = (function (window, undefined) {
         return this.context.currentTime;
     };
 
+    tsw.createChannelMerger = function (channels) {
+        return tsw.context.createChannelMerger(channels);
+    };
+
     /*
      * Connects multiple nodes together.
      * @param {AudioNodes} arguments Nodes to connect in order.
      */
     tsw.connect = function () {
+
+        var connectNativeNodeToNativeNode = function () {
+            arguments[0].connect(arguments[1]);
+        };
+
+        var connectNativeNodeToTswNode = function () {
+            arguments[0].connect(arguments[1].input);   
+        };
+
+        var connectNativeNodeToArray = function () {
+            for (var j = 0; j < arguments[1].length; j++) {
+                tsw.connect(arguments[0], arguments[1][j]);
+            }
+        };
+
+        var connectArrayToNativeNode = function () {
+            for (var j = 0; j < arguments[0].length; j++) {
+                tsw.connect(arguments[0][j], arguments[1]);
+            }
+        };
+
+        var connectTswNodeToTswNode = function () {
+            arguments[0].output.connect(arguments[1].input);
+        };
+
+        var connectTswNodeToNativeNode = function () {
+            arguments[0].output.connect(arguments[1]);
+        };
+
+        var connectArrayToTswNode = function () {
+            for (var j = 0; j < arguments[0].length; j++) {
+                this.connect(arguments[0][j], arguments[1]); 
+            }
+        };
+
+        var connectArrayToArray = function () {
+            for (var j = 0; j < arguments[0].length; j++) {
+                this.connect(arguments[0][j], arguments[1]); 
+            }
+        };
+
+        var connectObjectWithNodeToObjectWithNode = function () {
+            arguments[0].node.connect(arguments[1].node, arguments[0].channel, arguments[1].channel);
+        }
+
+        // Iterate over each argument.
         for (var i = 0; i < arguments.length - 1; i++) {
-            if (Array.isArray(arguments[i])) {
-                for (var j = 0; j < arguments[i].length; j++) {
-                    this.connect(arguments[i][j], arguments[i + 1]); 
-                }
-            } else if (arguments[i].hasOwnProperty('output')) {
-                if (arguments[i + 1].hasOwnProperty('input')) {
-                    arguments[i].output.connect(arguments[i + 1].input);
-                } else {
-                    arguments[i].output.connect(arguments[i + 1]);
-                }
-            } else {
-                if (arguments[i + 1].hasOwnProperty('input')) {
-                    arguments[i].connect(arguments[i + 1].input);
-                } else {
-                    arguments[i].connect(arguments[i + 1]);
-                }
+            var first_arg = arguments[i],
+                second_arg = arguments[i + 1];
+
+            // First arg is native node, second is tsw node.
+            if (isNativeNode(first_arg) && isTswNode(second_arg)) {
+                connectNativeNodeToTswNode(first_arg, second_arg);
+                continue;
+            }
+
+            // First arg is tsw node, second is native node.
+            if (isTswNode(first_arg) && isNativeNode(second_arg)) {
+                connectTswNodeToNativeNode(first_arg, second_arg);
+                continue;
+            }
+
+            if (isNativeNode(first_arg) && isArray(second_arg)) {
+                connectNativeNodeToArray(first_arg, second_arg);
+                continue;
+            }
+
+            if (isArray(first_arg) && isNativeNode(second_arg)) {
+                connectArrayToNativeNode(first_arg, second_arg);
+                continue;
+            }
+
+            // Both arguments are native nodes.
+            if (isNativeNode(first_arg) && isNativeNode(second_arg)) {
+                connectNativeNodeToNativeNode(first_arg, second_arg);
+                continue;
+            }
+
+            // Both arguments are tsw nodes.
+            if (isTswNode(first_arg) && isTswNode(second_arg)) {
+                connectTswNode(first_arg, second_arg);
+                continue;
+            }
+
+            // First arg is tsw node, second is array.
+            if (isTswNode(first_arg) && isArray(second_arg)) {
+                connectTswNodeToArray(first_arg, second_arg);
+                continue;
+            }
+
+            // First arg is array, second is tsw node.
+            if (isArray(first_arg) && isTswNode(second_arg)) {
+                connectArrayToTswNode(first_arg, second_arg);
+                continue;
+            }
+
+            // Both arguments are arrays.
+            if (isArray(first_arg) && isArray(second_arg)) {
+                connectArrayToArray(first_arg, second_arg);
+                continue;
+            }
+
+            // First arg is object containing nodes, second is arrat.
+            if (isObjectWithNode(first_arg) && isArray(second_arg)) {
+                connectObjectWithNodeToArray(first_arg, second_arg);
+                continue;
+            }
+
+            // First arg is array, second is object containing node.
+            if (isArray(first_arg) && isObjectWithNode(second_arg)) {
+                connectArrayToObjectWithNode(first_arg, second_arg);
+                continue;
+            }
+
+            // Both arguments are objects containing nodes.
+            if (isObjectWithNode(first_arg) && isObjectWithNode(second_arg)) {
+                connectObjectWithNodeToObjectWithNode(first_arg, second_arg)
+                continue;
             }
         }
     };
@@ -133,13 +277,13 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
-    * @param files
-    * @param callback
+    * @param {array} files
+    * @param {function} callback
     */ 
     tsw.load = function (files, callback) {
         var returnObj = {},
-            filesLoaded = 0,
-            numberOfFiles = 0,
+            files_loaded = 0,
+            number_of_files = 0,
             that = this;
 
         // Load a single file
@@ -192,6 +336,20 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
+     * Make an incoming stream mono.
+     */
+    tsw.createMonoMaker = function () {
+        var effect = {};
+
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+
+        tsw.connect(effect.input, effect.output);
+
+        return effect;
+    };
+
+    /*
      * Pan incoming sound.
      * Range from -1 to 1.
      * -1 is fully left. 1 is fully right.
@@ -199,11 +357,63 @@ window.tsw = (function (window, undefined) {
      */
     tsw.createPanner = function (pan) {
         var panner = {},
-            leftGain = tsw.createGain(),
-            rightGain = tsw.createGain();
+            left_gain = tsw.createGain(1),
+            right_gain = tsw.createGain(0),
+            left_percentage = 50,
+            merger = tsw.createChannelMerger(2);
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
+        panner.input = tsw.createGain();
+        panner.output = tsw.createGain();
+        panner.value = pan;
+
+        // Force max panning values.
+        if (panner.value > 1) {
+            panner.value = 1;
+        } else if (panner.value < -1) {
+            panner.value = -1;
+        }
+
+        // 100% === 2
+        // Example value = -0.56
+        // (0.44 / 2) * 100 = 22% -> 78%
+        // Left gain = (1 / 100) * 78 = 0.78 
+        // Right gain = 1 - 0.78 =  0.22
+
+        // Example value = 0.2
+        // (1.2 / 2) * 100 = 60% -> 40%
+        // Left gain = (1 / 100) * 40 = 0.4
+        // Right gain = 1 - 0.4 = 0.6
+
+        left_gain.gain.value = 1 - (0.01 * ((1 + panner.value) / 2) * 100);
+        right_gain.gain.value = 1 - left_gain.gain.value;
+
+        tsw.connect(panner.input, [left_gain, right_gain]);
+
+        tsw.connect(
+            {
+                node: left_gain,
+                channel: 0
+            }, 
+            {
+                node:  merger,
+                channel: 0
+            }
+        );
+
+        tsw.connect(
+            {
+                node: right_gain,
+                channel: 0
+            }, 
+            {
+                node:  merger,
+                channel: 1
+            }
+        );
+
+        tsw.connect(merger, tsw.speakers);
+
+        return panner;
     };
 
     /*
