@@ -1,3 +1,4 @@
+/* Theresa's Sound World 0.0.1 (c) 2013 Stuart Memo */
 /*****************************
  * Theresa's Sound World
  * tsw.js
@@ -774,3 +775,552 @@ window.tsw = (function (window, undefined) {
 
     return tsw;
 })(window);
+
+/**********************************
+ * Theresas's Sound World - Effects
+ * tsw-effects.js
+ * Dependencies: tsw-core.js
+ * Copyright 2013 Stuart Memo
+ **********************************/
+
+(function (window, undefined) {
+
+    /*
+     * Creates delay node.
+     *
+     * @method createDelay
+     * @param {object} settings Delay settings.
+     * @return {AudioNode} Created delay node.
+     */
+    tsw.createDelay = function (settings) {
+
+        /*
+         *  Delay effect
+         *  ============
+         *  +-------+         +----------+     +----------+
+         *  | Input |---->----|   Delay  |-->--| Feedback |
+         *  | (Osc) |         |  (Delay) |     |  (Gain)  |
+         *  +-------+         +----------+     +----------+
+         *      |                |   |              |
+         *      v                v   +-----<--------+
+         *      |                |   
+         *   +---------------+   +--------------+        
+         *   |     Output    |<--| Effect Level |
+         *   | (Destination) |   |    (Gain)    |
+         *   +---------------+   +--------------+
+         *
+         *  Config
+         *  ------
+         *  Delay Time: Number of seconds to delay signal
+         *  Feedback: Volume of signal fed back into delay node
+         *  Effect Level: Volume of effect mixed back into signal
+         */
+
+        var effect = {},
+            delay = tsw.context.createDelay(),
+            feedback = tsw.context.createGain(),
+            effectLevel = tsw.context.createGain(),
+            gain = tsw.createGain();
+
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+        effect.settings = {
+            delayTime: 0.5,
+            feedback: 0.5,
+            effectLevel: 0.5,
+        };
+
+        // Set values
+        settings = settings || {};
+        delay.delayTime.value =  settings.delayTime || effect.settings.delayTime;
+        feedback.gain.value = settings.feedback || effect.settings.feedback;
+        effectLevel.gain.value = settings.effectLevel || effect.settings.effectLevel;
+
+        tsw.connect(effect.input, gain, delay, feedback, delay, effectLevel, effect.output);
+        tsw.connect(gain, delay)
+
+        return effect;
+    };
+
+    /*
+     * Creates a distortion node.
+     *
+     * @method createDistortion
+     * @param {object} settings Distortion settings.
+     * @return Created distortion node.
+     */
+    tsw.createDistortion = function (settings) {
+
+        /*
+         *  Distortion
+         *  ==========
+         *  +----------+     +--------------+
+         *  |  Input   |-->--|  Distortion  |
+         *  | (Source) |     | (WaveShaper) |
+         *  +----------+     +--------------+
+         *                    |        | 
+         *   +-----------------+   +-------------------+
+         *   | Low-pass Filter |   |  High-pass Filter |
+         *   |  (BiquadFilter) |   |   (BiquadFilter)  |
+         *   +-----------------+   +-------------------+
+         *                  |         |
+         *               +---------------+
+         *               |     Output    |
+         *               | (Destination) |
+         *               +---------------+
+         *
+         */ 
+
+        var effect = {},
+            distortion = context.createWaveShaper(),
+            lowpass = context.createBiquadFilter(),
+            highpass = context.createBiquadFilter();
+
+        effect.settings = {
+            distortionLevel: 0.5
+        };
+
+        // Set values
+        settings = settings || {};
+
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+
+        tsw.connect(effect.input, distortion, [lowpass, highpass], effect.output);
+
+        return effect;
+    };
+
+    /*
+     * Creates flange effect. Y'know, like in Come As You Are.
+     *
+     * @method createFlanger
+     * @param {object} settings Flanger settings.
+     * @return
+     */
+    tsw.createFlanger = function (settings) {
+
+        /*
+         *  Flanger 
+         *  =======
+         *  +----------+
+         *  |  Input   |
+         *  | (Source) |
+         *  +----------+
+         *
+         */
+
+        var effect = {};
+
+        return effect;
+    };
+    
+    /*
+     * Creates a phaser node.
+     *
+     * @method createPhaser
+     * @param {object} settings Phaser settings
+     * @return {AudioNode} Created phaser node.
+     */
+    tsw.createPhaser = function (settings) {
+
+        /****************************
+        Phaser
+        ======
+        +----------+     +-----------------+               +-----------------+
+        |  Input   |-->--| All-pass Filter |-->--(..n)-->--| All-pass Filter |
+        | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
+        +----------+     +-----------------+               +-----------------+
+              |                |      |                           |
+              v                v      Ê                           v 
+        +---------------+      |      |                     +----------+
+        |     Output    |---<--+      +----------<----------| Feedback |
+        | (Destination) |                                   |  (Gain)  |
+        +---------------+                                   +----------+
+
+        Config
+        ------
+        Rate: The speed at which the filter changes
+        Depth: The depth of the filter change
+        Resonance: Strength of the filter effect
+        *****************************/
+
+        var effect = {},
+            allPassFilters = [],
+            feedback = tsw.createGain(),
+            defaults  = {
+                rate: 8,
+                depth: 0.5,
+                feedback: 0.8
+            };
+
+        // Set values
+        settings = settings || {};
+
+        feedback.gain.value = settings.gain || defaults.gain;
+
+        for (var i = 0; i < config.rate; i++) {
+            allPassFilters[i] = tsw.context.createBiquadFilter();
+            allPassFilters[i].type = 7;
+            allPassFilters[i].frequency.value = 100 * i;
+        }
+
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+
+        for (var i = 0; i < allPassFilters.length - 1; i++) {
+            tsw.connect(allPassFilters[i], allPassFilters[i + 1]);
+        }
+
+        tsw.connect(effect.input, allPassFilters[0], allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
+        tsw.connect(allPassFilters[allPassFilters.length - 1], effect.output);
+
+        effect.setCutoff = function (c) {
+            for (var i = 0; i < allPassFilters.length; i++) {
+                // allPassFilters[i].frequency.value = c;
+            }
+        };
+
+        return effect;
+    };
+
+    /*
+     * Create a reverb node.
+     *
+     * @method createReverb
+     * @param {object} settings Reverb settings.
+     * @return {AudioNode} The created reverb node.
+     */
+    tsw.createReverb = function (settings) {
+
+        /***********************************
+
+        Reverb
+        ======
+        +----------+         +-------------+
+        |  Input   |---->----|   Reverb    |
+        | (Source) |         | (Convolver) |
+        +----------+         +-------------+
+             |                      |
+             v                      v
+             |                      |
+        +---------------+   +--------------+
+        |     Output    |<--| Effect Level |
+        | (Destination) |   |    (Gain)    |
+        +---------------+   +--------------+
+
+        Config
+        ------
+        Effect Level - Volume of effect
+        Reverb Time - 
+        Reverb Type - 
+        Reverb Path - Path of impulse response file    
+
+        ***********************************/
+
+        var reverb = tsw.context.createConvolver(),
+            effectLevel = tsw.createGain(),
+            effectObj = {},
+            defaults = {
+                effectLevel: 0.5,
+                reverbTime: 0.5,
+                reverbType: 'spring',
+                reverbPath: ''
+            };
+
+        // Set values
+        settings = settings || {};
+        effectLevel.gain.value = settings.effectLevel || defaults.effectLevel;
+
+        tsw.load({
+            'hall': '/effects/reverb/responses/bright-hall.wav',
+            'room': '/effects/reverb/responses/medium-room.wav',
+            'spring': '/effects/reverb/responses/feedback-spring.wav'
+        }, function (buffers) {
+            defaults.reverbPath = buffers[defaults.reverbType];
+            reverb.buffer = defaults.reverbPath;
+
+            effectObj.input = tsw.createGain();
+            effectObj.output = tsw.createGain();
+
+            tsw.connect(effectObj.input, [effectObj.output, reverb])
+            tsw.connect(reverb, effectLevel);
+            tsw.connect(effectLevel, effectObj.output);
+
+        });
+        return effectObj;
+    };
+
+    /*
+     * Creates tremolo node.
+     *
+     * @param {object} settings Tremolo settings.
+     * @return {AudioNode} Created tremolo node.
+     */
+    tsw.createTremolo = function (settings) {
+
+        /******************************
+        
+        Tremolo
+        =======
+        +---------+     +-------------+
+        |   LFO   |-->--|   Any Node  |
+        |         |     | (Amplitude) |
+        +---------+     +-------------+
+
+        ******************************/
+
+        var mmNode = {},
+            config = {},
+            tremolo = tsw.createGain(),
+            lfo = this.createLFO(),
+            that = this;
+
+        settings = settings || {};
+
+        mmNode.input = tsw.createGain();
+
+        mmNode.connect = function (output) {
+            mmNode.input.connect(output);
+            lfo.modulate(mmNode.input.gain);
+            lfo.start(that.now())
+        };
+
+        mmNode.setRate = function (r) {
+            lfo.setFrequency(r);
+        };
+
+        mmNode.setDepth = function (r) {
+            lfo.setDepth(r);
+        };
+
+        return mmNode;
+    };
+
+})(window);
+
+/*********************************
+ * Theresas's Sound World - Music
+ * tsw-music.js
+ * Dependencies: tsw-core.js
+ * Copyright 2013 Stuart Memo
+ ********************************/
+
+(function (window, undefined) {
+
+    /*
+     * Creates an instance of Music
+     *
+     * @param {AudioContext} Current audio context
+     */
+    var Music = function () {
+        this.context = tsw.context;
+    };
+    
+    var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+    // append list of notes to itself to avoid worrying about writing wraparound code
+    notes.push.apply(notes, notes);
+
+    var intervals = ['unison', 'flat 2nd', '2nd', 'minor 3rd', 'major 3rd', 'perfect 4th',
+                    'flat 5th', 'perfect 5th', 'minor 6th', 'major 6th', 'minor 7th',
+                    'major 7th', 'octave', 'flat 9th', '9th', 'sharp 9th', 'major 10th',
+                    '11th', 'augmented 11th', 'perfect 12th', 'flat 13th', '13th'];
+
+    /*
+     * Get position of note in note array.
+     *
+     * @method getNotePosition
+     * @param {string} note Note to get position of.
+     * @return {number} Position of note in note array.
+     */
+    var getNotePosition = function (note) {
+        var notesLength = notes.length;
+
+        // don't use forEach as we're breaking early
+        for (var i = 0; i < notesLength; i++) {
+            if (note.toUpperCase() === notes[i]) {
+                positionOnScale = i;
+                return i;
+            }
+        }
+
+        return null;
+    };
+
+    /*
+     * Returns major scale of given root note
+     * 
+     * @method getMajorScale
+     * @param {string} rootNote Root note of the scale
+     * @return {array} List of notes in scale
+     */
+    tsw.getMajorScale = function (rootNote) {
+        var scale = [],
+            positionOnScale = getNotePosition(rootNote);
+        
+        scale.push(notes[positionOnScale]);
+        scale.push(notes[positionOnScale + 2]);
+        scale.push(notes[positionOnScale + 4]);
+        scale.push(notes[positionOnScale + 5]);
+        scale.push(notes[positionOnScale + 7]);
+        scale.push(notes[positionOnScale + 9]);
+        scale.push(notes[positionOnScale + 11]);
+        scale.push(notes[positionOnScale + 12]);
+
+        return scale;
+    };
+
+    /*
+     * Returns minor scale of given root note
+     * 
+     * @method getMinorScale
+     * @param {string} rootNote Root note of the scale
+     * @return {array} List of notes in scale
+     */
+    tsw.getMinorScale = function (rootNote) {
+        var scale = [],
+            positionOnScale = getNotePosition(rootNote);
+        
+        scale.push(notes[positionOnScale]);
+        scale.push(notes[positionOnScale + 2]);
+        scale.push(notes[positionOnScale + 3]);
+        scale.push(notes[positionOnScale + 5]);
+        scale.push(notes[positionOnScale + 7]);
+        scale.push(notes[positionOnScale + 8]);
+        scale.push(notes[positionOnScale + 10]);
+        scale.push(notes[positionOnScale + 12]);
+
+        return scale;
+    };
+
+    /*
+     * Parses a chord name into a detailed object.
+     *
+     * @method parseChord 
+     * @param {string} chord Name of chord to turn into object.
+     * return {object} Detailed chord object.
+     */
+    tsw.parseChord = function (chord) {
+        var chordObj = {},
+            notePositions = [],
+            rootNotePosition = 0;
+
+        if (Array.isArray(chord)) {
+            return false;
+        }
+
+        chord = chord.toLowerCase();
+
+        chordObj.rootNote = chord[0].toUpperCase();
+        chordObj.isMajor = (chord.indexOf('maj') > -1)
+        chordObj.isMinor = !chordObj.isMajor && (chord.indexOf('m') > -1);
+        chordObj.is7th = (chord.indexOf('7') > -1);
+        chordObj.notes = [];
+
+        if (!chordObj.is7th) {
+            chordObj.octave = chord.match(/\d/g);
+        }
+
+        if (!chordObj.isMajor && !chordObj.isMinor) {
+            // Hey! This aint no chord that I've ever seen!
+            return false;
+        }
+
+        rootNotePosition = getNotePosition(chordObj.rootNote);
+        notePositions.push(rootNotePosition);
+
+        if (chord.isMinor) {
+            notePositions.push(rootNotePosition + getSemitoneDifference('minor 3rd'));
+        } else {
+            notePositions.push(rootNotePosition + getSemitoneDifference('major 3rd'));
+        }
+
+        notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
+        notePositions.push(rootNotePosition + getSemitoneDifference('octave'));
+
+        notePositions.forEach(function (position) {
+            chordObj.notes.push(notes[position]);
+        });
+
+        return chordObj.notes;
+    };
+
+    /*
+     * Returns a list of notes in a given scale.
+     * 
+     * @method getScale
+     * @param {string} rootNote Root note to base scale on.
+     * @return {array} List of notes in scale.
+     */
+    tsw.getScale = function (rootNote, scaleType) {
+        if (scaleType === 'minor') {
+            return getMinorScale(rootNote);
+        } else {
+            return getMajorScale(rootNote);
+        }
+    };
+
+    /*
+     * Returns the number of semitones an interval is from a base note.
+     *
+     * @method getSemitoneDifference
+     * @param {string} interval The name of the interval
+     * @return {number} Number of semitones of interval from a base note.
+     */
+    tsw.getSemitoneDifference = function (interval) {
+        var numberOfIntervals = intervals.length;
+
+        for (var i = 0; i < numberOfIntervals; i++) {
+            if (interval === intervals[i]) {
+                return i;
+            }
+        }
+    };
+
+    tsw.isChord = function (str) {
+        return this.parseChord(str);
+    };
+
+    /*
+     * Returns a list of notes in a given chord.
+     *
+     * @method chordToNotes
+     * @param {string} chord Name of chord to turn into string.
+     * @return {array} List of notes in chord.
+     */
+    tsw.chordToNotes = function (chord) {
+        chord = this.parseChord(chord);
+
+        return chord.notes;
+    };
+
+    /*
+     * Calculates the frequency of a given note
+     *
+     * @method noteToFrequency
+     * @param {string} note Note to convert to frequency
+     * @return {number} Frequency of note
+     */
+    tsw.noteToFrequency = function (note) {
+        var octave,
+            keyNumber;
+
+        if (note.length === 3) {
+            octave = note.charAt(2);
+        } else {
+            octave = note.charAt(1);
+        }
+     
+        keyNumber = notes.indexOf(note.slice(0, -1));
+     
+        if (keyNumber < 3) {
+            keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1; 
+        } else {
+            keyNumber = keyNumber + ((octave - 1) * 12) + 1; 
+        }
+     
+        // Return frequency of note
+        return Math.round(440 * Math.pow(2, (keyNumber- 49) / 12));
+    };
+
+ })(window);
