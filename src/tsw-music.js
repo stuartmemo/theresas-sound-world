@@ -6,16 +6,6 @@
  ********************************/
 
 (function (window, undefined) {
-
-    /*
-     * Creates an instance of Music
-     *
-     * @param {AudioContext} Current audio context
-     */
-    var Music = function () {
-        this.context = tsw.context;
-    };
-    
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     // append list of notes to itself to avoid worrying about writing wraparound code
     notes.push.apply(notes, notes);
@@ -53,7 +43,7 @@
      * @param {string} rootNote Root note of the scale
      * @return {array} List of notes in scale
      */
-    tsw.getMajorScale = function (rootNote) {
+    var getMajorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
         
@@ -76,7 +66,7 @@
      * @param {string} rootNote Root note of the scale
      * @return {array} List of notes in scale
      */
-    tsw.getMinorScale = function (rootNote) {
+    var getMinorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
         

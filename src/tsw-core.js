@@ -272,8 +272,12 @@ window.tsw = (function (window, undefined) {
      * Disconnects a node from everything it's connected to.
      * @param {AudioNode} node
      */
-    tsw.disconnect = function (node) {
-        node.disconnect();
+    tsw.disconnect = function () {
+        var argumentsLength = arguments.length;
+
+        for (var i = 0; i < argumentsLength; i++) {
+            arguments[i].disconnect();
+        } 
     };
 
     /*
@@ -333,6 +337,17 @@ window.tsw = (function (window, undefined) {
         } else {
             throw new Error('Files must be an array or a valid string.');
         }
+    };
+
+    /*
+     * Create a delay node.
+     */
+    tsw.createDelay = function (delayTime) {
+        var delayNode = this.context.createDelay();
+
+        delayNode.delayTime.value = delayTime || 0;
+
+        return delayNode;
     };
 
     /*

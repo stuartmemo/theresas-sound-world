@@ -24,7 +24,7 @@
          * @param {function} success
          * @param {function} failure
          */
-        MIDI.prototype.startMIDI = function (success, failure) {
+        MIDI.prototype.getUserMIDI = function (success, failure) {
             navigator.requestMIDIAccess().then(success, failure);
         };
 
