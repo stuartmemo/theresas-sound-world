@@ -28,11 +28,10 @@
             navigator.requestMIDIAccess().then(success, failure);
         };
 
-        MIDI.prototype.numberToNote = function (number) {
+        MIDI.prototype.MIDINumberToNote = function (number) {
             var noteOnScale = number % 12,
-                octave = Math.floor(number / 12);
-
-            var notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+                octave = Math.floor(number / 12),
+                notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
             return notes[noteOnScale] + octave;
         };

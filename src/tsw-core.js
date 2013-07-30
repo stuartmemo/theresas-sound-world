@@ -280,7 +280,7 @@ window.tsw = (function (window, undefined) {
     * @param {array} files
     * @param {function} callback
     */ 
-    tsw.load = function (baseUrl, files, callback) {
+    tsw.load = function (baseU, files, callback) {
         var returnObj = {},
             files_loaded = 0,
             number_of_files = 0,
@@ -419,17 +419,21 @@ window.tsw = (function (window, undefined) {
     /*
      * Play preloaded buffer.
      * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
+     * @param {number} when
      */
-    tsw.play = function (buffer) {
-        buffer.start(0);
+    tsw.play = function (buffer, when) {
+        when = when || 0;
+        buffer.start(when);
     };
 
     /*
      * Stop buffer if it's currently playing.
      * @param {AudioBuffer} buffer
+     * @param {number} when 
      */
-    tsw.stop = function (buffer) {
-        buffer.stop(0);
+    tsw.stop = function (buffer, when) {
+        when = when || 0;
+        buffer.stop(when);
     };
 
     /*

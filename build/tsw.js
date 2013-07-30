@@ -281,7 +281,7 @@ window.tsw = (function (window, undefined) {
     * @param {array} files
     * @param {function} callback
     */ 
-    tsw.load = function (baseUrl, files, callback) {
+    tsw.load = function (baseU, files, callback) {
         var returnObj = {},
             files_loaded = 0,
             number_of_files = 0,
@@ -420,17 +420,21 @@ window.tsw = (function (window, undefined) {
     /*
      * Play preloaded buffer.
      * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
+     * @param {number} when
      */
-    tsw.play = function (buffer) {
-        buffer.start(0);
+    tsw.play = function (buffer, when) {
+        when = when || 0;
+        buffer.start(when);
     };
 
     /*
      * Stop buffer if it's currently playing.
      * @param {AudioBuffer} buffer
+     * @param {number} when 
      */
-    tsw.stop = function (buffer) {
-        buffer.stop(0);
+    tsw.stop = function (buffer, when) {
+        when = when || 0;
+        buffer.stop(when);
     };
 
     /*
@@ -1324,3 +1328,47 @@ window.tsw = (function (window, undefined) {
     };
 
  })(window);
+
+/*******************************
+ * Theresas's Sound World - MIDI
+ * tsw-midi.js
+ * Dependencies: tsw-core.js
+ * Copyright 2013 Stuart Memo
+ *******************************/
+
+ (function (window, undefined) {
+
+   var MIDI = (function () {
+        /*
+         * Creates an instance of MIDI
+         *
+         * @param {AudioContext} Current audio context
+         */
+        var MIDI = function (context) {
+            this.context = context;
+        };
+
+        /*
+         * Initiate MIDI input/output if available.
+         *
+         * @method startMIDI
+         * @param {function} success
+         * @param {function} failure
+         */
+        MIDI.prototype.startMIDI = function (success, failure) {
+            navigator.requestMIDIAccess().then(success, failure);
+        };
+
+        MIDI.prototype.MIDINumberToNote = function (number) {
+            var noteOnScale = number % 12,
+                octave = Math.floor(number / 12),
+                notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+            return notes[noteOnScale] + octave;
+        };
+
+        return MIDI;
+    })();
+
+    window.tsw.midi = new MIDI();     
+})(window);
