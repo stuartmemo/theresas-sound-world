@@ -139,6 +139,7 @@
      * 
      * @method getScale
      * @param {string} rootNote Root note to base scale on.
+     * @param {string} scaleType Type of scale to return.
      * @return {array} List of notes in scale.
      */
     tsw.getScale = function (rootNote, scaleType) {

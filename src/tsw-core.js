@@ -622,7 +622,8 @@ window.tsw = (function (window, undefined) {
      * @return Envelope filter.
      */
     tsw.createEnvelope = function (settings) {
-        var envelope = {};
+        var envelope = {},
+            settings = settings || {};
 
         // Initial levels
         envelope.startLevel = settings.startLevel || 0;
