@@ -631,13 +631,13 @@ window.tsw = (function (window, undefined) {
         envelope.minLevel = settings.minLevel || 0;
 
         // Envelope values
-        envelope.attackTime = settings.attackTime || 0;
-        envelope.decayTime = settings.decayTime || 0;
-        envelope.sustainLevel = settings.sustainLevel || 0;
-        envelope.releaseTime = settings.releaseTime || 0;
+        envelope.attackTime = settings.attackTime || 1;
+        envelope.decayTime = settings.decayTime || 1;
+        envelope.sustainLevel = settings.sustainLevel || 1;
+        envelope.releaseTime = settings.releaseTime || 1;
         
         // Automation parameters 
-        envelope.param = settings.param;
+        envelope.param = settings.param || {};
         envelope.param.value = envelope.startLevel;
 
         // Should the release kick-in automatically
@@ -649,25 +649,28 @@ window.tsw = (function (window, undefined) {
             this.sustainLevel = this.startLevel + this.sustainLevel;
 
             // Calculate times
-            this.startTime = timeToStart || tsw.now();
-            this.attackTime = this.startTime + this.attackTime;
-            this.decayTime = this.attackTime + this.decayTime;
-            this.releaseTime = this.decayTime + this.releaseTime;
+            console.log(this.attackTime)
+            var startTime = timeToStart || tsw.now(),
+                attackTime = startTime + this.attackTime,
+                decayTime = attackTime + this.decayTime,
+                releaseTime = decayTime + this.releaseTime;
 
             // Initialise
-            this.param.cancelScheduledValues(this.startTime);
-            this.param.setValueAtTime(this.startLevel, this.startTime);
+            this.param.cancelScheduledValues(startTime);
+            this.param.setValueAtTime(this.startLevel, startTime);
 
             // Attack
-            this.param.linearRampToValueAtTime(this.maxLevel, this.attackTime);
+            this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
 
             // Decay
-            this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, this.decayTime); 
+            this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime); 
+
+            console.log(attackTime - tsw.now());
 
             // Release
             if (this.autoStop) {
-                this.param.linearRampToValueAtTime(this.minLevel, this.releaseTime); 
-                this.stop(this.releaseTime);
+                this.param.linearRampToValueAtTime(this.minLevel, releaseTime); 
+                this.stop(releaseTime);
             }
         };
 

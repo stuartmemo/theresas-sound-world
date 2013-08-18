@@ -273,8 +273,12 @@ window.tsw = (function (window, undefined) {
      * Disconnects a node from everything it's connected to.
      * @param {AudioNode} node
      */
-    tsw.disconnect = function (node) {
-        node.disconnect();
+    tsw.disconnect = function () {
+        var argumentsLength = arguments.length;
+
+        for (var i = 0; i < argumentsLength; i++) {
+            arguments[i].disconnect();
+        } 
     };
 
     /*
@@ -334,6 +338,17 @@ window.tsw = (function (window, undefined) {
         } else {
             throw new Error('Files must be an array or a valid string.');
         }
+    };
+
+    /*
+     * Create a delay node.
+     */
+    tsw.createDelay = function (delayTime) {
+        var delayNode = this.context.createDelay();
+
+        delayNode.delayTime.value = delayTime || 0;
+
+        return delayNode;
     };
 
     /*
@@ -608,7 +623,8 @@ window.tsw = (function (window, undefined) {
      * @return Envelope filter.
      */
     tsw.createEnvelope = function (settings) {
-        var envelope = {};
+        var envelope = {},
+            settings = settings || {};
 
         // Initial levels
         envelope.startLevel = settings.startLevel || 0;
@@ -616,13 +632,13 @@ window.tsw = (function (window, undefined) {
         envelope.minLevel = settings.minLevel || 0;
 
         // Envelope values
-        envelope.attackTime = settings.attackTime || 0;
-        envelope.decayTime = settings.decayTime || 0;
-        envelope.sustainLevel = settings.sustainLevel || 0;
-        envelope.releaseTime = settings.releaseTime || 0;
+        envelope.attackTime = settings.attackTime || 1;
+        envelope.decayTime = settings.decayTime || 1;
+        envelope.sustainLevel = settings.sustainLevel || 1;
+        envelope.releaseTime = settings.releaseTime || 1;
         
         // Automation parameters 
-        envelope.param = settings.param;
+        envelope.param = settings.param || {};
         envelope.param.value = envelope.startLevel;
 
         // Should the release kick-in automatically
@@ -634,25 +650,28 @@ window.tsw = (function (window, undefined) {
             this.sustainLevel = this.startLevel + this.sustainLevel;
 
             // Calculate times
-            this.startTime = timeToStart || tsw.now();
-            this.attackTime = this.startTime + this.attackTime;
-            this.decayTime = this.attackTime + this.decayTime;
-            this.releaseTime = this.decayTime + this.releaseTime;
+            console.log(this.attackTime)
+            var startTime = timeToStart || tsw.now(),
+                attackTime = startTime + this.attackTime,
+                decayTime = attackTime + this.decayTime,
+                releaseTime = decayTime + this.releaseTime;
 
             // Initialise
-            this.param.cancelScheduledValues(this.startTime);
-            this.param.setValueAtTime(this.startLevel, this.startTime);
+            this.param.cancelScheduledValues(startTime);
+            this.param.setValueAtTime(this.startLevel, startTime);
 
             // Attack
-            this.param.linearRampToValueAtTime(this.maxLevel, this.attackTime);
+            this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
 
             // Decay
-            this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, this.decayTime); 
+            this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime); 
+
+            console.log(attackTime - tsw.now());
 
             // Release
             if (this.autoStop) {
-                this.param.linearRampToValueAtTime(this.minLevel, this.releaseTime); 
-                this.stop(this.releaseTime);
+                this.param.linearRampToValueAtTime(this.minLevel, releaseTime); 
+                this.stop(releaseTime);
             }
         };
 
@@ -1111,16 +1130,6 @@ window.tsw = (function (window, undefined) {
  ********************************/
 
 (function (window, undefined) {
-
-    /*
-     * Creates an instance of Music
-     *
-     * @param {AudioContext} Current audio context
-     */
-    var Music = function () {
-        this.context = tsw.context;
-    };
-    
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     // append list of notes to itself to avoid worrying about writing wraparound code
     notes.push.apply(notes, notes);
@@ -1158,7 +1167,7 @@ window.tsw = (function (window, undefined) {
      * @param {string} rootNote Root note of the scale
      * @return {array} List of notes in scale
      */
-    tsw.getMajorScale = function (rootNote) {
+    var getMajorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
         
@@ -1181,7 +1190,7 @@ window.tsw = (function (window, undefined) {
      * @param {string} rootNote Root note of the scale
      * @return {array} List of notes in scale
      */
-    tsw.getMinorScale = function (rootNote) {
+    var getMinorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
         
@@ -1254,6 +1263,7 @@ window.tsw = (function (window, undefined) {
      * 
      * @method getScale
      * @param {string} rootNote Root note to base scale on.
+     * @param {string} scaleType Type of scale to return.
      * @return {array} List of notes in scale.
      */
     tsw.getScale = function (rootNote, scaleType) {
@@ -1355,7 +1365,7 @@ window.tsw = (function (window, undefined) {
          * @param {function} success
          * @param {function} failure
          */
-        MIDI.prototype.startMIDI = function (success, failure) {
+        MIDI.prototype.getUserMIDI = function (success, failure) {
             navigator.requestMIDIAccess().then(success, failure);
         };
 
