@@ -20,7 +20,7 @@ window.tsw = (function (window, undefined) {
      **********/
 
     /*
-     * Applies the attributes of one objet to another.
+     * Applies the attributes of one object to another.
      * @return {object} A newly merged object.
      */
     var applyObject = function (obj1, obj2) {
@@ -107,7 +107,7 @@ window.tsw = (function (window, undefined) {
      * @param {function} success Success method execute.
      * @param {function} failure Failure method execute.
      */
-    var checkCompatibility = function (success, failure) {
+    var checkBrowserSupport = function (success, failure) {
         // Check if the Web Audio API is supported.
         if (typeof webkitAudioContext === 'undefined' && typeof AudioContext === 'undefined') {
             if (typeof webkitAudioContext.prototype.createGainNode === 'undefined') {
@@ -129,7 +129,7 @@ window.tsw = (function (window, undefined) {
         }
 
         // All is good, continue;
-        tsw.isBrowserCompatible = true;
+        tsw.browserSupported = true;
         success();
     };
 
