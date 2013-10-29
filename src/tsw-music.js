@@ -6,6 +6,10 @@
  ********************************/
 
 (function (window, undefined) {
+    'use strict';
+
+    var tsw = tsw || {};
+
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     // append list of notes to itself to avoid worrying about writing wraparound code
     notes.push.apply(notes, notes);
@@ -23,12 +27,13 @@
      * @return {number} Position of note in note array.
      */
     var getNotePosition = function (note) {
-        var notesLength = notes.length;
+        var notesLength = notes.length,
+            position_on_scale;
 
         // don't use forEach as we're breaking early
         for (var i = 0; i < notesLength; i++) {
             if (note.toUpperCase() === notes[i]) {
-                positionOnScale = i;
+                position_on_scale = i;
                 return i;
             }
         }
@@ -101,7 +106,7 @@
         chord = chord.toLowerCase();
 
         chordObj.rootNote = chord[0].toUpperCase();
-        chordObj.isMajor = (chord.indexOf('maj') > -1)
+        chordObj.isMajor = (chord.indexOf('maj') > -1);
         chordObj.isMinor = !chordObj.isMajor && (chord.indexOf('m') > -1);
         chordObj.is7th = (chord.indexOf('7') > -1);
         chordObj.notes = [];
@@ -119,13 +124,13 @@
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
-            notePositions.push(rootNotePosition + getSemitoneDifference('minor 3rd'));
+            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('minor 3rd'));
         } else {
-            notePositions.push(rootNotePosition + getSemitoneDifference('major 3rd'));
+            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('major 3rd'));
         }
 
-        notePositions.push(rootNotePosition + getSemitoneDifference('perfect 5th'));
-        notePositions.push(rootNotePosition + getSemitoneDifference('octave'));
+        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('perfect 5th'));
+        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('octave'));
 
         notePositions.forEach(function (position) {
             chordObj.notes.push(notes[position]);
@@ -204,9 +209,9 @@
         keyNumber = notes.indexOf(note.slice(0, -1));
      
         if (keyNumber < 3) {
-            keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1; 
+            keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1;
         } else {
-            keyNumber = keyNumber + ((octave - 1) * 12) + 1; 
+            keyNumber = keyNumber + ((octave - 1) * 12) + 1;
         }
      
         // Return frequency of note

@@ -6,6 +6,7 @@
  *******************************/
 
  (function (window, undefined) {
+    'use strict';
 
    var MIDI = (function () {
         /*
@@ -39,5 +40,5 @@
         return MIDI;
     })();
 
-    window.tsw.midi = new MIDI();     
+    window.tsw.midi = new MIDI();
 })(window);

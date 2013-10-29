@@ -6,6 +6,9 @@
  **********************************/
 
 (function (window, undefined) {
+    'use strict';
+
+    var tsw = tsw || {};
 
     /*
      * Creates delay node.
@@ -59,7 +62,7 @@
         effectLevel.gain.value = settings.effectLevel || effect.settings.effectLevel;
 
         tsw.connect(effect.input, gain, delay, feedback, delay, effectLevel, effect.output);
-        tsw.connect(gain, delay)
+        tsw.connect(gain, delay);
 
         return effect;
     };
@@ -91,12 +94,12 @@
          *               | (Destination) |
          *               +---------------+
          *
-         */ 
+         */
 
         var effect = {},
-            distortion = context.createWaveShaper(),
-            lowpass = context.createBiquadFilter(),
-            highpass = context.createBiquadFilter();
+            distortion = tsw.context.createWaveShaper(),
+            lowpass = tsw.context.createBiquadFilter(),
+            highpass = tsw.context.createBiquadFilter();
 
         effect.settings = {
             distortionLevel: 0.5
@@ -265,7 +268,7 @@
             effectObj.input = tsw.createGain();
             effectObj.output = tsw.createGain();
 
-            tsw.connect(effectObj.input, [effectObj.output, reverb])
+            tsw.connect(effectObj.input, [effectObj.output, reverb]);
             tsw.connect(reverb, effectLevel);
             tsw.connect(effectLevel, effectObj.output);
 
@@ -305,7 +308,7 @@
         mmNode.connect = function (output) {
             mmNode.input.connect(output);
             lfo.modulate(mmNode.input.gain);
-            lfo.start(that.now())
+            lfo.start(that.now());
         };
 
         mmNode.setRate = function (r) {
