@@ -24,13 +24,19 @@ module.exports = function (grunt) {
                 src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
                 dest: 'build/tsw.js'
             }
+        },
+
+        watch: {
+            files: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
+            tasks: ['concat', 'uglify']
         }
     });
 
     // Load plugins.
+    grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Default tasks.
-    grunt.registerTask('default', ['uglify', 'concat']);
+    grunt.registerTask('default', ['watch']);
 };

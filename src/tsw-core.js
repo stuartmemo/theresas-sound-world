@@ -11,6 +11,7 @@
  * @constructor
  * @this {SoundWorld}
  */
+
 window.tsw = (function (window, undefined) {
     'use strict';
 
@@ -67,10 +68,12 @@ window.tsw = (function (window, undefined) {
 
     /*
      * Is variable a native node?
-     * @parm thing Variable to check if it's a native node.
+     * @parm thing Variable to check if it's a native node wat.
      */
     var isNativeNode = function (thing) {
-        return (thing.hasOwnProperty('context'));
+        // Can't use hasOwnProperty because of Firefox bug.
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=934309
+        return (typeof thing.context !== 'undefined');
     };
 
     /*
@@ -302,15 +305,18 @@ window.tsw = (function (window, undefined) {
     * @param {array} files
     * @param {function} callback
     */
-    tsw.load = function (basePath, files, callback) {
+    tsw.load = function () {
         var returnObj = {},
-            basePath = basePath || '',
+            files = arguments[0],
+            basePath = '',
+            extensions = [],        
             files_loaded = 0,
             number_of_files = 0,
+            callback,
             that = this;
 
         // Load a single file
-        var loadFile = function (fileKey, filePath, returnObj, callback) {
+        var loadFile = function (basePath, fileKey, filePath, returnObj, callback) {
             var request = new XMLHttpRequest();
 
             request.open('GET', basePath + filePath, true);
@@ -320,39 +326,41 @@ window.tsw = (function (window, undefined) {
                 files_loaded++;
 
                 that.context.decodeAudioData(request.response, function (decodedBuffer) {
-
-                    returnObj[fileKey] = that.context.createBufferSource();
-                    returnObj[fileKey].buffer = decodedBuffer;
-
-                    returnObj[fileKey].play = function () {
-                        that.play(this);
-                    };
-
-                    returnObj[fileKey].stop = function () {
-                        that.stop(this);
-                    };
-
-                    returnObj[fileKey].isPlaying = function () {
-                        return this.playbackState;
-                    };
+                    returnObj[fileKey] = decodedBuffer;
 
                     if (files_loaded === number_of_files) {
                         callback(returnObj);
                     }
                 });
+            }, function (error) {
+                console.log('Error decoding audio data', error);
             };
 
             request.send();
         };
 
+        // Is 2nd argument a config object or the callback?
+        if (typeof arguments[1] === 'object') {
+            basePath = arguments[1].path || '';
+            extensions = arguments[1].extensions || [];
+        } else if (typeof arguments[1] === 'function') {
+            callback = arguments[1];
+        }
+
+        // Is 3rd argument is the callback?
+        if (typeof arguments[2] === 'function') {
+            callback = arguments[2];
+        }
+
+        // 1st argument is files object
         if (typeof files === 'object') {
             for (var file in files) {
                 number_of_files++;
-                loadFile(file, files[file], returnObj, callback);
+                loadFile(basePath, file, files[file], returnObj, callback);
             }
         } else if (typeof files === 'string') {
             number_of_files = 1;
-            loadFile(file, files[file], returnObj, callback);
+            loadFile(basePath, file, files[file], returnObj, callback);
         } else {
             throw new Error('Files must be an array or a valid string.');
         }
@@ -819,7 +827,7 @@ window.tsw = (function (window, undefined) {
      * Kick everything off.
      */
     (function () {
-        checkCompatibility(function () {
+        checkBrowserSupport(function () {
             // Browser is compatible.
             mapToSoundWorld();
             initialise();

@@ -8,8 +8,6 @@
 (function (window, undefined) {
     'use strict';
 
-    var tsw = tsw || {};
-
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
     // append list of notes to itself to avoid worrying about writing wraparound code
     notes.push.apply(notes, notes);
