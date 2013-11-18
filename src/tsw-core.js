@@ -504,12 +504,11 @@ window.tsw = (function (window, undefined) {
             osc.stop = osc.noteOff;
         }
 
-        waveType = waveType || 'SINE';
-        waveType = waveType.toUpperCase();
+        waveType = waveType || 'sine';
+        osc.type = waveType.toLowerCase();
 
-        osc.type = osc[waveType];
-        osc.safariType = waveType.toLowerCase();
         osc.frequency.value = frequency || 440;
+        osc.nodeType = 'oscillator';
 
         return osc;
     };
@@ -527,7 +526,21 @@ window.tsw = (function (window, undefined) {
             gainNode = this.context.createGainNode();
         }
 
-        gainNode.gain.value = volume || 1;
+        gainNode = Object.create(gainNode, {
+            gain: {
+                value: 1
+            }
+        });
+
+        if (volume <= 0) {
+            volume = 0;
+        }
+
+        if (typeof volume === 'undefined') {
+            volume = 1; 
+        }
+
+        gainNode.gain.value = volume;
 
         return gainNode;
     };
@@ -726,9 +739,14 @@ window.tsw = (function (window, undefined) {
      * @param {string} colour Type of noise.
      * @return Noise generating node.
      */
-    tsw.createNoise = function () {
+    tsw.createNoise = function (colour) {
         var noise_node = this.createBufferSource(tsw.noise_buffer);
+
         noise_node.loop = true;
+
+        noise_node.nodeType = 'noise';
+        noise_node.color = colour || 'white';
+        noise_node.colour = noise_node.color;
 
         return noise_node;
     };

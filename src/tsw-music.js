@@ -8,7 +8,8 @@
 (function (window, undefined) {
     'use strict';
 
-    var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+    var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
+        natural_notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     // append list of notes to itself to avoid worrying about writing wraparound code
     notes.push.apply(notes, notes);
 
@@ -170,7 +171,7 @@
         }
     };
 
-    tsw.isChord = function (str) {
+    tsw.getChord = function (str) {
         return this.parseChord(str);
     };
 
@@ -188,32 +189,76 @@
     };
 
     /*
+     * Returns the flat equivalent of a given note.
+     *
+     * @method sharpToFlat
+     * @param {string} note Note to convert.
+     * @return {string} New flat note.
+     */
+    tsw.sharpToFlat = function (note) {
+        var new_note;
+
+        note = note.replace('#', 'b');
+        new_note = String.fromCharCode(note[0].toUpperCase().charCodeAt(0) + 1);
+
+        if (new_note === 'H') {
+            new_note = 'A';
+        }
+
+        new_note += note.substr(1);
+
+        return new_note;
+    };
+
+    /*
+     * Returns the sharp equivalent of a given note.
+     *
+     * @method flatToSharp
+     * @param {string} note Note to convert.
+     * @return {string} New sharp note.
+     */
+    tsw.flatToSharp = function (note) {
+        var new_note;
+
+        note = note.replace('b', '#');
+        new_note = String.fromCharCode(note[0].toUpperCase().charCodeAt(0) - 1);
+
+        if (new_note === '@') {
+            new_note = 'G';
+        }
+        
+        new_note += note.substr(1);
+
+        return new_note;
+    };
+
+    /*
      * Calculates the frequency of a given note
      *
-     * @method noteToFrequency
+     * @method getFrequency
      * @param {string} note Note to convert to frequency
      * @return {number} Frequency of note
      */
-    tsw.noteToFrequency = function (note) {
+    tsw.getFrequency = function (note) {
         var octave,
             keyNumber;
 
-        if (note.length === 3) {
-            octave = note.charAt(2);
-        } else {
-            octave = note.charAt(1);
-        }
-     
-        keyNumber = notes.indexOf(note.slice(0, -1));
-     
+        octave = parseInt(note.slice(0, -1), 10);
+
+        if (isNaN(octave)) {
+            octave = 4;
+        } 
+
+        keyNumber = notes.indexOf(note.slice(0, -1).toUpperCase());
+
         if (keyNumber < 3) {
             keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1;
         } else {
             keyNumber = keyNumber + ((octave - 1) * 12) + 1;
         }
-     
+
         // Return frequency of note
-        return Math.round(440 * Math.pow(2, (keyNumber- 49) / 12));
+        return parseFloat((440 * Math.pow(2, (keyNumber- 49) / 12)).toFixed(2), 10);
     };
 
  })(window);
