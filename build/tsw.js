@@ -6,13 +6,6 @@
  * Copyright 2013 Stuart Memo
  *****************************/
 
-/*
- * Creates a Sound World.
- *
- * @constructor
- * @this {SoundWorld}
- */
-
 window.tsw = (function (window, undefined) {
     'use strict';
 
@@ -93,8 +86,8 @@ window.tsw = (function (window, undefined) {
         nodes_to_disconnect = [];
 
     tsw.version = '0.0.1';
+    tsw.isBrowserSupported = false;
     tsw.processors = []; // Add ScriptProcessor nodes to global object to avoid garbage collection.
-    tsw.isBrowserCompatible = false;
 
     var initialise = function () {
         tsw.noise_buffer = tsw.createBuffer();
@@ -132,7 +125,7 @@ window.tsw = (function (window, undefined) {
         }
 
         // All is good, continue;
-        tsw.browserSupported = true;
+        tsw.isBrowserSupported = true;
         success();
     };
 
@@ -141,6 +134,15 @@ window.tsw = (function (window, undefined) {
      */
     var mapToSoundWorld = function () {
         tsw.speakers = tsw.context.destination;
+    };
+
+    tsw.createNode = function () {
+        var node = {};
+
+        node.input = tsw.createGain();
+        node.output = tsw.createGain();
+
+        return node;
     };
 
     /*
@@ -160,6 +162,11 @@ window.tsw = (function (window, undefined) {
      * @param {AudioNodes} arguments Nodes to connect in order.
      */
     tsw.connect = function () {
+
+        var updateConnectedToArray = function (node1, node2) {
+            node1.connectedTo.push(node2);
+            node2.connectedTo.push(node1);
+        };
 
         var connectNativeNodeToNativeNode = function () {
             arguments[0].connect(arguments[1]);
@@ -240,7 +247,7 @@ window.tsw = (function (window, undefined) {
 
             // Both arguments are tsw nodes.
             if (isTswNode(first_arg) && isTswNode(second_arg)) {
-                connectTswNode(first_arg, second_arg);
+                connectTswNodeToTswNode(first_arg, second_arg);
                 continue;
             }
 
@@ -327,6 +334,11 @@ window.tsw = (function (window, undefined) {
                 files_loaded++;
 
                 that.context.decodeAudioData(request.response, function (decodedBuffer) {
+                    decodedBuffer.play = function (time) {
+                        var buffer_source = tsw.createBufferSource(this);
+                        buffer_source.start(tsw.now() || time);
+                    }
+
                     returnObj[fileKey] = decodedBuffer;
 
                     if (files_loaded === number_of_files) {
@@ -491,6 +503,27 @@ window.tsw = (function (window, undefined) {
         return sourceNode;
     };
 
+    var initialiseNode = function (node, options) {
+        // Keep a list of nodes this node is connected to.
+        node.connectedTo = [];
+
+        node.get = function (attribute) {
+            if (node[attribute].hasOwnProperty('value')) {
+                return node[attribute].value;
+            } else {
+                return node[attribute].value;
+            }
+        }
+
+        // Map old API methods over to new one.
+        if (options.sourceNode) {
+            if (node.hasOwnProperty('start')) {
+                node.start = node.start || node.noteOn;
+                node.stop = node.start || node.noteOff;
+            }
+        }
+    }
+
     /*
      * Create oscillator node.
      * @param {string} waveType The type of wave form.
@@ -500,10 +533,7 @@ window.tsw = (function (window, undefined) {
     tsw.createOscillator = function (waveType, frequency) {
         var osc = this.context.createOscillator();
 
-        if (typeof osc.start === 'undefined') {
-            osc.start = osc.noteOn;
-            osc.stop = osc.noteOff;
-        }
+        initialiseNode(osc, {sourceNode: true});
 
         waveType = waveType || 'sine';
         osc.type = waveType.toLowerCase();
@@ -527,12 +557,6 @@ window.tsw = (function (window, undefined) {
             gainNode = this.context.createGainNode();
         }
 
-        gainNode = Object.create(gainNode, {
-            gain: {
-                value: 1
-            }
-        });
-
         if (volume <= 0) {
             volume = 0;
         }
@@ -555,7 +579,14 @@ window.tsw = (function (window, undefined) {
         buffer_size = buffer_size || 65536;
         sample_rate = sample_rate || 44100;
 
-        return this.context.createBuffer(no_channels, buffer_size, sample_rate);
+        var buffer = this.context.createBuffer(no_channels, buffer_size, sample_rate);
+
+        buffer.play = function (time) {
+            var buffer_source = tsw.createBufferSource(this);
+            buffer_source.start(time || tsw.now());
+        };
+
+        return buffer;
     };
     
     /*
@@ -580,14 +611,28 @@ window.tsw = (function (window, undefined) {
      * @return Filter node.
      */
     tsw.createFilter = function (filterType, frequency, Q) {
-        var fType = filterType || 'lowpass';
+        var fType = filterType || 'lowpass',
+            effect = {},
+            filter = tsw.context.createBiquadFilter();
 
-        var filter = this.context.createBiquadFilter();
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+
         filter.type = fType;
-        filter.frequency.value = frequency || 0;
+        filter.frequency.value = frequency || 1000;
         filter.Q.value = Q || 0;
 
-        return filter;
+        effect.get = function (attribute) {
+            return filter[attribute].value;
+        }
+
+        effect.set = function (attributes) {
+            filter.frequency.value = attributes.frequency;
+        };
+
+        tsw.connect(effect.input, filter, effect.output);
+
+        return effect;
     };
 
     /*
@@ -741,13 +786,26 @@ window.tsw = (function (window, undefined) {
      * @return Noise generating node.
      */
     tsw.createNoise = function (colour) {
-        var noise_node = this.createBufferSource(tsw.noise_buffer);
+        var noise_node = tsw.createNode(),
+            noise_source = this.createBufferSource(tsw.noise_buffer),
+            filter = tsw.createFilter('lowpass');
 
-        noise_node.loop = true;
+        noise_source.loop = true;
 
         noise_node.nodeType = 'noise';
         noise_node.color = colour || 'white';
-        noise_node.colour = noise_node.color;
+
+        if (noise_node.color === 'pink') {
+            filter.frequency = 1000;
+        } else {
+            filter.frequency = 10000;
+        }
+
+        noise_node.start = function (time) {
+            noise_source.start(time || tsw.now());
+        }
+
+        tsw.connect(noise_source, filter, noise_node.output);
 
         return noise_node;
     };
@@ -870,7 +928,7 @@ window.tsw = (function (window, undefined) {
 (function (window, undefined) {
     'use strict';
 
-    var tsw = tsw || {};
+    window.tsw = tsw || {};
 
     /*
      * Creates delay node.
@@ -1046,7 +1104,7 @@ window.tsw = (function (window, undefined) {
 
         feedback.gain.value = settings.gain || defaults.gain;
 
-        for (var i = 0; i < config.rate; i++) {
+        for (var i = 0; i < defaults.rate; i++) {
             allPassFilters[i] = tsw.context.createBiquadFilter();
             allPassFilters[i].type = 7;
             allPassFilters[i].frequency.value = 100 * i;
@@ -1184,6 +1242,8 @@ window.tsw = (function (window, undefined) {
         return mmNode;
     };
 
+    console.log(tsw)
+
 })(window);
 
 /*********************************
@@ -1199,6 +1259,8 @@ window.tsw = (function (window, undefined) {
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
         natural_notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     // append list of notes to itself to avoid worrying about writing wraparound code
+
+    notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     notes.push.apply(notes, notes);
 
     var intervals = ['unison', 'flat 2nd', '2nd', 'minor 3rd', 'major 3rd', 'perfect 4th',
@@ -1273,6 +1335,20 @@ window.tsw = (function (window, undefined) {
 
         return scale;
     };
+
+    /*
+     * Decides whether a string looks like a valid note.
+     *
+     * @method isValidNote
+     * @param {string} Name of note to test.
+     * return {boolean} If note is valid.
+     */
+    var isValidNote = function (note) {
+        if ((typeof note !== 'string') || (note.length > 3)) {
+            return false;
+        }
+        return true;
+    }
 
     /*
      * Parses a chord name into a detailed object.
@@ -1406,22 +1482,38 @@ window.tsw = (function (window, undefined) {
      * @return {string} New sharp note.
      */
     tsw.flatToSharp = function (note) {
-        var new_note;
+        var new_note,
+            num_index = 0;
+
+        // Note isn't flat to begin with
+        if (note.indexOf('b') === -1) {
+            return note;
+        }
 
         note = note.replace('b', '#');
+
+        // Get previous letter in alphabet.
         new_note = String.fromCharCode(note[0].toUpperCase().charCodeAt(0) - 1);
 
         if (new_note === '@') {
             new_note = 'G';
         }
-        
+
+        // If new note is B, decrease the octave by 1.
+        if (new_note === 'B') {
+            num_index = note.search(/\d/);
+            if (num_index > -1) {
+                note = note.substring(0, num_index) + (note[num_index] - 1) + note.substring(num_index + 1);
+            } 
+        }
+
         new_note += note.substr(1);
 
         return new_note;
     };
 
     /*
-     * Calculates the frequency of a given note
+     * Calculates the frequency of a given note.
      *
      * @method getFrequency
      * @param {string} note Note to convert to frequency
@@ -1429,24 +1521,53 @@ window.tsw = (function (window, undefined) {
      */
     tsw.getFrequency = function (note) {
         var octave,
-            keyNumber;
+            keyNumber,
+            note_index,
+            note_without_octave;
 
-        octave = parseInt(note.slice(0, -1), 10);
+        if (isValidNote(note) === false) {
+            return false;
+        }
+
+        note_index = note.search(/\d/),
+        octave = parseInt(note.slice(-1));
 
         if (isNaN(octave)) {
             octave = 4;
         } 
 
-        keyNumber = notes.indexOf(note.slice(0, -1).toUpperCase());
+        note = this.flatToSharp(note);
+        note_without_octave = note;
 
-        if (keyNumber < 3) {
-            keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1;
-        } else {
-            keyNumber = keyNumber + ((octave - 1) * 12) + 1;
+        /*
+        switch (note.length) {
+            case 1:
+                noteLetter = note[0];
+                break;
+            case 2:
+                if (note.indexOf('#')) {
+                    noteLetter = note;
+                } else {
+                    noteLetter = note[0];
+                }
+                break;
+            case 3:
+                noteLetter = note.slice(0, 2);
+                break;
+            default:
+                return 'This doesn\'t look like any note I\'ve seen';
+        }
+        */
+
+        if (note_index > -1) {
+            note_without_octave = note.substr(0, note_index);
         }
 
+        keyNumber = notes.indexOf(note_without_octave.toUpperCase());
+        keyNumber = keyNumber + (octave * 12);
+
         // Return frequency of note
-        return parseFloat((440 * Math.pow(2, (keyNumber- 49) / 12)).toFixed(2), 10);
+        return parseFloat((440 * Math.pow(2, (keyNumber - 57) / 12)), 10);
     };
 
  })(window);

@@ -5,13 +5,6 @@
  * Copyright 2013 Stuart Memo
  *****************************/
 
-/*
- * Creates a Sound World.
- *
- * @constructor
- * @this {SoundWorld}
- */
-
 window.tsw = (function (window, undefined) {
     'use strict';
 
@@ -92,8 +85,8 @@ window.tsw = (function (window, undefined) {
         nodes_to_disconnect = [];
 
     tsw.version = '0.0.1';
+    tsw.isBrowserSupported = false;
     tsw.processors = []; // Add ScriptProcessor nodes to global object to avoid garbage collection.
-    tsw.isBrowserCompatible = false;
 
     var initialise = function () {
         tsw.noise_buffer = tsw.createBuffer();
@@ -131,7 +124,7 @@ window.tsw = (function (window, undefined) {
         }
 
         // All is good, continue;
-        tsw.browserSupported = true;
+        tsw.isBrowserSupported = true;
         success();
     };
 
@@ -140,6 +133,15 @@ window.tsw = (function (window, undefined) {
      */
     var mapToSoundWorld = function () {
         tsw.speakers = tsw.context.destination;
+    };
+
+    tsw.createNode = function () {
+        var node = {};
+
+        node.input = tsw.createGain();
+        node.output = tsw.createGain();
+
+        return node;
     };
 
     /*
@@ -159,6 +161,11 @@ window.tsw = (function (window, undefined) {
      * @param {AudioNodes} arguments Nodes to connect in order.
      */
     tsw.connect = function () {
+
+        var updateConnectedToArray = function (node1, node2) {
+            node1.connectedTo.push(node2);
+            node2.connectedTo.push(node1);
+        };
 
         var connectNativeNodeToNativeNode = function () {
             arguments[0].connect(arguments[1]);
@@ -239,7 +246,7 @@ window.tsw = (function (window, undefined) {
 
             // Both arguments are tsw nodes.
             if (isTswNode(first_arg) && isTswNode(second_arg)) {
-                connectTswNode(first_arg, second_arg);
+                connectTswNodeToTswNode(first_arg, second_arg);
                 continue;
             }
 
@@ -326,6 +333,11 @@ window.tsw = (function (window, undefined) {
                 files_loaded++;
 
                 that.context.decodeAudioData(request.response, function (decodedBuffer) {
+                    decodedBuffer.play = function (time) {
+                        var buffer_source = tsw.createBufferSource(this);
+                        buffer_source.start(tsw.now() || time);
+                    }
+
                     returnObj[fileKey] = decodedBuffer;
 
                     if (files_loaded === number_of_files) {
@@ -490,6 +502,27 @@ window.tsw = (function (window, undefined) {
         return sourceNode;
     };
 
+    var initialiseNode = function (node, options) {
+        // Keep a list of nodes this node is connected to.
+        node.connectedTo = [];
+
+        node.get = function (attribute) {
+            if (node[attribute].hasOwnProperty('value')) {
+                return node[attribute].value;
+            } else {
+                return node[attribute].value;
+            }
+        }
+
+        // Map old API methods over to new one.
+        if (options.sourceNode) {
+            if (node.hasOwnProperty('start')) {
+                node.start = node.start || node.noteOn;
+                node.stop = node.start || node.noteOff;
+            }
+        }
+    }
+
     /*
      * Create oscillator node.
      * @param {string} waveType The type of wave form.
@@ -499,10 +532,7 @@ window.tsw = (function (window, undefined) {
     tsw.createOscillator = function (waveType, frequency) {
         var osc = this.context.createOscillator();
 
-        if (typeof osc.start === 'undefined') {
-            osc.start = osc.noteOn;
-            osc.stop = osc.noteOff;
-        }
+        initialiseNode(osc, {sourceNode: true});
 
         waveType = waveType || 'sine';
         osc.type = waveType.toLowerCase();
@@ -526,12 +556,6 @@ window.tsw = (function (window, undefined) {
             gainNode = this.context.createGainNode();
         }
 
-        gainNode = Object.create(gainNode, {
-            gain: {
-                value: 1
-            }
-        });
-
         if (volume <= 0) {
             volume = 0;
         }
@@ -554,7 +578,14 @@ window.tsw = (function (window, undefined) {
         buffer_size = buffer_size || 65536;
         sample_rate = sample_rate || 44100;
 
-        return this.context.createBuffer(no_channels, buffer_size, sample_rate);
+        var buffer = this.context.createBuffer(no_channels, buffer_size, sample_rate);
+
+        buffer.play = function (time) {
+            var buffer_source = tsw.createBufferSource(this);
+            buffer_source.start(time || tsw.now());
+        };
+
+        return buffer;
     };
     
     /*
@@ -579,14 +610,28 @@ window.tsw = (function (window, undefined) {
      * @return Filter node.
      */
     tsw.createFilter = function (filterType, frequency, Q) {
-        var fType = filterType || 'lowpass';
+        var fType = filterType || 'lowpass',
+            effect = {},
+            filter = tsw.context.createBiquadFilter();
 
-        var filter = this.context.createBiquadFilter();
+        effect.input = tsw.createGain();
+        effect.output = tsw.createGain();
+
         filter.type = fType;
-        filter.frequency.value = frequency || 0;
+        filter.frequency.value = frequency || 1000;
         filter.Q.value = Q || 0;
 
-        return filter;
+        effect.get = function (attribute) {
+            return filter[attribute].value;
+        }
+
+        effect.set = function (attributes) {
+            filter.frequency.value = attributes.frequency;
+        };
+
+        tsw.connect(effect.input, filter, effect.output);
+
+        return effect;
     };
 
     /*
@@ -740,13 +785,26 @@ window.tsw = (function (window, undefined) {
      * @return Noise generating node.
      */
     tsw.createNoise = function (colour) {
-        var noise_node = this.createBufferSource(tsw.noise_buffer);
+        var noise_node = tsw.createNode(),
+            noise_source = this.createBufferSource(tsw.noise_buffer),
+            filter = tsw.createFilter('lowpass');
 
-        noise_node.loop = true;
+        noise_source.loop = true;
 
         noise_node.nodeType = 'noise';
         noise_node.color = colour || 'white';
-        noise_node.colour = noise_node.color;
+
+        if (noise_node.color === 'pink') {
+            filter.frequency = 1000;
+        } else {
+            filter.frequency = 10000;
+        }
+
+        noise_node.start = function (time) {
+            noise_source.start(time || tsw.now());
+        }
+
+        tsw.connect(noise_source, filter, noise_node.output);
 
         return noise_node;
     };

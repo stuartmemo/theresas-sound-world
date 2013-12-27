@@ -8,7 +8,7 @@
 (function (window, undefined) {
     'use strict';
 
-    var tsw = tsw || {};
+    window.tsw = tsw || {};
 
     /*
      * Creates delay node.
@@ -184,7 +184,7 @@
 
         feedback.gain.value = settings.gain || defaults.gain;
 
-        for (var i = 0; i < config.rate; i++) {
+        for (var i = 0; i < defaults.rate; i++) {
             allPassFilters[i] = tsw.context.createBiquadFilter();
             allPassFilters[i].type = 7;
             allPassFilters[i].frequency.value = 100 * i;
@@ -321,5 +321,7 @@
 
         return mmNode;
     };
+
+    console.log(tsw)
 
 })(window);

@@ -11,6 +11,8 @@
     var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
         natural_notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     // append list of notes to itself to avoid worrying about writing wraparound code
+
+    notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     notes.push.apply(notes, notes);
 
     var intervals = ['unison', 'flat 2nd', '2nd', 'minor 3rd', 'major 3rd', 'perfect 4th',
@@ -85,6 +87,20 @@
 
         return scale;
     };
+
+    /*
+     * Decides whether a string looks like a valid note.
+     *
+     * @method isValidNote
+     * @param {string} Name of note to test.
+     * return {boolean} If note is valid.
+     */
+    var isValidNote = function (note) {
+        if ((typeof note !== 'string') || (note.length > 3)) {
+            return false;
+        }
+        return true;
+    }
 
     /*
      * Parses a chord name into a detailed object.
@@ -218,22 +234,38 @@
      * @return {string} New sharp note.
      */
     tsw.flatToSharp = function (note) {
-        var new_note;
+        var new_note,
+            num_index = 0;
+
+        // Note isn't flat to begin with
+        if (note.indexOf('b') === -1) {
+            return note;
+        }
 
         note = note.replace('b', '#');
+
+        // Get previous letter in alphabet.
         new_note = String.fromCharCode(note[0].toUpperCase().charCodeAt(0) - 1);
 
         if (new_note === '@') {
             new_note = 'G';
         }
-        
+
+        // If new note is B, decrease the octave by 1.
+        if (new_note === 'B') {
+            num_index = note.search(/\d/);
+            if (num_index > -1) {
+                note = note.substring(0, num_index) + (note[num_index] - 1) + note.substring(num_index + 1);
+            } 
+        }
+
         new_note += note.substr(1);
 
         return new_note;
     };
 
     /*
-     * Calculates the frequency of a given note
+     * Calculates the frequency of a given note.
      *
      * @method getFrequency
      * @param {string} note Note to convert to frequency
@@ -241,24 +273,53 @@
      */
     tsw.getFrequency = function (note) {
         var octave,
-            keyNumber;
+            keyNumber,
+            note_index,
+            note_without_octave;
 
-        octave = parseInt(note.slice(0, -1), 10);
+        if (isValidNote(note) === false) {
+            return false;
+        }
+
+        note_index = note.search(/\d/),
+        octave = parseInt(note.slice(-1));
 
         if (isNaN(octave)) {
             octave = 4;
         } 
 
-        keyNumber = notes.indexOf(note.slice(0, -1).toUpperCase());
+        note = this.flatToSharp(note);
+        note_without_octave = note;
 
-        if (keyNumber < 3) {
-            keyNumber = keyNumber + 12 + ((octave - 1) * 12) + 1;
-        } else {
-            keyNumber = keyNumber + ((octave - 1) * 12) + 1;
+        /*
+        switch (note.length) {
+            case 1:
+                noteLetter = note[0];
+                break;
+            case 2:
+                if (note.indexOf('#')) {
+                    noteLetter = note;
+                } else {
+                    noteLetter = note[0];
+                }
+                break;
+            case 3:
+                noteLetter = note.slice(0, 2);
+                break;
+            default:
+                return 'This doesn\'t look like any note I\'ve seen';
+        }
+        */
+
+        if (note_index > -1) {
+            note_without_octave = note.substr(0, note_index);
         }
 
+        keyNumber = notes.indexOf(note_without_octave.toUpperCase());
+        keyNumber = keyNumber + (octave * 12);
+
         // Return frequency of note
-        return parseFloat((440 * Math.pow(2, (keyNumber- 49) / 12)).toFixed(2), 10);
+        return parseFloat((440 * Math.pow(2, (keyNumber - 57) / 12)), 10);
     };
 
  })(window);

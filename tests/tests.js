@@ -67,7 +67,7 @@ describe('Theresa\'s Sound World', function () {
 			});
 
 			it('Default gain value should be 1', function () {
-				expect(tsw.createGain().gain).toEqual(1);
+				expect(tsw.createGain().gain.value).toEqual(1);
 			});
 
 			it('Set gain value', function () {
@@ -82,7 +82,7 @@ describe('Theresa\'s Sound World', function () {
 			});
 
 			it('Default colour is "white"', function () {
-				expect(tsw.createNoise().colour).toEqual('white');
+				expect(tsw.createNoise().color).toEqual('white');
 			});
 		});
 	});
@@ -104,15 +104,15 @@ describe('Theresa\'s Sound World', function () {
 		it('Returns the frequency of a given note', function () {
 			expect(tsw.getFrequency('A4')).toEqual(440.00);
 			expect(tsw.getFrequency('a6')).toEqual(1760.00);
-			expect(tsw.getFrequency('B2')).toEqual(123.47);
-			expect(tsw.getFrequency('C#3')).toEqual(138.59);
-			expect(tsw.getFrequency('d#3')).toEqual(155.56);
-			expect(tsw.getFrequency('eb3')).toEqual(155.56);
-			expect(tsw.getFrequency('C')).toEqual(261.63);
-			expect(tsw.getFrequency('D#')).toEqual(261.63);
-			expect(tsw.getFrequency('eb')).toEqual(261.63);
-			expect(tsw.getFrequency('Not a note')).toEqual(261.63);
-			expect(tsw.getFrequency(123)).toEqual(261.63);
+			expect(tsw.getFrequency('B2')).toEqual(123.47082531403103);
+			expect(tsw.getFrequency('C#3')).toEqual(138.59131548843604);
+			expect(tsw.getFrequency('d#3')).toEqual(155.56349186104046);
+			expect(tsw.getFrequency('eb3')).toEqual(155.56349186104046);
+			expect(tsw.getFrequency('C')).toEqual(261.6255653005986);
+			expect(tsw.getFrequency('D#')).toEqual(311.12698372208087);
+			expect(tsw.getFrequency('eb')).toEqual(311.12698372208087);
+			expect(tsw.getFrequency('Not a note')).toEqual(false);
+			expect(tsw.getFrequency(123)).toEqual(false);
 		});
 	});
 });
