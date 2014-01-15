@@ -22,6 +22,13 @@ describe('Theresa\'s Sound World', function () {
 			});
 		});
 
+		describe('Nodes', function () {
+			it('Can create node', function () {
+				expect(tsw.createNode().nodeType).toEqual('default');
+			});
+
+		})
+
 		describe('Create Oscillator', function () {
 
 			it('Node is an OscillatorNode', function () {
@@ -70,8 +77,14 @@ describe('Theresa\'s Sound World', function () {
 				expect(tsw.createGain().gain.value).toEqual(1);
 			});
 
-			it('Set gain value', function () {
-				expect(tsw.createGain().gain.value = 0.5).toEqual(0.5);
+			it('Create gain node with different gain level than default', function () {
+				expect(tsw.createGain(0.5).gain.value).toEqual(0.5);
+			});
+
+			it('Create gain node with different gain level than default', function () {
+				var volume = tsw.createGain();
+				volume.set({gain: 0.2})	;
+				expect(volume.gain.value).toEqual(0.20000000298023224);
 			});
 		});
 
