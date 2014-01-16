@@ -36,16 +36,32 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
-     * Is a variable an array?
-     * @param thing Variable to check if it's an array.
+     * Is an argument an array?
+     * @param thing Argument to check if it's an array.
      */
      var isArray = function (thing) {
         return Array.isArray(thing);
      };
 
     /*
-     * Is a variable an object?
+     * Is an argument a function?
+     * @param thing Argument to check if it's a function.
+     */
+     var isFunction = function (thing) {
+        return typeof thing === 'function';
+     };
+
+    /*
+     * Is an argument an object?
      * @param thing Argument to check if it's an object.
+     */
+    var isObject = function (thing) {
+        return typeof thing === 'object';
+    };
+
+    /*
+     * Is an argument an object with an audio node?
+     * @param thing Argument to check if it's an object with an audio node.
      */
      var isObjectWithNode = function (thing) {
         var is_object_with_node = false;
@@ -60,15 +76,15 @@ window.tsw = (function (window, undefined) {
      };
 
     /*
-     * Is variable a native node?
+     * Is an argument a native node?
      * @parm thing Argument to check if it's a native node wat.
      */
     var isNativeNode = function (thing) {
-        return (typeof thing.context !== 'undefined');
+        return typeof thing.context !== 'undefined';
     };
 
     /*
-     * Is variable a tsw node?
+     * Is an argument a tsw node?
      * @parm thing Argument to check if it's a tsw node.
      */
     var isTswNode = function (thing) {
@@ -80,8 +96,27 @@ window.tsw = (function (window, undefined) {
      * @param thing Argument to check if is an audio paramter.
      */
     var isAudioParam = function (thing) {
-        return ('setValueAtTime' in thing);
+        if (isObject(thing)) {
+            return ('setValueAtTime' in thing);
+        } else {
+            return false;
+        }
     }
+
+    /*
+     * Enable jQuery style getters & setters.
+     * @param paramToGetSet P
+     */
+    var createGetSetter = function (paramToGetSet) {
+        return function (val) {
+            if (typeof val === 'undefined') {
+                return paramToGetSet;
+            } else {
+                paramToGetSet = val;
+            }
+        }
+    };
+
 
     /***************
      * Sound World *
@@ -139,16 +174,6 @@ window.tsw = (function (window, undefined) {
      */
     var mapToSoundWorld = function () {
         tsw.speakers = tsw.context.destination;
-    };
-
-    tsw.createNode = function () {
-        var node = {};
-
-        node.input = tsw.createGain();
-        node.output = tsw.createGain();
-        node.nodeType = 'default';
-
-        return node;
     };
 
     /*
@@ -509,44 +534,82 @@ window.tsw = (function (window, undefined) {
         return sourceNode;
     };
 
-    var initialiseNode = function (node, options) {
-        // Keep a list of nodes this node is connected to.
-        node.connectedTo = [];
-        options = options || {};
+    /*
+     * Does a few things:
+     * 1. Updates old WAA syntax if need be.
+     * 2. Creates 2 gain nodes, one connected before the node, the other after.
+     * 3. Adds jQuery style getters & setters to node parameters that can be changed.
+     *
+     * @param {AudioNode} node The node to initialise.
+     * @param {object} options Options.
+     */
 
-        node.get = function (attribute) {
-            if (node[attribute].hasOwnProperty('value')) {
-                return node[attribute].value;
+    var addGetterSetters = function (node) {
+    console.log(node);
+        for (var prop in node) {
+            // Create getter/setter if an audio parameter.
+            if (isAudioParam(node[prop])) {
+                switch (prop) {
+                    case 'gain':
+                        console.log(node);
+                        node.gain = createGetSetter(node.gain.value);
+                        break;
+                    case 'frequency':
+                        console.log('in frequ');
+                        //node.frequency = createGetSetter(osc.frequency.value);
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    };
+
+    /*
+     * Update old WAA methods to more recent names.
+     *
+     * @param {object} Additional options.
+     */
+    var updateMethods = function (options) {
+        this.start = function (timeToStart) {
+            if (options.sourceNode.hasOwnProperty('start')) {
+                options.sourceNode.start(timeToStart);  
             } else {
-                return node[attribute].value;
+                options.sourceNode.noteOn(timeToStart);
             }
         }
 
-        node.set = function (options) {
-            node.gain.value = options.gain || node.gain.value; 
-        };
+        this.stop = function (timeToStop) {
+            if (options.sourceNode.hasOwnProperty('stop')) {
+                options.sourceNode.stop(timeToStop);  
+            } else {
+                options.sourceNode.noteOff(timeToStop);
+            }
+        }
+    };
 
-        // Map old API methods over to new one.
+    tsw.createNode = function (options) {
+        var node = {};
+
+        options = options || {};
+
+        node.input = tsw.context.createGain();
+        node.output = tsw.context.createGain();
+        node.nodeType = 'default';
+
+        // Keep a list of nodes this node is connected to.
+        node.connectedTo = [];
+
         if (options.hasOwnProperty('sourceNode')) {
-            node.start = function (timeToStart) {
-                if (options.sourceNode.hasOwnProperty('start')) {
-                    options.sourceNode.start(timeToStart);  
-                } else {
-                    options.sourceNode.noteOn(timeToStart);
-                }
-            }
-
-            node.stop = function (timeToStop) {
-                if (options.sourceNode.hasOwnProperty('stop')) {
-                    options.sourceNode.stop(timeToStop);  
-                } else {
-                    options.sourceNode.noteOff(timeToStop);
-                }
-            }
+            updateMethods.call(node, options);
         } else {
             options.sourceNode = false;
         }
-    }
+
+        addGetterSetters(node);
+
+        return node;
+    };
 
     /*
      * Create oscillator node.
@@ -555,10 +618,15 @@ window.tsw = (function (window, undefined) {
      * @return Oscillator node of specified type.
      */
     tsw.createOscillator = function (waveType, frequency) {
-        var node = tsw.createNode(),
+        var node,
             osc = this.context.createOscillator();
 
-        initialiseNode(node, {sourceNode: osc});
+        node = tsw.createNode({sourceNode: osc});
+
+/*
+        node.frequency = createGetSetter(osc.frequency.value);
+        node.type = createGetSetter(node.type);
+        */
 
         node.waveType = waveType || 'sine';
         osc.type = node.waveType.toLowerCase();
@@ -566,15 +634,6 @@ window.tsw = (function (window, undefined) {
         node.nodeType = 'oscillator';
 
         tsw.connect(osc, node.output);
-
-        node.frequency = function (freq) {
-            if (typeof freq === 'undefined') {
-                return osc.frequency.value;
-            } else {
-                osc.frequency.value = freq;
-            }
-        }
-
         return node;
     };
 
@@ -591,8 +650,6 @@ window.tsw = (function (window, undefined) {
             gainNode = this.context.createGainNode();
         }
 
-        initialiseNode(gainNode);
-
         if (volume <= 0) {
             volume = 0;
         }
@@ -601,7 +658,7 @@ window.tsw = (function (window, undefined) {
             volume = 1; 
         }
 
-        gainNode.gain.value = volume;
+        gainNode.gain(volume);
 
         return gainNode;
     };
@@ -656,7 +713,7 @@ window.tsw = (function (window, undefined) {
         effect.input = tsw.createGain();
         effect.output = tsw.createGain();
 
-        initialiseNode(filter, options);
+        //initialiseNode(filter, options);
 
         filter.type = options.filterType;
         filter.frequency.value = frequency || 1000;
@@ -846,7 +903,7 @@ window.tsw = (function (window, undefined) {
             filter.frequency = 10000;
         }
 
-        initialiseNode(noise_node, {sourceNode: noise_source});
+        //initialiseNode(noise_node, {sourceNode: noise_source});
 
         tsw.connect(noise_source, filter, noise_node.output);
 
