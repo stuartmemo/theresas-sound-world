@@ -32,32 +32,32 @@ describe('Theresa\'s Sound World', function () {
 		describe('Create Oscillator', function () {
 
 			it('Node is an OscillatorNode', function () {
-				expect(tsw.createOscillator().constructor.name).toEqual('OscillatorNode');
 				expect(tsw.createOscillator().nodeType).toEqual('oscillator');
 			});
 
 			it('Default type is a sine wave', function () {
-				expect(tsw.createOscillator().type).toEqual('sine');
+				expect(tsw.createOscillator().waveType).toEqual('sine');
 			});
 
 			it('Creates a sine wave.', function () {
-				expect(tsw.createOscillator('sine').type).toEqual('sine');
+				expect(tsw.createOscillator('sine').waveType).toEqual('sine');
 			});
 
 			it('Creates a square wave.', function () {
-				expect(tsw.createOscillator('square').type).toEqual('square');
+				expect(tsw.createOscillator('square').waveType).toEqual('square');
 			});
 
 			it('Creates a triangle wave', function () {
-				expect(tsw.createOscillator('triangle').type).toEqual('triangle');
+				expect(tsw.createOscillator('triangle').waveType).toEqual('triangle');
 			});
 
 			it('Creates a sawtooth wave', function () {
-				expect(tsw.createOscillator('sawtooth').type).toEqual('sawtooth');
+				expect(tsw.createOscillator('sawtooth').waveType).toEqual('sawtooth');
 			});
 
 			it('Creates a sine wave with a certain frequency', function () {
-				expect(tsw.createOscillator('sawtooth', 500).frequency.value).toEqual(500);
+				var osc = tsw.createOscillator('sawtooth', 500);
+				expect(osc.frequency()).toEqual(500);
 			});
 
 			it('Sets the frequency', function () {
@@ -70,21 +70,21 @@ describe('Theresa\'s Sound World', function () {
 		describe('Create Gain', function () {
 
 			it('Node should be a GainNode', function () {
-				expect(tsw.createGain().constructor.name).toEqual('GainNode');
+				expect(tsw.createGain().nodeType).toEqual('gain');
 			});
 
 			it('Default gain value should be 1', function () {
-				expect(tsw.createGain().gain.value).toEqual(1);
+				expect(tsw.createGain().gain()).toEqual(1);
 			});
 
 			it('Create gain node with different gain level than default', function () {
-				expect(tsw.createGain(0.5).gain.value).toEqual(0.5);
+				expect(tsw.createGain(0.5).gain()).toEqual(0.5);
 			});
 
-			it('Create gain node with different gain level than default', function () {
+			it('Create gain node with different gain level than default using object syntax', function () {
 				var volume = tsw.createGain();
-				volume.set({gain: 0.2})	;
-				expect(volume.gain.value).toEqual(0.20000000298023224);
+				volume.gain(0.2);
+				expect(volume.gain()).toEqual(0.2);
 			});
 		});
 

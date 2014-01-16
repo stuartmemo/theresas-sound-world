@@ -2,7 +2,7 @@
  * Theresa's Sound World
  * tsw.js
  * An audio library.
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  *****************************/
 
 window.tsw = (function (window, undefined) {
@@ -535,37 +535,6 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
-     * Does a few things:
-     * 1. Updates old WAA syntax if need be.
-     * 2. Creates 2 gain nodes, one connected before the node, the other after.
-     * 3. Adds jQuery style getters & setters to node parameters that can be changed.
-     *
-     * @param {AudioNode} node The node to initialise.
-     * @param {object} options Options.
-     */
-
-    var addGetterSetters = function (node) {
-    console.log(node);
-        for (var prop in node) {
-            // Create getter/setter if an audio parameter.
-            if (isAudioParam(node[prop])) {
-                switch (prop) {
-                    case 'gain':
-                        console.log(node);
-                        node.gain = createGetSetter(node.gain.value);
-                        break;
-                    case 'frequency':
-                        console.log('in frequ');
-                        //node.frequency = createGetSetter(osc.frequency.value);
-                        break;
-                    default:
-                        break;
-                }
-            }
-        }
-    };
-
-    /*
      * Update old WAA methods to more recent names.
      *
      * @param {object} Additional options.
@@ -606,8 +575,6 @@ window.tsw = (function (window, undefined) {
             options.sourceNode = false;
         }
 
-        addGetterSetters(node);
-
         return node;
     };
 
@@ -621,19 +588,21 @@ window.tsw = (function (window, undefined) {
         var node,
             osc = this.context.createOscillator();
 
+        frequency = frequency || 440;
+
         node = tsw.createNode({sourceNode: osc});
 
-/*
-        node.frequency = createGetSetter(osc.frequency.value);
-        node.type = createGetSetter(node.type);
-        */
-
         node.waveType = waveType || 'sine';
-        osc.type = node.waveType.toLowerCase();
-        osc.frequency.value = frequency || 440;
         node.nodeType = 'oscillator';
 
+        node.type = createGetSetter(osc.type);
+        node.type(node.waveType.toLowerCase());
+
+        node.frequency = createGetSetter(osc.frequency.value);
+        node.frequency(frequency);
+
         tsw.connect(osc, node.output);
+
         return node;
     };
 
@@ -642,13 +611,18 @@ window.tsw = (function (window, undefined) {
      * @return Gain node.
      */
     tsw.createGain = function (volume) {
-        var gainNode;
+        var node,
+            gainNode;
 
         if (typeof this.context.createGain === 'function') {
             gainNode = this.context.createGain();
         } else {
             gainNode = this.context.createGainNode();
         }
+
+        node = tsw.createNode();
+        node.nodeType = 'gain';
+        node.gain = createGetSetter(gainNode.gain.value);
 
         if (volume <= 0) {
             volume = 0;
@@ -658,9 +632,9 @@ window.tsw = (function (window, undefined) {
             volume = 1; 
         }
 
-        gainNode.gain(volume);
+        node.gain(volume);
 
-        return gainNode;
+        return node;
     };
 
     /*
@@ -888,26 +862,26 @@ window.tsw = (function (window, undefined) {
      * @return Noise generating node.
      */
     tsw.createNoise = function (colour) {
-        var noise_node = tsw.createNode(),
+        var node,
             noise_source = this.createBufferSource(tsw.noise_buffer),
             filter = tsw.createFilter('lowpass');
 
+        node = tsw.createNode({sourceNode: noise_source});
+
         noise_source.loop = true;
 
-        noise_node.nodeType = 'noise';
-        noise_node.color = colour || 'white';
+        node.nodeType = 'noise';
+        node.color = colour || 'white';
 
-        if (noise_node.color === 'pink') {
+        if (node.color === 'pink') {
             filter.frequency = 1000;
         } else {
             filter.frequency = 10000;
         }
 
-        //initialiseNode(noise_node, {sourceNode: noise_source});
+        tsw.connect(noise_source, filter, node.output);
 
-        tsw.connect(noise_source, filter, noise_node.output);
-
-        return noise_node;
+        return node;
     };
 
     /*
