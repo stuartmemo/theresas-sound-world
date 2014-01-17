@@ -678,33 +678,24 @@ window.tsw = (function (window, undefined) {
      * @return Filter node.
      */
     tsw.createFilter = function (filterType, frequency, Q) {
-        var effect = {},
+        var node = tsw.createNode(),
             options = {},
             filter = tsw.context.createBiquadFilter();
 
         options.filterType = filterType || 'lowpass';
+        options.Q = options.Q || 0;
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
+        node.type = createGetSetter(filter.type.value);
+        node.frequency = createGetSetter(filter.frequency.value);
+        node.Q = createGetSetter(filter.Q.value);
 
-        //initialiseNode(filter, options);
+        node.type(options.filterType);
+        node.frequency(frequency || 1000);
+        node.Q(Q || 0);
 
-        filter.type = options.filterType;
-        filter.frequency.value = frequency || 1000;
+        tsw.connect(node.input, filter, node.output);
 
-        filter.Q.value = Q || 0;
-
-        effect.frequency = function (freq) {
-            if (typeof freq === 'undefined') {
-                return filter.frequency.value;
-            } else {
-                filter.frequency.value = freq;
-            }
-        };
-
-        tsw.connect(effect.input, filter, effect.output);
-
-        return effect;
+        return node;
     };
 
     /*
@@ -866,17 +857,19 @@ window.tsw = (function (window, undefined) {
             noise_source = this.createBufferSource(tsw.noise_buffer),
             filter = tsw.createFilter('lowpass');
 
+        colour = colour || 'white';
+
         node = tsw.createNode({sourceNode: noise_source});
+        node.nodeType = 'noise';
+
+        node.color = colour || 'white';
 
         noise_source.loop = true;
 
-        node.nodeType = 'noise';
-        node.color = colour || 'white';
-
         if (node.color === 'pink') {
-            filter.frequency = 1000;
+            filter.frequency(1000);
         } else {
-            filter.frequency = 10000;
+            filter.frequency(10000);
         }
 
         tsw.connect(noise_source, filter, node.output);
