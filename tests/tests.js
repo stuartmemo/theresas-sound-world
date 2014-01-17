@@ -26,8 +26,19 @@ describe('Theresa\'s Sound World', function () {
 			it('Can create node', function () {
 				expect(tsw.createNode().nodeType).toEqual('default');
 			});
+		});
 
-		})
+        describe('Browser Support', function () {
+            it('Browser is supported', function () {
+                expect(tsw.isBrowserSupported).toEqual(true);
+            });
+        });
+
+        describe('Create Buffer', function () {
+            it('Node is a Buffer', function () {
+                expect(tsw.createBuffer().nodeType).toEqual('buffer');
+            });
+        });
 
 		describe('Create Oscillator', function () {
 
@@ -87,6 +98,63 @@ describe('Theresa\'s Sound World', function () {
 				expect(volume.gain()).toEqual(0.2);
 			});
 		});
+
+        describe('Create Filter', function () {
+            it('Node should be a Filter', function () {
+                expect(tsw.createFilter().nodeType).toEqual('filter');
+            });
+
+            it('Creates a lowpass filter by default', function () {
+                expect(tsw.createFilter().type()).toEqual('lowpass');
+            });
+
+            it('Create a highpass filter by passing string', function () {
+                expect(tsw.createFilter('highpass').type()).toEqual('highpass');
+            });
+
+            it('Create a highpass filter by changing filter type', function () {
+                var filter = tsw.createFilter();
+                filter.type('highpass');
+                expect(filter.type()).toEqual('highpass');
+            });
+
+            it('Filter cut-off frequency should default to 1000', function () {
+                expect(tsw.createFilter().frequency()).toEqual(1000);
+            });
+
+            it('Sets filter frequency', function () {
+                var filter = tsw.createFilter();
+                filter.frequency(500);
+                expect(filter.frequency()).toEqual(500);
+            });
+
+            it('Filter Q should default to 0', function () {
+                expect(tsw.createFilter().Q()).toEqual(0);
+            });
+
+            it('Sets Q', function () {
+                var filter = tsw.createFilter();
+                filter.Q(5);
+                expect(filter.Q()).toEqual(5);
+            });
+
+            it('Create filter with options object', function () {
+                var filter = tsw.createFilter(
+                    {
+                        frequency: 500,
+                        type: 'notch',
+                        Q: 10
+                    }
+                );
+                expect(filter.frequency()).toEqual(500);
+                expect(filter.type()).toEqual('notch');
+                expect(filter.Q()).toEqual(10);
+            });
+        });
+
+        describe('Create Compressor', function () {
+            expect(tsw.createCompressor().nodeType).toEqual('compressor');
+        });
 
 		describe('Create Noise', function () {
 

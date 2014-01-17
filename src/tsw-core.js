@@ -60,6 +60,14 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
+     * Is an argument a string?
+     * @param thing Argument to check if it's an string.
+     */
+    var isString = function (thing) {
+        return typeof thing === 'string';
+    };
+
+    /*
      * Is an argument an object with an audio node?
      * @param thing Argument to check if it's an object with an audio node.
      */
@@ -648,6 +656,8 @@ window.tsw = (function (window, undefined) {
 
         var buffer = this.context.createBuffer(no_channels, buffer_size, sample_rate);
 
+        buffer.nodeType = 'buffer';
+
         buffer.play = function (time) {
             var buffer_source = tsw.createBufferSource(this);
             buffer_source.start(time || tsw.now());
@@ -677,21 +687,30 @@ window.tsw = (function (window, undefined) {
      * @param {string} filterType Type of filter.
      * @return Filter node.
      */
-    tsw.createFilter = function (filterType, frequency, Q) {
+    tsw.createFilter = function () {
         var node = tsw.createNode(),
             options = {},
             filter = tsw.context.createBiquadFilter();
 
-        options.filterType = filterType || 'lowpass';
+        if (isObject(arguments[0])) {
+            options.type = arguments[0].type || 'lowpass';
+            options.frequency = arguments[0].frequency || 1000;
+            options.Q = arguments[0].Q || 0;
+        } else if (isString(arguments[0])) {
+            options.type = arguments[0]; 
+        }
+
+        options.type = options.type || 'lowpass';
         options.Q = options.Q || 0;
 
         node.type = createGetSetter(filter.type.value);
         node.frequency = createGetSetter(filter.frequency.value);
         node.Q = createGetSetter(filter.Q.value);
 
-        node.type(options.filterType);
-        node.frequency(frequency || 1000);
-        node.Q(Q || 0);
+        node.nodeType = 'filter';
+        node.type(options.type);
+        node.frequency(options.frequency || 1000);
+        node.Q(options.Q || 0);
 
         tsw.connect(node.input, filter, node.output);
 
@@ -722,7 +741,8 @@ window.tsw = (function (window, undefined) {
          *  | (Source) |     | (DynamicsCompressor) |     | (Destination) |
          *  +----------+     +----------------------+     +---------------+
          */
-        var compressor = this.context.createDynamicsCompressor(),
+        var node = tsw.createNode(),
+            compressor = this.context.createDynamicsCompressor(),
             defaults = {
                 threshold: -24,     // dbs (min: -100, max: 0)
                 knee: 30,           // dbs (min: 0, max: 40)
@@ -731,10 +751,12 @@ window.tsw = (function (window, undefined) {
                 release: 0.25       // seconds (min: 0, max: 1)
             };
 
+        node.nodeType = 'compressor';
+
         settings = applyObject(defaults, settings);
         applySettings(compressor, settings);
 
-        return compressor;
+        return node;
     };
 
     /*
