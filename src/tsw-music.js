@@ -1,6 +1,6 @@
 /*********************************
  * Theresas's Sound World - Music
- * tsw-music.js
+ * music.js
  * Dependencies: tsw-core.js
  * Copyright 2013 Stuart Memo
  ********************************/
@@ -8,11 +8,11 @@
 (function (window, undefined) {
     'use strict';
 
-    var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
+    var music = {},
+        notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
         natural_notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     // append list of notes to itself to avoid worrying about writing wraparound code
 
-    notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     notes.push.apply(notes, notes);
 
     var intervals = ['unison', 'flat 2nd', '2nd', 'minor 3rd', 'major 3rd', 'perfect 4th',
@@ -105,11 +105,11 @@
     /*
      * Parses a chord name into a detailed object.
      *
-     * @method parseChord 
+     * @method getChord
      * @param {string} chord Name of chord to turn into object.
      * return {object} Detailed chord object.
      */
-    tsw.parseChord = function (chord) {
+    music.getChord = function (chord) {
         var chordObj = {},
             notePositions = [],
             rootNotePosition = 0;
@@ -130,22 +130,22 @@
             chordObj.octave = chord.match(/\d/g);
         }
 
-        if (!chordObj.isMajor && !chordObj.isMinor) {
-            // Hey! This aint no chord that I've ever seen!
-            return false;
+        if (!chordObj.isMajor && !chordObj.isMinor && !chord.is7th) {
+            // Hey! This aint no chord that I've ever seen! Default to major.
+            chordObj.isMajor = true;
         }
 
         rootNotePosition = getNotePosition(chordObj.rootNote);
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
-            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('minor 3rd'));
+            notePositions.push(rootNotePosition + music.getSemitoneDifference('minor 3rd'));
         } else {
-            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('major 3rd'));
+            notePositions.push(rootNotePosition + music.getSemitoneDifference('major 3rd'));
         }
 
-        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('perfect 5th'));
-        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('octave'));
+        notePositions.push(rootNotePosition + music.getSemitoneDifference('perfect 5th'));
+        notePositions.push(rootNotePosition + music.getSemitoneDifference('octave'));
 
         notePositions.forEach(function (position) {
             chordObj.notes.push(notes[position]);
@@ -162,7 +162,7 @@
      * @param {string} scaleType Type of scale to return.
      * @return {array} List of notes in scale.
      */
-    tsw.getScale = function (rootNote, scaleType) {
+    music.getScale = function (rootNote, scaleType) {
         if (scaleType === 'minor') {
             return getMinorScale(rootNote);
         } else {
@@ -177,7 +177,7 @@
      * @param {string} interval The name of the interval
      * @return {number} Number of semitones of interval from a base note.
      */
-    tsw.getSemitoneDifference = function (interval) {
+    music.getSemitoneDifference = function (interval) {
         var numberOfIntervals = intervals.length;
 
         for (var i = 0; i < numberOfIntervals; i++) {
@@ -187,31 +187,14 @@
         }
     };
 
-    tsw.getChord = function (str) {
-        return this.parseChord(str);
-    };
-
-    /*
-     * Returns a list of notes in a given chord.
-     *
-     * @method chordToNotes
-     * @param {string} chord Name of chord to turn into string.
-     * @return {array} List of notes in chord.
-     */
-    tsw.chordToNotes = function (chord) {
-        chord = this.parseChord(chord);
-
-        return chord.notes;
-    };
-
     /*
      * Returns the flat equivalent of a given note.
      *
-     * @method sharpToFlat
+     * @method getFlat
      * @param {string} note Note to convert.
      * @return {string} New flat note.
      */
-    tsw.sharpToFlat = function (note) {
+    music.getFlat = function (note) {
         var new_note;
 
         note = note.replace('#', 'b');
@@ -229,11 +212,11 @@
     /*
      * Returns the sharp equivalent of a given note.
      *
-     * @method flatToSharp
+     * @method getSharp
      * @param {string} note Note to convert.
      * @return {string} New sharp note.
      */
-    tsw.flatToSharp = function (note) {
+    music.getSharp = function (note) {
         var new_note,
             num_index = 0;
 
@@ -271,7 +254,7 @@
      * @param {string} note Note to convert to frequency
      * @return {number} Frequency of note
      */
-    tsw.getFrequency = function (note) {
+    music.getFrequency = function (note) {
         var octave,
             keyNumber,
             note_index,
@@ -288,7 +271,7 @@
             octave = 4;
         } 
 
-        note = this.flatToSharp(note);
+        note = this.getSharp(note);
         note_without_octave = note;
 
         /*
@@ -321,5 +304,7 @@
         // Return frequency of note
         return parseFloat((440 * Math.pow(2, (keyNumber - 57) / 12)), 10);
     };
+
+    tsw.music = music;
 
  })(window);

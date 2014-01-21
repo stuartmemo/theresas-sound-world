@@ -109,13 +109,12 @@ window.tsw = (function (window, undefined) {
         } else {
             return false;
         }
-    }
+    };
 
     /*
      * Enable jQuery style getters & setters.
      * @param paramToGetSet
      */
-    //node.type = createGetSetter.call(osc, ['type', 'frequency', 'waveType']);
 
     var createGetSetter = function (node, arrayOfParams) {
         var that = this;
@@ -632,6 +631,39 @@ window.tsw = (function (window, undefined) {
         createGetSetter.call(osc, node, ['type', 'frequency', 'waveType']);
         node.type(waveType || 'sine');
         node.frequency(frequency || 440);
+        frequency = frequency || 440;
+
+        node = tsw.createNode({sourceNode: osc});
+
+        node.waveType = waveType || 'sine';
+        node.nodeType = 'oscillator';
+
+        node.type = createGetSetter.call(osc, osc.type);
+
+        node.type = function (wt) {
+            if (typeof wt === 'undefined') {
+                return osc.type;
+            } else {
+                osc.type = wt.toLowerCase();
+            }
+        };
+
+        node.type(node.waveType.toLowerCase());
+
+        node.frequency = createGetSetter(osc.frequency);
+        node.frequency(frequency);
+
+        node.isPlaying = function () {
+            if (osc.playbackState === 2) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+
+        node.returnNode = function () {
+            return osc;
+        }
 
         tsw.connect(osc, node.output);
 
@@ -657,6 +689,12 @@ window.tsw = (function (window, undefined) {
         });
 
         createGetSetter.call(gainNode, node, ['gain']);
+
+        if (isObject(volume)) {
+            if (volume.hasOwnProperty('gain')) {
+                volume = volume.gain.value;                
+            }
+        }
 
         if (volume <= 0) {
             volume = 0;
@@ -750,6 +788,9 @@ window.tsw = (function (window, undefined) {
         options.Q = options.Q || 0;
 
         createGetSetter.call(filter, node, ['type', 'frequency', 'Q']);
+        node.type = createGetSetter(filter.type);
+        node.frequency = createGetSetter(filter.frequency);
+        node.Q = createGetSetter(filter.Q);
 
         node.type(options.type);
         node.frequency(options.frequency || 1000);

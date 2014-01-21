@@ -9,6 +9,7 @@
     'use strict';
 
     window.tsw = tsw || {};
+    var fx = {};
 
     /*
      * Creates delay node.
@@ -17,7 +18,7 @@
      * @param {object} settings Delay settings.
      * @return {AudioNode} Created delay node.
      */
-    tsw.fx.createDelay = function (settings) {
+    fx.createDelay = function (settings) {
 
         /*
          *  Delay effect
@@ -74,7 +75,7 @@
      * @param {object} settings Distortion settings.
      * @return Created distortion node.
      */
-    tsw.createDistortion = function (settings) {
+    fx.createDistortion = function (settings) {
 
         /*
          *  Distortion
@@ -123,7 +124,7 @@
      * @param {object} settings Flanger settings.
      * @return
      */
-    tsw.createFlanger = function (settings) {
+    fx.createFlanger = function (settings) {
 
         /*
          *  Flanger 
@@ -147,7 +148,7 @@
      * @param {object} settings Phaser settings
      * @return {AudioNode} Created phaser node.
      */
-    tsw.createPhaser = function (settings) {
+    fx.createPhaser = function (settings) {
 
         /****************************
         Phaser
@@ -216,7 +217,7 @@
      * @param {object} settings Reverb settings.
      * @return {AudioNode} The created reverb node.
      */
-    tsw.createReverb = function (settings) {
+    fx.createReverb = function (settings) {
 
         /***********************************
 
@@ -282,7 +283,7 @@
      * @param {object} settings Tremolo settings.
      * @return {AudioNode} Created tremolo node.
      */
-    tsw.createTremolo = function (settings) {
+    fx.createTremolo = function (settings) {
 
         /******************************
         
@@ -322,6 +323,6 @@
         return mmNode;
     };
 
-    console.log(tsw)
+    tsw.fx = fx;
 
 })(window);

@@ -97,6 +97,7 @@ describe('Theresa\'s Sound World', function () {
 				var volume = tsw.createGain();
 				volume.gain(0.2);
 				expect(volume.gain()).toEqual(0.20000000298023224);
+<<<<<<< HEAD
 			});
 		});
 
@@ -118,6 +119,8 @@ describe('Theresa\'s Sound World', function () {
 				var delay = tsw.createDelay();
 				delay.delayTime(0.2);
 				expect(delay.delayTime()).toEqual(0.20000000298023224);
+=======
+>>>>>>> bf0c855d386be41f1d44772fae153af973851812
 			});
 		});
 
@@ -195,27 +198,41 @@ describe('Theresa\'s Sound World', function () {
 
 	describe('Music', function () {
 		it('Turns sharp note into equivalent flat note', function () {
-			expect(tsw.sharpToFlat('A#')).toEqual('Bb');
-			expect(tsw.sharpToFlat('G#')).toEqual('Ab');
+			expect(tsw.music.getFlat('A#')).toEqual('Bb');
+			expect(tsw.music.getFlat('G#')).toEqual('Ab');
 		});
 
 		it('Turns flat note into equivalent sharp note', function () {
-			expect(tsw.flatToSharp('Db')).toEqual('C#');
-			expect(tsw.flatToSharp('Ab')).toEqual('G#');
+			expect(tsw.music.getSharp('Db')).toEqual('C#');
+			expect(tsw.music.getSharp('Ab')).toEqual('G#');
 		});
 
 		it('Returns the frequency of a given note', function () {
-			expect(tsw.getFrequency('A4')).toEqual(440.00);
-			expect(tsw.getFrequency('a6')).toEqual(1760.00);
-			expect(tsw.getFrequency('B2')).toEqual(123.47082531403103);
-			expect(tsw.getFrequency('C#3')).toEqual(138.59131548843604);
-			expect(tsw.getFrequency('d#3')).toEqual(155.56349186104046);
-			expect(tsw.getFrequency('eb3')).toEqual(155.56349186104046);
-			expect(tsw.getFrequency('C')).toEqual(261.6255653005986);
-			expect(tsw.getFrequency('D#')).toEqual(311.12698372208087);
-			expect(tsw.getFrequency('eb')).toEqual(311.12698372208087);
-			expect(tsw.getFrequency('Not a note')).toEqual(false);
-			expect(tsw.getFrequency(123)).toEqual(false);
+			expect(tsw.music.getFrequency('A4')).toEqual(440.00);
+			expect(tsw.music.getFrequency('a6')).toEqual(1760.00);
+			expect(tsw.music.getFrequency('B2')).toEqual(123.47082531403103);
+			expect(tsw.music.getFrequency('C#3')).toEqual(138.59131548843604);
+			expect(tsw.music.getFrequency('d#3')).toEqual(155.56349186104046);
+			expect(tsw.music.getFrequency('eb3')).toEqual(155.56349186104046);
+			expect(tsw.music.getFrequency('C')).toEqual(261.6255653005986);
+			expect(tsw.music.getFrequency('D#')).toEqual(311.12698372208087);
+			expect(tsw.music.getFrequency('eb')).toEqual(311.12698372208087);
+			expect(tsw.music.getFrequency('Not a note')).toEqual(false);
+			expect(tsw.music.getFrequency(123)).toEqual(false);
 		});
+
+        it('Get notes from given chord', function () {
+            expect(tsw.music.getChord('C', 'major')).toEqual(['C', 'E', 'G', 'C']);
+            expect(tsw.music.getChord('c')).toEqual(['C', 'E', 'G', 'C']);
+        });
+
+        it('Get scale from given note', function () {
+            expect(tsw.music.getScale('C', 'major')).toEqual([ 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C' ]);
+            expect(tsw.music.getScale('D', 'minor')).toEqual([ 'D', 'E', 'F', 'G', 'A', 'A#', 'C', 'D']);
+        });
+	});
+
+	describe('MIDI', function () {
+        expect(tsw.midi.getNote(48)).toEqual('C3'); 
 	});
 });
