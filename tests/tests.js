@@ -24,7 +24,8 @@ describe('Theresa\'s Sound World', function () {
 
 		describe('Nodes', function () {
 			it('Can create node', function () {
-				expect(tsw.createNode().nodeType).toEqual('default');
+				var wat = tsw.createNode();
+				expect(tsw.createNode().nodeType()).toEqual('default');
 			});
 		});
 
@@ -36,34 +37,34 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Create Buffer', function () {
             it('Node is a Buffer', function () {
-                expect(tsw.createBuffer().nodeType).toEqual('buffer');
+                expect(tsw.createBuffer().nodeType()).toEqual('buffer');
             });
         });
 
 		describe('Create Oscillator', function () {
 
 			it('Node is an OscillatorNode', function () {
-				expect(tsw.createOscillator().nodeType).toEqual('oscillator');
+				expect(tsw.createOscillator().nodeType()).toEqual('oscillator');
 			});
 
 			it('Default type is a sine wave', function () {
-				expect(tsw.createOscillator().waveType).toEqual('sine');
+				expect(tsw.createOscillator().type()).toEqual('sine');
 			});
 
 			it('Creates a sine wave.', function () {
-				expect(tsw.createOscillator('sine').waveType).toEqual('sine');
+				expect(tsw.createOscillator('sine').type()).toEqual('sine');
 			});
 
 			it('Creates a square wave.', function () {
-				expect(tsw.createOscillator('square').waveType).toEqual('square');
+				expect(tsw.createOscillator('square').type()).toEqual('square');
 			});
 
 			it('Creates a triangle wave', function () {
-				expect(tsw.createOscillator('triangle').waveType).toEqual('triangle');
+				expect(tsw.createOscillator('triangle').type()).toEqual('triangle');
 			});
 
 			it('Creates a sawtooth wave', function () {
-				expect(tsw.createOscillator('sawtooth').waveType).toEqual('sawtooth');
+				expect(tsw.createOscillator('sawtooth').type()).toEqual('sawtooth');
 			});
 
 			it('Creates a sine wave with a certain frequency', function () {
@@ -81,7 +82,7 @@ describe('Theresa\'s Sound World', function () {
 		describe('Create Gain', function () {
 
 			it('Node should be a GainNode', function () {
-				expect(tsw.createGain().nodeType).toEqual('gain');
+				expect(tsw.createGain().nodeType()).toEqual('gain');
 			});
 
 			it('Default gain value should be 1', function () {
@@ -92,16 +93,37 @@ describe('Theresa\'s Sound World', function () {
 				expect(tsw.createGain(0.5).gain()).toEqual(0.5);
 			});
 
-			it('Create gain node with different gain level than default using object syntax', function () {
+			it('Create gain node and change gain level after creation', function () {
 				var volume = tsw.createGain();
 				volume.gain(0.2);
-				expect(volume.gain()).toEqual(0.2);
+				expect(volume.gain()).toEqual(0.20000000298023224);
+			});
+		});
+
+		describe('Create Delay', function () {
+
+			it('Node should be a delay node', function () {
+				expect(tsw.createDelay().nodeType()).toEqual('delay');
+			});
+
+			it('Default delayTime value should be 1', function () {
+				expect(tsw.createDelay().delayTime()).toEqual(1);
+			});
+
+			it('Create delay node with different delayTime than default', function () {
+				expect(tsw.createDelay(0.5).delayTime()).toEqual(0.5);
+			});
+
+			it('Create delay node and change delayTime after creation', function () {
+				var delay = tsw.createDelay();
+				delay.delayTime(0.2);
+				expect(delay.delayTime()).toEqual(0.20000000298023224);
 			});
 		});
 
         describe('Create Filter', function () {
             it('Node should be a Filter', function () {
-                expect(tsw.createFilter().nodeType).toEqual('filter');
+                expect(tsw.createFilter().nodeType()).toEqual('filter');
             });
 
             it('Creates a lowpass filter by default', function () {
@@ -153,17 +175,17 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Create Compressor', function () {
-            expect(tsw.createCompressor().nodeType).toEqual('compressor');
+            expect(tsw.createCompressor().nodeType()).toEqual('compressor');
         });
 
 		describe('Create Noise', function () {
 
 			it('Node nodeType is "noise"', function () {
-				expect(tsw.createNoise().nodeType).toEqual('noise');
+				expect(tsw.createNoise().nodeType()).toEqual('noise');
 			});
 
 			it('Default colour is "white"', function () {
-				expect(tsw.createNoise().color).toEqual('white');
+				expect(tsw.createNoise().color()).toEqual('white');
 			});
 		});
 	});

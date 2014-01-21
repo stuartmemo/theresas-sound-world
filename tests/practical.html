@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Practical TSW tests</title>
+	</head>
+	<body>
+		<h1>Practical TSW tests</h1>
+		<section>
+			<h2>Core</h2>
+			<section>
+				<h3>Time</h3>
+				<p>Current time is: <span id="current-time"></span></p>
+				<button id="print-current-time">Print current time</button>
+			</section>
+		</section>
+		<section>
+			<h2>Effects</h2>
+			<section>
+				<h3>Delay</h3>
+				<button id="effects-delay">Test delay effect</button>
+			</section>
+		</section>
+
+		<section>
+			<h2>Music</h2>
+		</section>
+
+		<script src="../src/tsw-core.js"></script>
+		<script src="../src/tsw-effects.js"></script>
+
+		<script>
+			document.querySelector('button').addEventListener('click', function () {
+				console.log(this.id);
+			});
+		</script
+	</body>
+</html>
