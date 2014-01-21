@@ -118,9 +118,17 @@ window.tsw = (function (window, undefined) {
     var createGetSetter = function (paramToGetSet) {
         return function (val) {
             if (typeof val === 'undefined') {
-                return paramToGetSet;
+                if (paramToGetSet.hasOwnProperty('value')) {
+                    return paramToGetSet.value;
+                } else {
+                    return paramToGetSet;
+                }
             } else {
-                paramToGetSet = val;
+                if (paramToGetSet.hasOwnProperty('value')) {
+                    paramToGetSet.value = val;
+                } else {
+                    paramToGetSet = val;
+                }
             }
         }
     };
@@ -606,8 +614,12 @@ window.tsw = (function (window, undefined) {
         node.type = createGetSetter(osc.type);
         node.type(node.waveType.toLowerCase());
 
-        node.frequency = createGetSetter(osc.frequency.value);
+        node.frequency = createGetSetter(osc.frequency);
         node.frequency(frequency);
+
+        node.returnNode = function () {
+            return osc;
+        };
 
         tsw.connect(osc, node.output);
 
@@ -703,9 +715,9 @@ window.tsw = (function (window, undefined) {
         options.type = options.type || 'lowpass';
         options.Q = options.Q || 0;
 
-        node.type = createGetSetter(filter.type.value);
-        node.frequency = createGetSetter(filter.frequency.value);
-        node.Q = createGetSetter(filter.Q.value);
+        node.type = createGetSetter(filter.type);
+        node.frequency = createGetSetter(filter.frequency);
+        node.Q = createGetSetter(filter.Q);
 
         node.nodeType = 'filter';
         node.type(options.type);

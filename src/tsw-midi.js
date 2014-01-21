@@ -8,37 +8,37 @@
  (function (window, undefined) {
     'use strict';
 
-   var MIDI = (function () {
-        /*
-         * Creates an instance of MIDI
-         *
-         * @param {AudioContext} Current audio context
-         */
-        var MIDI = function (context) {
-            this.context = context;
-        };
+    tsw = tsw || {};
+    var midi = {};
 
-        /*
-         * Initiate MIDI input/output if available.
-         *
-         * @method startMIDI
-         * @param {function} success
-         * @param {function} failure
-         */
-        MIDI.prototype.getUserMIDI = function (success, failure) {
-            navigator.requestMIDIAccess().then(success, failure);
-        };
+    midi.isSupported = function () {
+        return typeof navigator.requestMIDIAccess === 'function';
+    }
 
-        MIDI.prototype.MIDINumberToNote = function (number) {
-            var noteOnScale = number % 12,
-                octave = Math.floor(number / 12),
-                notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    /*
+     * Initiate MIDI input/output if available.
+     *
+     * @method startMIDI
+     * @param {function} success
+     * @param {function} failure
+     */
+    midi.getUserMIDI = function (success, failure) {
+        navigator.requestMIDIAccess().then(success, failure);
+    };
 
-            return notes[noteOnScale] + octave;
-        };
+    midi.getNote = function (number) {
+        var noteOnScale = number % 12,
+            octave = Math.floor(number / 12),
+            notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-        return MIDI;
-    })();
+        notes.push.apply(notes, notes);
 
-    window.tsw.midi = new MIDI();
+        return notes[noteOnScale] + octave;
+    };
+
+    midi.getNoteNumber = function (note) {
+        
+    };
+
+    tsw.midi = midi;
 })(window);
