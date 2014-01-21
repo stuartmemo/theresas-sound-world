@@ -95,7 +95,7 @@ describe('Theresa\'s Sound World', function () {
 			it('Create gain node with different gain level than default using object syntax', function () {
 				var volume = tsw.createGain();
 				volume.gain(0.2);
-				expect(volume.gain()).toEqual(0.2);
+				expect(volume.gain()).toEqual(0.20000000298023224);
 			});
 		});
 

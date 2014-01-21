@@ -109,7 +109,7 @@ window.tsw = (function (window, undefined) {
         } else {
             return false;
         }
-    }
+    };
 
     /*
      * Enable jQuery style getters & setters.
@@ -611,15 +611,32 @@ window.tsw = (function (window, undefined) {
         node.waveType = waveType || 'sine';
         node.nodeType = 'oscillator';
 
-        node.type = createGetSetter(osc.type);
+        node.type = createGetSetter.call(osc, osc.type);
+
+        node.type = function (wt) {
+            if (typeof wt === 'undefined') {
+                return osc.type;
+            } else {
+                osc.type = wt.toLowerCase();
+            }
+        };
+
         node.type(node.waveType.toLowerCase());
 
         node.frequency = createGetSetter(osc.frequency);
         node.frequency(frequency);
 
+        node.isPlaying = function () {
+            if (osc.playbackState === 2) {
+                return true;
+            } else {
+                return false;
+            }
+        };
+
         node.returnNode = function () {
             return osc;
-        };
+        }
 
         tsw.connect(osc, node.output);
 
@@ -640,9 +657,15 @@ window.tsw = (function (window, undefined) {
             gainNode = this.context.createGainNode();
         }
 
+        if (isObject(volume)) {
+            if (volume.hasOwnProperty('gain')) {
+                volume = volume.gain.value;                
+            }
+        }
+
         node = tsw.createNode();
         node.nodeType = 'gain';
-        node.gain = createGetSetter(gainNode.gain.value);
+        node.gain = createGetSetter(gainNode.gain);
 
         if (volume <= 0) {
             volume = 0;
@@ -653,6 +676,10 @@ window.tsw = (function (window, undefined) {
         }
 
         node.gain(volume);
+
+        console.log(volume);
+
+        tsw.connect(node.input, gainNode, node.output);
 
         return node;
     };
