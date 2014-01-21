@@ -17,7 +17,7 @@
      * @param {object} settings Delay settings.
      * @return {AudioNode} Created delay node.
      */
-    tsw.createDelay = function (settings) {
+    tsw.fx.createDelay = function (settings) {
 
         /*
          *  Delay effect
