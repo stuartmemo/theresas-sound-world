@@ -1,36 +1,89 @@
 <!doctype html>
 <html>
 	<head>
+		<meta charset="utf-8"/>
 		<title>Practical TSW tests</title>
+		<link href="http://theresassoundworld.com/styles/master.css" rel="stylesheet"/>
+		<style>
+			h1 {
+				font-family: 'Helvetica Neue', arial;
+				margin: 0.3em 0;
+			}
+
+			div.main {
+				position: relative;
+			}
+
+			#test-plate {
+				width: 300px;
+				height: 300px;
+				background: maroon;
+				position: fixed;
+				left: 50%;
+				top: 74px;
+				margin-left: 100px;
+			}
+		</style>
 	</head>
 	<body>
-		<h1>Practical TSW tests</h1>
-		<section>
-			<h2>Core</h2>
-			<section>
-				<h3>Time</h3>
-				<p>Current time is: <span id="current-time"></span></p>
-				<button id="print-current-time">Print current time</button>
-			</section>
-		</section>
-		<section>
-			<h2>Effects</h2>
-			<section>
-				<h3>Delay</h3>
-				<button id="effects-delay">Test delay effect</button>
-			</section>
-		</section>
+		<div class="container">
+			<h1>Practical TSW tests</h1>
+			<div role="main" class="main">
+				<section>
+					<h2>Core</h2>
 
-		<section>
-			<h2>Music</h2>
-		</section>
+					<h3>Time</h3>
+					<p>Current time is: <span id="current-time"></span></p>
+					<button id="print-current-time">Print current time</button>
+
+					<h3>Gain</h3>
+					<p>Volume starts off at 0.5. Changes suddendly to 0.1 after 2 seconds. Then ramps up and down.</p>
+					<button id="test-gain">Test gain</button>
+				</section>
+				<section>
+					<h2>Effects</h2>
+					<section>
+						<h3>Delay</h3>
+						<button id="effects-delay">Test delay effect</button>
+					</section>
+				</section>
+
+				<section>
+					<h2>Music</h2>
+				</section>
+			</div>
+		</div>
 
 		<script src="../src/tsw-core.js"></script>
 		<script src="../src/tsw-effects.js"></script>
 
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>	
+
 		<script>
-			document.querySelector('button').addEventListener('click', function () {
-				console.log(this.id);
+			// Volume starts off at 0.5. Changes suddendly to 0.1 after 2 seconds. Then ramps up and down.
+			var testGain = function () {
+				var osc = tsw.createOscillator(),
+					vol = tsw.createGain(0.5);
+
+				tsw.connect(osc, vol, tsw.speakers);
+				osc.start(tsw.now());
+
+				vol.gain(0.1, tsw.now() + 2);
+				vol.gain(0.8, tsw.now() + 6, 6);
+				vol.gain(0, tsw.now() + 10, 3);
+
+				osc.stop(tsw.now() + 10);
+			};
+
+			$('button').click(function () {
+				switch (this.id) {
+					case 'print-current-time':
+						$('#current-time').text(tsw.now());
+						break;
+					case 'test-gain':
+						testGain();
+					default:
+				}
 			});
 		</script
 	</body>

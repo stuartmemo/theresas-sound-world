@@ -97,7 +97,6 @@ describe('Theresa\'s Sound World', function () {
 				var volume = tsw.createGain();
 				volume.gain(0.2);
 				expect(volume.gain()).toEqual(0.20000000298023224);
-<<<<<<< HEAD
 			});
 		});
 
@@ -119,8 +118,6 @@ describe('Theresa\'s Sound World', function () {
 				var delay = tsw.createDelay();
 				delay.delayTime(0.2);
 				expect(delay.delayTime()).toEqual(0.20000000298023224);
-=======
->>>>>>> bf0c855d386be41f1d44772fae153af973851812
 			});
 		});
 

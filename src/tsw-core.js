@@ -68,6 +68,14 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
+     * Is an argument defined?
+     * @param thing Argument to check if it's defined.
+     */
+    var isDefined = function (thing) {
+        return typeof thing !== 'undefined';
+    };
+
+    /*
      * Is an argument an object with an audio node?
      * @param thing Argument to check if it's an object with an audio node.
      */
@@ -120,7 +128,8 @@ window.tsw = (function (window, undefined) {
         var that = this;
 
         arrayOfParams.forEach(function (param, index) {
-            node[param] = function (val) {
+            node[param] = function (val, targetTime, transition) {
+
                 if (typeof val === 'undefined') {
                     if (that[param].hasOwnProperty('value')) {
                         return that[param].value;
@@ -129,6 +138,12 @@ window.tsw = (function (window, undefined) {
                     }
                 } else {
                     if (that[param].hasOwnProperty('value')) {
+                        if (isDefined(targetTime)) {
+                            // Set current value first so we have a schedule.
+                            transition = transition || 0;
+                            that[param].setTargetAtTime(that[param].value, tsw.now(), transition);
+                            that[param].setTargetAtTime(val, targetTime, transition);
+                        }
                         that[param].value = val;
                     } else {
                         that[param] = val;
@@ -633,13 +648,12 @@ window.tsw = (function (window, undefined) {
         node.frequency(frequency || 440);
         frequency = frequency || 440;
 
-        node = tsw.createNode({sourceNode: osc});
-
         node.waveType = waveType || 'sine';
-        node.nodeType = 'oscillator';
+        node.nodeType = function () {
+            return 'oscillator';
+        };
 
-        node.type = createGetSetter.call(osc, osc.type);
-
+/*
         node.type = function (wt) {
             if (typeof wt === 'undefined') {
                 return osc.type;
@@ -647,10 +661,10 @@ window.tsw = (function (window, undefined) {
                 osc.type = wt.toLowerCase();
             }
         };
+        */
 
         node.type(node.waveType.toLowerCase());
 
-        node.frequency = createGetSetter(osc.frequency);
         node.frequency(frequency);
 
         node.isPlaying = function () {
@@ -788,9 +802,6 @@ window.tsw = (function (window, undefined) {
         options.Q = options.Q || 0;
 
         createGetSetter.call(filter, node, ['type', 'frequency', 'Q']);
-        node.type = createGetSetter(filter.type);
-        node.frequency = createGetSetter(filter.frequency);
-        node.Q = createGetSetter(filter.Q);
 
         node.type(options.type);
         node.frequency(options.frequency || 1000);
