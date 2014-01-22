@@ -29,14 +29,24 @@ module.exports = function (grunt) {
         watch: {
             files: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
             tasks: ['concat', 'uglify']
+        },
+
+        connect: {
+            server: {
+                options: {
+                    port: 9000,
+                    keepalive: true
+                }
+            }
         }
     });
 
     // Load plugins.
+    grunt.loadNpmTasks('grunt-contrib-connect');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Default tasks.
-    grunt.registerTask('default', ['watch']);
+    grunt.registerTask('default', ['connect', 'watch']);
 };
