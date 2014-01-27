@@ -34,8 +34,7 @@ module.exports = function (grunt) {
         connect: {
             server: {
                 options: {
-                    port: 9000,
-                    keepalive: true
+                    port: 9000
                 }
             }
         }
@@ -48,5 +47,6 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-concat');
 
     // Default tasks.
-    grunt.registerTask('default', ['connect', 'watch']);
+    grunt.registerTask('default', ['watch']);
+    grunt.registerTask('server', ['connect', 'watch']);
 };

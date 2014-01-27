@@ -4,21 +4,21 @@ describe('Theresa\'s Sound World', function () {
 		describe('Audio Context', function () {
 
 			it('Context exists', function () {
-				expect(tsw.context.constructor.name).toEqual('AudioContext');
+				expect(typeof tsw['context']).toEqual('function');
 			})
 		});
 
 		describe('Output', function () {
 
 			it('Speakers exist', function () {
-				expect(tsw.speakers.constructor.name).toEqual('AudioDestinationNode');
+				expect(typeof tsw.speakers).toEqual('object');
 			});
 		})
 
 		describe('Time', function () {
 
 			it('Now is current context time', function () {
-				expect(tsw.context.currentTime).toEqual(tsw.now());
+				expect(tsw.context().currentTime).toEqual(tsw.now());
 			});
 		});
 
@@ -188,9 +188,80 @@ describe('Theresa\'s Sound World', function () {
 				expect(tsw.createNoise().color()).toEqual('white');
 			});
 		});
+
+		describe('Load files', function () {
+
+			it('Load some mp3s', function () {
+				tsw.load({
+					sample_one: 'samples/tsw1.mp3',
+					sample_two: 'samples/tsw2.mp3',
+					sample_three: 'samples/tsw3.mp3',
+				}, function (success) {
+					expect(Object.keys(success).length === 3);
+				});
+			});
+		});
+
+		describe('Fade In', function () {
+
+			it('Oscillator node fades in', function () {
+				var osc = tsw.createOscillator(),
+					mute = tsw.createGain(0);
+
+				expect(osc.output.gain.value).toEqual(1);
+				tsw.connect(osc, mute, tsw.speakers);
+				osc
+					.start(tsw.now())
+					.fadeIn();
+
+				osc.stop(tsw.now() + 3);
+
+				waits(3000);
+
+				runs(function () {
+					expect(osc.output.gain.value).toEqual(1);
+				});
+			});
+		});
+
+		describe('Fade Out', function () {
+
+			it('Oscillator node fades out', function () {
+				var osc = tsw.createOscillator(),
+					mute = tsw.createGain(0);
+
+				expect(osc.output.gain.value).toEqual(1);
+				tsw.connect(osc, mute, tsw.speakers);
+				osc
+					.start(tsw.now())
+					.fadeOut();
+
+				waits(3000);
+
+				runs(function () {
+					expect(osc.output.gain.value).toEqual(0);
+				});
+			});
+		});
 	});
 
 	describe('Effects', function () {
+
+        it('Create delay effect', function () {
+        	// tsw.fx.createDelay
+        });
+
+        it('Create distortion effect', function () {
+        	// tsw.fx.createDelay
+        });
+
+        it('Create phaser effect', function () {
+        	// tsw.fx.createDelay
+        });
+
+        it('Create tremolo effect', function () {
+        	// tsw.fx.createDelay
+        });
 	});
 
 	describe('Music', function () {
@@ -224,12 +295,16 @@ describe('Theresa\'s Sound World', function () {
         });
 
         it('Get scale from given note', function () {
-            expect(tsw.music.getScale('C', 'major')).toEqual([ 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C' ]);
-            expect(tsw.music.getScale('D', 'minor')).toEqual([ 'D', 'E', 'F', 'G', 'A', 'A#', 'C', 'D']);
+            expect(tsw.music.scale ('C', 'major')).toEqual([ 'C', 'D', 'E', 'F', 'G', 'A', 'B', 'C' ]);
+            expect(tsw.music.scale('D', 'minor')).toEqual([ 'D', 'E', 'F', 'G', 'A', 'A#', 'C', 'D']);
         });
 	});
 
 	describe('MIDI', function () {
-        expect(tsw.midi.getNote(48)).toEqual('C3'); 
+		it('Gets note name from given MIDI number', function () {
+	        expect(tsw.midi.getNote(0)).toEqual('C0');
+	        expect(tsw.midi.getNote(48)).toEqual('C4');
+	        expect(tsw.midi.getNote(30)).toEqual('F#2');
+		});
 	});
 });

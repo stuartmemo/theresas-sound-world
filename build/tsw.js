@@ -3,980 +3,1173 @@
  * Theresa's Sound World
  * tsw.js
  * An audio library.
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  *****************************/
 
-window.tsw = (function (window, undefined) {
+(function (window, undefined) {
     'use strict';
 
-    /***********
-     * Helpers *
-     **********/
+    var tsw,
+        version = '1.0.0';
 
-    /*
-     * Applies the attributes of one object to another.
-     * @return {object} A newly merged object.
-     */
-    var applyObject = function (obj1, obj2) {
-        for (var attr in obj2) {
-            obj1[attr] = obj2[attr];
-        }
+    tsw = (function () {
 
-        return obj1;
-    };
+        /***********
+         * Helpers *
+         **********/
 
-    /*
-     * Applies the settings object to a node.
-     * @method applySettings
-     * @return {AudioNode} Node with settings applied.
-     */
-    var applySettings = function (node, settings) {
-        for (var setting in settings) {
-            node[setting].value = settings[setting];
-        }
-    };
-
-    /*
-     * Is a variable an array?
-     * @param thing Variable to check if it's an array.
-     */
-     var isArray = function (thing) {
-        return Array.isArray(thing);
-     };
-
-    /*
-     * Is a variable an object?
-     * @param thing Argument to check if it's an object.
-     */
-     var isObjectWithNode = function (thing) {
-        var is_object_with_node = false;
-
-        if (Object(thing)) {
-            if ('node' in thing) {
-                is_object_with_node = true;
+        /*
+         * Applies the attributes of one object to another.
+         * @return {object} A newly merged object.
+         */
+        var applyObject = function (obj1, obj2) {
+            for (var attr in obj2) {
+                obj1[attr] = obj2[attr];
             }
-        }
 
-        return is_object_with_node;
-     };
+            return obj1;
+        };
 
-    /*
-     * Is variable a native node?
-     * @parm thing Argument to check if it's a native node wat.
-     */
-    var isNativeNode = function (thing) {
-        return (typeof thing.context !== 'undefined');
-    };
+        /*
+         * Applies the settings object to a node.
+         * @method applySettings
+         * @return {AudioNode} Node with settings applied.
+         */
+        var applySettings = function (node, settings) {
+            for (var setting in settings) {
+                node[setting].value = settings[setting];
+            }
+        };
 
-    /*
-     * Is variable a tsw node?
-     * @parm thing Argument to check if it's a tsw node.
-     */
-    var isTswNode = function (thing) {
-        return (thing.hasOwnProperty('input') || thing.hasOwnProperty('output'));
-    };
+        /*
+         * Is an argument an array?
+         * @param thing Argument to check if it's an array.
+         */
+         var isArray = function (thing) {
+            return Array.isArray(thing);
+         };
 
-    /*
-     * Is property of an object an audio parameter?
-     * @param thing Argument to check if is an audio paramter.
-     */
-    var isAudioParam = function (thing) {
-        return ('setValueAtTime' in thing);
-    }
+        /*
+         * Is an argument a function?
+         * @param thing Argument to check if it's a function.
+         */
+         var isFunction = function (thing) {
+            return typeof thing === 'function';
+         };
 
-    /***************
-     * Sound World *
-     **************/
+        /*
+         * Is an argument an object?
+         * @param thing Argument to check if it's an object.
+         */
+        var isObject = function (thing) {
+            return typeof thing === 'object';
+        };
 
-    var tsw = {},
-        nodes_to_disconnect = [];
+        /*
+         * Is an argument a string?
+         * @param thing Argument to check if it's an string.
+         */
+        var isString = function (thing) {
+            return typeof thing === 'string';
+        };
 
-    tsw.version = '0.0.1';
-    tsw.isBrowserSupported = false;
-    tsw.processors = []; // Add ScriptProcessor nodes to global object to avoid garbage collection.
+        /*
+         * Is an argument defined?
+         * @param thing Argument to check if it's defined.
+         */
+        var isDefined = function (thing) {
+            return typeof thing !== 'undefined';
+        };
 
-    var initialise = function () {
-        tsw.noise_buffer = tsw.createBuffer();
+        /*
+         * Is an argument an object with an audio node?
+         * @param thing Argument to check if it's an object with an audio node.
+         */
+         var isObjectWithNode = function (thing) {
+            var is_object_with_node = false;
 
-        for (var i = 0; i < tsw.noise_buffer.length; i++) {
-            tsw.noise_buffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
-        }
-    };
+            if (Object(thing)) {
+                if ('node' in thing) {
+                    is_object_with_node = true;
+                }
+            }
 
-    /*
-     * Check if browser has Web Audio API.
-     * Also, map older API methods to new ones.
-     * @param {function} success Success method execute.
-     * @param {function} failure Failure method execute.
-     */
-    var checkBrowserSupport = function (success, failure) {
-        // Check if the Web Audio API is supported.
-        if (typeof webkitAudioContext === 'undefined' && typeof AudioContext === 'undefined') {
-            if (typeof webkitAudioContext.prototype.createGainNode === 'undefined') {
-                failure('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
+            return is_object_with_node;
+         };
+
+        /*
+         * Is an argument a native node?
+         * @parm thing Argument to check if it's a native node wat.
+         */
+        var isNativeNode = function (thing) {
+            return typeof thing.context !== 'undefined';
+        };
+
+        /*
+         * Is an argument a tsw node?
+         * @parm thing Argument to check if it's a tsw node.
+         */
+        var isTswNode = function (thing) {
+            return (thing.hasOwnProperty('input') || thing.hasOwnProperty('output'));
+        };
+
+        /*
+         * Is property of an object an audio parameter?
+         * @param thing Argument to check if is an audio paramter.
+         */
+        var isAudioParam = function (thing) {
+            if (isObject(thing)) {
+                return ('setValueAtTime' in thing);
             } else {
-                // Using older version of API.
-                var ctx = webkitAudioContext.prototype;
-
-                ctx.createGain  = ctx.createGainNode;
-                ctx.createDelay  = ctx.createDelayNode;
-                ctx.createScriptProcessor = ctx.createJavaScriptNode;
+                return false;
             }
-        } else {
-            if (typeof AudioContext === 'function') {
-                tsw.context = new AudioContext();
+        };
+
+        /*
+         * Enable jQuery style getters & setters.
+         * @param paramToGetSet
+         */
+
+        var createGetSetter = function (node, arrayOfParams) {
+            var that = this;
+
+            arrayOfParams.forEach(function (param, index) {
+                node[param] = function (val, targetTime, transition) {
+
+                    if (typeof val === 'undefined') {
+                        if (that[param].hasOwnProperty('value')) {
+                            return that[param].value;
+                        } else {
+                            return that[param];
+                        }
+                    } else {
+                        if (that[param].hasOwnProperty('value')) {
+                            if (isDefined(targetTime)) {
+                                // Set current value first so we have a schedule.
+                                transition = transition || 0;
+                                that[param].setTargetAtTime(that[param].value, tsw.now(), transition);
+                                that[param].setTargetAtTime(val, targetTime, transition);
+                            }
+                            that[param].value = val;
+                        } else {
+                            that[param] = val;
+                        }
+                    }
+                }
+            });
+        };
+
+        /***************
+         * Sound World *
+         **************/
+
+        var tsw = {},
+            nodes_to_disconnect = [];
+
+        tsw.version = version;
+        tsw.isBrowserSupported = false;
+        tsw.processors = []; // Add ScriptProcessor nodes to global object to avoid garbage collection.
+
+        var initialise = function () {
+            tsw.noise_buffer = tsw.buffer();
+
+            for (var i = 0; i < tsw.noise_buffer.buffer().length; i++) {
+                tsw.noise_buffer.buffer().getChannelData(0)[i] = (Math.random() * 2) - 1;
+            }
+            tsw.noise_buffer
+        };
+
+        /*
+         * Check if browser has Web Audio API.
+         * Also, map older API methods to new ones.
+         * @param {function} success Success method execute.
+         * @param {function} failure Failure method execute.
+         */
+        var checkBrowserSupport = function (success, failure) {
+            var context;
+            // Check if the Web Audio API is supported.
+            if (typeof webkitAudioContext === 'undefined' && typeof AudioContext === 'undefined') {
+                if (typeof webkitAudiocontext().prototype.createGainNode === 'undefined') {
+                    failure('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
+                } else {
+                    // Using older version of API.
+                    var ctx = webkitAudiocontext().prototype;
+
+                    ctx.createGain  = ctx.createGainNode;
+                    ctx.createDelay  = ctx.createDelayNode;
+                    ctx.createScriptProcessor = ctx.createJavaScriptNode;
+                }
             } else {
-                tsw.context = new webkitAudioContext();
+                if (typeof AudioContext === 'function') {
+                    context = new AudioContext();
+                    tsw.context = function () {
+                        return context;
+                    };
+                } else {
+                    context = new webkitAudioContext();
+                    tsw.context = function () {
+                        return context;
+                    };
+                }
             }
-        }
 
-        // All is good, continue;
-        tsw.isBrowserSupported = true;
-        success();
-    };
-
-    /*
-     * Map WAAPI methods to tsw.
-     */
-    var mapToSoundWorld = function () {
-        tsw.speakers = tsw.context.destination;
-    };
-
-    tsw.createNode = function () {
-        var node = {};
-
-        node.input = tsw.createGain();
-        node.output = tsw.createGain();
-        node.nodeType = 'default';
-
-        return node;
-    };
-
-    /*
-     * Get the current time of the audio context.
-     * @return {number} Time since audio began (in seconds).
-     */
-    tsw.now = function () {
-        return this.context.currentTime;
-    };
-
-    tsw.createChannelMerger = function (channels) {
-        return tsw.context.createChannelMerger(channels);
-    };
-
-    /*
-     * Connects multiple nodes together.
-     * @param {AudioNodes} arguments Nodes to connect in order.
-     */
-    tsw.connect = function () {
-
-        var updateConnectedToArray = function (node1, node2) {
-            node1.connectedTo.push(node2);
-            node2.connectedTo.push(node1);
+            // All is good, continue;
+            tsw.isBrowserSupported = true;
+            success();
         };
 
-        var connectNativeNodeToNativeNode = function () {
-            arguments[0].connect(arguments[1]);
+        /*
+         * Map WAAPI methods to tsw.
+         */
+        var mapToSoundWorld = function () {
+            tsw.speakers = tsw.context().destination;
         };
 
-        var connectNativeNodeToTswNode = function () {
-            arguments[0].connect(arguments[1].input);
+        /*
+         * Fade in an audio source.
+         * @param thingToFadeOut Audio source to fade out.
+         */
+        var fadeIn = function (thingToFadeIn) {
+            thingToFadeIn.output.gain.cancelScheduledValues(tsw.now());
+            thingToFadeIn.output.gain.setValueAtTime(0, tsw.now());
+            thingToFadeIn.output.gain.linearRampToValueAtTime(1, tsw.now() + 2);
         };
 
-        var connectNativeNodeToArray = function () {
-            for (var j = 0; j < arguments[1].length; j++) {
-                tsw.connect(arguments[0], arguments[1][j]);
-            }
+        /*
+         * Fade out an audio source.
+         * @param thingToFadeOut Audio source to fade out.
+         */
+        var fadeOut = function (thingToFadeOut) {
+            thingToFadeOut.output.gain.cancelScheduledValues(tsw.now());
+            thingToFadeOut.output.gain.setValueAtTime(1, tsw.now());
+            thingToFadeOut.output.gain.linearRampToValueAtTime(0, tsw.now() + 2);
         };
 
-        var connectArrayToNativeNode = function () {
-            for (var j = 0; j < arguments[0].length; j++) {
-                tsw.connect(arguments[0][j], arguments[1]);
-            }
+        /*
+         * Get the current time of the audio context().
+         * @return {number} Time since audio began (in seconds).
+         */
+        tsw.now = function () {
+            return this.context().currentTime;
         };
 
-        var connectTswNodeToTswNode = function () {
-            arguments[0].output.connect(arguments[1].input);
+        tsw.createChannelMerger = function (channels) {
+            return tsw.context().createChannelMerger(channels);
         };
 
-        var connectTswNodeToNativeNode = function () {
-            arguments[0].output.connect(arguments[1]);
-        };
+        /*
+         * Connects multiple nodes together.
+         * @param {AudioNodes} arguments Nodes to connect in order.
+         */
+        tsw.connect = function () {
 
-        var connectArrayToTswNode = function () {
-            for (var j = 0; j < arguments[0].length; j++) {
-                tsw.connect(arguments[0][j], arguments[1]);
-            }
-        };
-
-        var connectArrayToArray = function () {
-            for (var j = 0; j < arguments[0].length; j++) {
-                tsw.connect(arguments[0][j], arguments[1]);
-            }
-        };
-
-        var connectObjectWithNodeToObjectWithNode = function () {
-            arguments[0].node.connect(arguments[1].node, arguments[0].channel, arguments[1].channel);
-        };
-
-        // Iterate over each argument.
-        for (var i = 0; i < arguments.length - 1; i++) {
-            var first_arg = arguments[i],
-                second_arg = arguments[i + 1];
-
-            // First arg is native node, second is tsw node.
-            if (isNativeNode(first_arg) && isTswNode(second_arg)) {
-                connectNativeNodeToTswNode(first_arg, second_arg);
-                continue;
-            }
-
-            // First arg is tsw node, second is native node.
-            if (isTswNode(first_arg) && isNativeNode(second_arg)) {
-                connectTswNodeToNativeNode(first_arg, second_arg);
-                continue;
-            }
-
-            if (isNativeNode(first_arg) && isArray(second_arg)) {
-                connectNativeNodeToArray(first_arg, second_arg);
-                continue;
-            }
-
-            if (isArray(first_arg) && isNativeNode(second_arg)) {
-                connectArrayToNativeNode(first_arg, second_arg);
-                continue;
-            }
-
-            // Both arguments are native nodes.
-            if (isNativeNode(first_arg) && isNativeNode(second_arg)) {
-                connectNativeNodeToNativeNode(first_arg, second_arg);
-                continue;
-            }
-
-            // Both arguments are tsw nodes.
-            if (isTswNode(first_arg) && isTswNode(second_arg)) {
-                connectTswNodeToTswNode(first_arg, second_arg);
-                continue;
-            }
-
-            // First arg is tsw node, second is array.
-            if (isTswNode(first_arg) && isArray(second_arg)) {
-                connectTswNodeToArray(first_arg, second_arg);
-                continue;
-            }
-
-            // First arg is array, second is tsw node.
-            if (isArray(first_arg) && isTswNode(second_arg)) {
-                connectArrayToTswNode(first_arg, second_arg);
-                continue;
-            }
-
-            // Both arguments are arrays.
-            if (isArray(first_arg) && isArray(second_arg)) {
-                connectArrayToArray(first_arg, second_arg);
-                continue;
-            }
-
-            // First arg is object containing nodes, second is arrat.
-            if (isObjectWithNode(first_arg) && isArray(second_arg)) {
-                connectObjectWithNodeToArray(first_arg, second_arg);
-                continue;
-            }
-
-            // First arg is array, second is object containing node.
-            if (isArray(first_arg) && isObjectWithNode(second_arg)) {
-                connectArrayToObjectWithNode(first_arg, second_arg);
-                continue;
-            }
-
-            // Both arguments are objects containing nodes.
-            if (isObjectWithNode(first_arg) && isObjectWithNode(second_arg)) {
-                connectObjectWithNodeToObjectWithNode(first_arg, second_arg);
-                continue;
-            }
-        }
-    };
-
-    /*
-     * Disconnects a node from everything it's connected to.
-     * @param {AudioNode} node
-     */
-    tsw.disconnect = function () {
-        var argumentsLength = arguments.length;
-
-        for (var i = 0; i < argumentsLength; i++) {
-            arguments[i].disconnect();
-        }
-    };
-
-    /*
-     * Disconnects a node after a certain time.
-     * @param {int} Time to disconnect node.
-     */
-    tsw.disconnectAfterTime = function (nodeToDisconnect, timeToDisconnect) {
-        nodes_to_disconnect.push({node: nodeToDisconnect, time: timeToDisconnect});
-    };
-
-    /*
-    * @param {array} files
-    * @param {function} callback
-    */
-    tsw.load = function () {
-        var returnObj = {},
-            files = arguments[0],
-            basePath = '',
-            extensions = [],        
-            files_loaded = 0,
-            number_of_files = 0,
-            callback,
-            that = this;
-
-        // Load a single file
-        var loadFile = function (basePath, fileKey, filePath, returnObj, callback) {
-            var request = new XMLHttpRequest();
-
-            request.open('GET', basePath + filePath, true);
-            request.responseType = 'arraybuffer';
-
-            request.onload = function () {
-                files_loaded++;
-
-                that.context.decodeAudioData(request.response, function (decodedBuffer) {
-                    decodedBuffer.play = function (time) {
-                        var buffer_source = tsw.createBufferSource(this);
-                        buffer_source.start(tsw.now() || time);
-                    }
-
-                    returnObj[fileKey] = decodedBuffer;
-
-                    if (files_loaded === number_of_files) {
-                        callback(returnObj);
-                    }
-                });
-            }, function (error) {
-                console.log('Error decoding audio data', error);
+            var updateConnectedToArray = function (node1, node2) {
+                node1.connectedTo.push(node2);
+                node2.connectedTo.push(node1);
             };
 
-            request.send();
+            var connectNativeNodeToNativeNode = function () {
+                arguments[0].connect(arguments[1]);
+            };
+
+            var connectNativeNodeToTswNode = function () {
+                arguments[0].connect(arguments[1].input);
+            };
+
+            var connectNativeNodeToArray = function () {
+                for (var j = 0; j < arguments[1].length; j++) {
+                    tsw.connect(arguments[0], arguments[1][j]);
+                }
+            };
+
+            var connectArrayToNativeNode = function () {
+                for (var j = 0; j < arguments[0].length; j++) {
+                    tsw.connect(arguments[0][j], arguments[1]);
+                }
+            };
+
+            var connectTswNodeToTswNode = function () {
+                arguments[0].output.connect(arguments[1].input);
+            };
+
+            var connectTswNodeToNativeNode = function () {
+                arguments[0].output.connect(arguments[1]);
+            };
+
+            var connectArrayToTswNode = function () {
+                for (var j = 0; j < arguments[0].length; j++) {
+                    tsw.connect(arguments[0][j], arguments[1]);
+                }
+            };
+
+            var connectArrayToArray = function () {
+                for (var j = 0; j < arguments[0].length; j++) {
+                    tsw.connect(arguments[0][j], arguments[1]);
+                }
+            };
+
+            var connectObjectWithNodeToObjectWithNode = function () {
+                arguments[0].node.connect(arguments[1].node, arguments[0].channel, arguments[1].channel);
+            };
+
+            // Iterate over each argument.
+            for (var i = 0; i < arguments.length - 1; i++) {
+                var first_arg = arguments[i],
+                    second_arg = arguments[i + 1];
+
+                // First arg is native node, second is tsw node.
+                if (isNativeNode(first_arg) && isTswNode(second_arg)) {
+                    connectNativeNodeToTswNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // First arg is tsw node, second is native node.
+                if (isTswNode(first_arg) && isNativeNode(second_arg)) {
+                    connectTswNodeToNativeNode(first_arg, second_arg);
+                    continue;
+                }
+
+                if (isNativeNode(first_arg) && isArray(second_arg)) {
+                    connectNativeNodeToArray(first_arg, second_arg);
+                    continue;
+                }
+
+                if (isArray(first_arg) && isNativeNode(second_arg)) {
+                    connectArrayToNativeNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // Both arguments are native nodes.
+                if (isNativeNode(first_arg) && isNativeNode(second_arg)) {
+                    connectNativeNodeToNativeNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // Both arguments are tsw nodes.
+                if (isTswNode(first_arg) && isTswNode(second_arg)) {
+                    connectTswNodeToTswNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // First arg is tsw node, second is array.
+                if (isTswNode(first_arg) && isArray(second_arg)) {
+                    connectTswNodeToArray(first_arg, second_arg);
+                    continue;
+                }
+
+                // First arg is array, second is tsw node.
+                if (isArray(first_arg) && isTswNode(second_arg)) {
+                    connectArrayToTswNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // Both arguments are arrays.
+                if (isArray(first_arg) && isArray(second_arg)) {
+                    connectArrayToArray(first_arg, second_arg);
+                    continue;
+                }
+
+                // First arg is object containing nodes, second is arrat.
+                if (isObjectWithNode(first_arg) && isArray(second_arg)) {
+                    connectObjectWithNodeToArray(first_arg, second_arg);
+                    continue;
+                }
+
+                // First arg is array, second is object containing node.
+                if (isArray(first_arg) && isObjectWithNode(second_arg)) {
+                    connectArrayToObjectWithNode(first_arg, second_arg);
+                    continue;
+                }
+
+                // Both arguments are objects containing nodes.
+                if (isObjectWithNode(first_arg) && isObjectWithNode(second_arg)) {
+                    connectObjectWithNodeToObjectWithNode(first_arg, second_arg);
+                    continue;
+                }
+            }
         };
 
-        // Is 2nd argument a config object or the callback?
-        if (typeof arguments[1] === 'object') {
-            basePath = arguments[1].path || '';
-            extensions = arguments[1].extensions || [];
-        } else if (typeof arguments[1] === 'function') {
-            callback = arguments[1];
-        }
+        /*
+         * Disconnects a node from everything it's connected to.
+         * @param {AudioNode} node
+         */
+        tsw.disconnect = function () {
+            var argumentsLength = arguments.length;
 
-        // Is 3rd argument is the callback?
-        if (typeof arguments[2] === 'function') {
-            callback = arguments[2];
-        }
+            for (var i = 0; i < argumentsLength; i++) {
+                arguments[i].disconnect();
+            }
+        };
 
-        // 1st argument is files object
-        if (typeof files === 'object') {
-            for (var file in files) {
-                number_of_files++;
+        /*
+         * Disconnects a node after a certain time.
+         * @param {int} Time to disconnect node.
+         */
+        tsw.disconnectAfterTime = function (nodeToDisconnect, timeToDisconnect) {
+            nodes_to_disconnect.push({node: nodeToDisconnect, time: timeToDisconnect});
+        };
+
+        /*
+        * @param {array} files
+        * @param {function} callback
+        */
+        tsw.load = function () {
+            var returnObj = {},
+                files = arguments[0],
+                basePath = '',
+                extensions = [],        
+                files_loaded = 0,
+                number_of_files = 0,
+                callback,
+                that = this;
+
+            // Load a single file
+            var loadFile = function (basePath, fileKey, filePath, returnObj, callback) {
+                var request = new XMLHttpRequest();
+
+                request.open('GET', basePath + filePath, true);
+                request.responseType = 'arraybuffer';
+
+                request.onload = function () {
+                    files_loaded++;
+
+                    that.context().decodeAudioData(request.response, function (decodedBuffer) {
+                        returnObj[fileKey] = decodedBuffer;
+
+                        if (Object.keys(returnObj).length === number_of_files) {
+                            callback(returnObj);
+                        }
+                    });
+                }, function (error) {
+                    console.log('Error decoding audio data', error);
+                };
+
+                request.send();
+            };
+
+            // Is 2nd argument a config object or the callback?
+            if (typeof arguments[1] === 'object') {
+                basePath = arguments[1].path || '';
+                extensions = arguments[1].extensions || [];
+            } else if (typeof arguments[1] === 'function') {
+                callback = arguments[1];
+            }
+
+            // Is 3rd argument is the callback?
+            if (typeof arguments[2] === 'function') {
+                callback = arguments[2];
+            }
+
+            // 1st argument is files object
+            if (typeof files === 'object') {
+                number_of_files = Object.keys(files).length;
+                for (var file in files) {
+                    loadFile(basePath, file, files[file], returnObj, callback);
+                }
+            } else if (typeof files === 'string') {
+                number_of_files = 1;
                 loadFile(basePath, file, files[file], returnObj, callback);
-            }
-        } else if (typeof files === 'string') {
-            number_of_files = 1;
-            loadFile(basePath, file, files[file], returnObj, callback);
-        } else {
-            throw new Error('Files must be an array or a valid string.');
-        }
-    };
-
-    /*
-     * Create a delay node.
-     */
-    tsw.createDelay = function (delayTime) {
-        var delayNode = this.context.createDelay();
-
-        delayNode.delayTime.value = delayTime || 0;
-
-        return delayNode;
-    };
-
-    /*
-     * Make an incoming stream mono.
-     */
-    tsw.createMonoMaker = function () {
-        var effect = {};
-
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
-
-        tsw.connect(effect.input, effect.output);
-
-        return effect;
-    };
-
-    /*
-     * Pan incoming sound.
-     * Range from -1 to 1.
-     * -1 is fully left. 1 is fully right.
-     * @param {number} pan
-     */
-    tsw.createPanner = function (pan) {
-        var panner = {},
-            left_gain = tsw.createGain(1),
-            right_gain = tsw.createGain(0),
-            left_percentage = 50,
-            merger = tsw.createChannelMerger(2);
-
-        panner.input = tsw.createGain();
-        panner.output = tsw.createGain();
-        panner.value = pan;
-
-        // Force max panning values.
-        if (panner.value > 1) {
-            panner.value = 1;
-        } else if (panner.value < -1) {
-            panner.value = -1;
-        }
-
-        // 100% === 2
-        // Example value = -0.56
-        // (0.44 / 2) * 100 = 22% -> 78%
-        // Left gain = (1 / 100) * 78 = 0.78 
-        // Right gain = 1 - 0.78 =  0.22
-
-        // Example value = 0.2
-        // (1.2 / 2) * 100 = 60% -> 40%
-        // Left gain = (1 / 100) * 40 = 0.4
-        // Right gain = 1 - 0.4 = 0.6
-
-        left_gain.gain.value = 1 - (0.01 * ((1 + panner.value) / 2) * 100);
-        right_gain.gain.value = 1 - left_gain.gain.value;
-
-        tsw.connect(panner.input, [left_gain, right_gain]);
-
-        tsw.connect(
-            {
-                node: left_gain,
-                channel: 0
-            },
-            {
-                node:  merger,
-                channel: 0
-            }
-        );
-
-        tsw.connect(
-            {
-                node: right_gain,
-                channel: 0
-            },
-            {
-                node:  merger,
-                channel: 1
-            }
-        );
-
-        tsw.connect(merger, panner.output);
-
-        return panner;
-    };
-
-    /*
-     * Play preloaded buffer.
-     * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
-     * @param {number} when
-     */
-    tsw.play = function (buffer, when) {
-        when = when || 0;
-        buffer.start(when);
-    };
-
-    /*
-     * Stop buffer if it's currently playing.
-     * @param {AudioBuffer} buffer
-     * @param {number} when 
-     */
-    tsw.stop = function (buffer, when) {
-        when = when || 0;
-        buffer.stop(when);
-    };
-
-    /*
-     * Reverse a buffer
-     * @param {AudioBuffer} buffer
-     */
-    tsw.reverse = function (sourceNode) {
-        // Reverse the array of each channel
-        for (var i = 0; i < sourceNode.buffer.numberOfChannels; i++) {
-            Array.prototype.reverse.call(sourceNode.buffer.getChannelData(i));
-        }
-        return sourceNode;
-    };
-
-    var initialiseNode = function (node, options) {
-        // Keep a list of nodes this node is connected to.
-        node.connectedTo = [];
-        options = options || {};
-
-        node.get = function (attribute) {
-            if (node[attribute].hasOwnProperty('value')) {
-                return node[attribute].value;
             } else {
-                return node[attribute].value;
+                throw new Error('Files must be an array or a valid string.');
             }
-        }
-
-        node.set = function (options) {
-            node.gain.value = options.gain || node.gain.value; 
         };
 
-        // Map old API methods over to new one.
-        if (options.hasOwnProperty('sourceNode')) {
-            node.start = function (timeToStart) {
+        /*
+         * Create a delay node.
+         */
+        tsw.createDelay = function (delayTime) {
+            var node,
+                delayNode = this.context().createDelay();
+
+            delayTime = delayTime || 1;
+
+            node = tsw.createNode({
+                nodeType: 'delay'
+            });
+
+            createGetSetter.call(delayNode, node, ['delayTime']);
+
+            node.delayTime(delayTime);
+
+            tsw.connect(node.input, delayNode, node.output);
+
+            return node;
+        };
+
+        /*
+         * Make an incoming stream mono.
+         */
+        tsw.createMonoMaker = function () {
+            var effect = {};
+
+            effect.input = tsw.createGain();
+            effect.output = tsw.createGain();
+
+            tsw.connect(effect.input, effect.output);
+
+            return effect;
+        };
+
+        /*
+         * Pan incoming sound.
+         * Range from -1 to 1.
+         * -1 is fully left. 1 is fully right.
+         * @param {number} pan
+         */
+        tsw.createPanner = function (pan) {
+            var panner = {},
+                left_gain = tsw.createGain(1),
+                right_gain = tsw.createGain(0),
+                left_percentage = 50,
+                merger = tsw.createChannelMerger(2);
+
+            panner.input = tsw.createGain();
+            panner.output = tsw.createGain();
+            panner.value = pan;
+
+            // Force max panning values.
+            if (panner.value > 1) {
+                panner.value = 1;
+            } else if (panner.value < -1) {
+                panner.value = -1;
+            }
+
+            // 100% === 2
+            // Example value = -0.56
+            // (0.44 / 2) * 100 = 22% -> 78%
+            // Left gain = (1 / 100) * 78 = 0.78 
+            // Right gain = 1 - 0.78 =  0.22
+
+            // Example value = 0.2
+            // (1.2 / 2) * 100 = 60% -> 40%
+            // Left gain = (1 / 100) * 40 = 0.4
+            // Right gain = 1 - 0.4 = 0.6
+
+            left_gain.gain.value = 1 - (0.01 * ((1 + panner.value) / 2) * 100);
+            right_gain.gain.value = 1 - left_gain.gain.value;
+
+            tsw.connect(panner.input, [left_gain, right_gain]);
+
+            tsw.connect(
+                {
+                    node: left_gain,
+                    channel: 0
+                },
+                {
+                    node:  merger,
+                    channel: 0
+                }
+            );
+
+            tsw.connect(
+                {
+                    node: right_gain,
+                    channel: 0
+                },
+                {
+                    node:  merger,
+                    channel: 1
+                }
+            );
+
+            tsw.connect(merger, panner.output);
+
+            return panner;
+        };
+
+        /*
+         * Play preloaded buffer.
+         * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
+         * @param {number} when
+         */
+        tsw.play = function (buffer, when) {
+            when = when || 0;
+            buffer.start(when);
+        };
+
+        /*
+         * Stop buffer if it's currently playing.
+         * @param {AudioBuffer} buffer
+         * @param {number} when 
+         */
+        tsw.stop = function (buffer, when) {
+            when = when || 0;
+            buffer.stop(when);
+        };
+
+        /*
+         * Reverse a buffer
+         * @param {AudioBuffer} buffer
+         */
+        tsw.reverse = function (sourceNode) {
+            // Reverse the array of each channel
+            for (var i = 0; i < sourceNode.buffer.numberOfChannels; i++) {
+                Array.prototype.reverse.call(sourceNode.buffer.getChannelData(i));
+            }
+            return sourceNode;
+        };
+
+        /*
+         * Update old WAA methods to more recent names.
+         *
+         * @param {object} Additional options.
+         */
+        var updateMethods = function (options) {
+            this.start = function (timeToStart) {
                 if (options.sourceNode.hasOwnProperty('start')) {
                     options.sourceNode.start(timeToStart);  
                 } else {
                     options.sourceNode.noteOn(timeToStart);
                 }
+
+                return this;
             }
 
-            node.stop = function (timeToStop) {
+            this.stop = function (timeToStop) {
                 if (options.sourceNode.hasOwnProperty('stop')) {
                     options.sourceNode.stop(timeToStop);  
                 } else {
                     options.sourceNode.noteOff(timeToStop);
                 }
-            }
-        } else {
-            options.sourceNode = false;
-        }
-    }
 
-    /*
-     * Create oscillator node.
-     * @param {string} waveType The type of wave form.
-     * @param {number} frequency The starting frequency of the oscillator.
-     * @return Oscillator node of specified type.
-     */
-    tsw.createOscillator = function (waveType, frequency) {
-        var node = tsw.createNode(),
-            osc = this.context.createOscillator();
-
-        initialiseNode(node, {sourceNode: osc});
-
-        node.waveType = waveType || 'sine';
-        osc.type = node.waveType.toLowerCase();
-        osc.frequency.value = frequency || 440;
-        node.nodeType = 'oscillator';
-
-        tsw.connect(osc, node.output);
-
-        node.frequency = function (freq) {
-            if (typeof freq === 'undefined') {
-                return osc.frequency.value;
-            } else {
-                osc.frequency.value = freq;
-            }
-        }
-
-        return node;
-    };
-
-    /*
-     * Create gain node.
-     * @return Gain node.
-     */
-    tsw.createGain = function (volume) {
-        var gainNode;
-
-        if (typeof this.context.createGain === 'function') {
-            gainNode = this.context.createGain();
-        } else {
-            gainNode = this.context.createGainNode();
-        }
-
-        initialiseNode(gainNode);
-
-        if (volume <= 0) {
-            volume = 0;
-        }
-
-        if (typeof volume === 'undefined') {
-            volume = 1; 
-        }
-
-        gainNode.gain.value = volume;
-
-        return gainNode;
-    };
-
-    /*
-     * Create buffer node.
-     * @return Buffer node.
-     */
-    tsw.createBuffer = function (no_channels, buffer_size, sample_rate) {
-        no_channels = no_channels || 1;
-        buffer_size = buffer_size || 65536;
-        sample_rate = sample_rate || 44100;
-
-        var buffer = this.context.createBuffer(no_channels, buffer_size, sample_rate);
-
-        buffer.play = function (time) {
-            var buffer_source = tsw.createBufferSource(this);
-            buffer_source.start(time || tsw.now());
-        };
-
-        return buffer;
-    };
-    
-    /*
-     * Create buffer source node.
-     * @return BufferSource node.
-     */
-    tsw.createBufferSource = function (buff) {
-        var source = this.context.createBufferSource();
-        source.buffer = buff;
-
-        if (typeof source.start === 'undefined') {
-            source.start = source.noteOn;
-            source.stop = source.noteOff;
-        }
-        
-        return source;
-    };
-
-    /*
-     * Create filter node.
-     * @param {string} filterType Type of filter.
-     * @return Filter node.
-     */
-    tsw.createFilter = function (filterType, frequency, Q) {
-        var effect = {},
-            options = {},
-            filter = tsw.context.createBiquadFilter();
-
-        options.filterType = filterType || 'lowpass';
-
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
-
-        initialiseNode(filter, options);
-
-        filter.type = options.filterType;
-        filter.frequency.value = frequency || 1000;
-
-        filter.Q.value = Q || 0;
-
-        effect.frequency = function (freq) {
-            if (typeof freq === 'undefined') {
-                return filter.frequency.value;
-            } else {
-                filter.frequency.value = freq;
+                return this;
             }
         };
 
-        tsw.connect(effect.input, filter, effect.output);
+        tsw.createNode = function (options) {
+            var node = {};
 
-        return effect;
-    };
+            options = options || {};
 
-    /*
-     * Create analyser node.
-     *
-     * @method createAnalyser
-     * @return Analyser node.
-     */
-    tsw.createAnalyser = function () {
-        return this.context.createAnalyser();
-    };
+            node.input = tsw.context().createGain();
+            node.output = tsw.context().createGain();
 
-    /*
-     * Creates compressor node.
-     * @param {object} settings Compressor settings.
-     * @return Created compressor node.
-     */
-    tsw.createCompressor = function (settings) {
+            node.nodeType = function () {
+                return options.nodeType || 'default';
+            };
+
+            // Keep a list of nodes this node is connected to.
+            node.connectedTo = [];
+
+            if (options.hasOwnProperty('sourceNode')) {
+                updateMethods.call(node, options);
+            } else {
+                options.sourceNode = false;
+            }
+
+            return node;
+        };
+
         /*
-         *  Compressor 
-         *  ==========
-         *  +----------+     +----------------------+     +---------------+
-         *  |  Input   |-->--|       Compressor     |-->--|     Output    |
-         *  | (Source) |     | (DynamicsCompressor) |     | (Destination) |
-         *  +----------+     +----------------------+     +---------------+
+         * Create oscillator node.
+         * @param {string} waveType The type of wave form.
+         * @param {number} frequency The starting frequency of the oscillator.
+         * @return Oscillator node of specified type.
          */
-        var compressor = this.context.createDynamicsCompressor(),
-            defaults = {
-                threshold: -24,     // dbs (min: -100, max: 0)
-                knee: 30,           // dbs (min: 0, max: 40)
-                ratio: 12,          // ratio (min: 1, max: 20)
-                attack: 0.003,      // seconds (min: 0, max: 1)
-                release: 0.25       // seconds (min: 0, max: 1)
+        tsw.oscillator = function (waveType, frequency) {
+            var node,
+                osc = tsw.context().createOscillator();
+
+            node = tsw.createNode({
+                sourceNode: osc,
+                nodeType: 'oscillator'
+            });
+
+            createGetSetter.call(osc, node, ['type', 'frequency', 'waveType']);
+            node.type(waveType || 'sine');
+            node.frequency(frequency || 440);
+
+            node.waveType = waveType || 'sine';
+
+            node.nodeType = function () {
+                return 'oscillator';
             };
 
-        settings = applyObject(defaults, settings);
-        applySettings(compressor, settings);
-
-        return compressor;
-    };
-
-    /*
-     * Create processor node.
-     * @return Script Processor node.
-     */
-    tsw.createProcessor = function (bs, callback) {
-        var bufferSize = bs || 1024,
-            processor =  tsw.context.createScriptProcessor(bufferSize, 1, 1);
-
-        if (typeof callback === 'function') {
-            processor.onaudioprocess = function (e) {
-                callback(e);
+            node.fadeIn = function () {
+                fadeIn(this);
+                return this;
             };
-        }
 
-        return processor;
-    };
+            node.fadeOut = function () {
+                fadeOut(this);
+                return this;
+            };
 
-    /*
-     * Create waveshaper.
-     */
-    tsw.createWaveShaper = function () {
-        var curve = new Float32Array(65536);
+            /*
+            node.type = function (wt) {
+                if (typeof wt === 'undefined') {
+                    return osc.type;
+                } else {
+                    osc.type = wt.toLowerCase();
+                }
+            };
+            */
 
-        for (var i = 0; i < 65536 / 2; i++) {
-            if (i < 30000) {
-                curve[i] = 0.1;
-            } else {
-                curve[i] = -1;
+            node.type(node.waveType.toLowerCase());
+
+            node.isPlaying = function () {
+                if (osc.playbackState === 2) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+
+            node.returnNode = function () {
+                return osc;
             }
-        }
 
-        var waveShaper = this.context.createWaveShaper();
-        waveShaper.curve = curve;
+            tsw.connect(osc, node.output);
 
-        return waveShaper;
-    };
+            return node;
+        };
 
-    /*
-     * Create envelope.
-     * @param {object} envelopeParams Envelope parameters.
-     * @return Envelope filter.
-     */
-    tsw.createEnvelope = function (settings) {
-        var envelope = {};
+        /*
+         * Create gain node.
+         * @return Gain node.
+         */
+        tsw.gain = function (volume) {
+            var node,
+                gainNode;
 
-        settings = settings || {};
+            if (typeof this.context().createGain === 'function') {
+                gainNode = this.context().createGain();
+            } else {
+                gainNode = this.context().createGainNode();
+            }
 
-        // Initial levels
-        envelope.name = settings.name|| '';
-        envelope.startLevel = settings.startLevel || 0;
-        envelope.maxLevel = settings.maxLevel || 1;
-        envelope.minLevel = settings.minLevel || 0;
+            node = tsw.createNode({
+                nodeType: 'gain'
+            });
 
-        // Envelope values
-        envelope.attackTime = settings.attackTime || 0;
-        envelope.decayTime = settings.decayTime || 0;
-        envelope.sustainLevel = settings.sustainLevel || 0;
-        envelope.releaseTime = settings.releaseTime || 0;
+            createGetSetter.call(gainNode, node, ['gain']);
+
+            if (isObject(volume)) {
+                if (volume.hasOwnProperty('gain')) {
+                    volume = volume.gain.value;                
+                }
+            }
+
+            if (volume <= 0) {
+                volume = 0;
+            }
+
+            if (typeof volume === 'undefined') {
+                volume = 1; 
+            }
+
+            node.gain(volume);
+
+            tsw.connect(node.input, gainNode, node.output);
+
+            return node;
+        };
+
+        /*
+         * Create buffer node.
+         * @return Buffer node.
+         */
+        tsw.buffer = function (no_channels, buffer_size, sample_rate) {
+            var node = tsw.createNode({
+                nodeType: 'buffer'
+            });
+
+            no_channels = no_channels || 1;
+            buffer_size = buffer_size || 65536;
+            sample_rate = sample_rate || 44100;
+
+            var buffer = this.context().createBuffer(no_channels, buffer_size, sample_rate);
+
+            createGetSetter.call(buffer, node, ['numberOfChannels', 'bufferSize', 'sampleRate']);
+
+            node.data = function (val) {
+                if (typeof val === 'undefined') {
+                    var channel_data = [];      
+
+                    for (var i = 0; i < no_channels; i++) {
+                        channel_data.push(buffer.getChannelData(i));
+                    }
+
+                    return channel_data;
+                }
+            }
+
+            node.buffer = function () {
+                return buffer;
+            };            
+
+            return node;
+        };
         
-        // Automation parameters 
-        envelope.param = settings.param || {};
-        envelope.param.value = envelope.startLevel;
+        /*
+         * Create buffer source node.
+         * @return BufferSource node.
+         */
+        tsw.createBufferSource = function (buff) {
+            var source = this.context().createBufferSource();
 
-        // Should the release kick-in automatically
-        settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
+            source.buffer = buff.buffer();
 
-        envelope.start = function (timeToStart) {
-            // Calculate times
-            var startTime = timeToStart || tsw.now(),
-                attackTime = startTime + this.attackTime,
-                decayTime = attackTime + this.decayTime,
-                releaseTime = decayTime + this.releaseTime;
+            if (typeof source.start === 'undefined') {
+                source.start = source.noteOn;
+                source.stop = source.noteOff;
+            }
 
-            // Calculate levels
-            this.maxLevel = this.startLevel + this.maxLevel;
-            this.sustainLevel = this.startLevel + this.sustainLevel;
+            return source;
+        };
 
-            // Param is actual AudioParam
-            if ('setValueAtTime' in this.param) {
-                // Initialise
-                this.param.cancelScheduledValues(startTime);
-                this.param.setValueAtTime(this.startLevel, startTime);
+        /*
+         * Create filter node.
+         * @param {string} filterType Type of filter.
+         * @return Filter node.
+         */
+        tsw.filter = function () {
+            var node = tsw.createNode({
+                    nodeType: 'filter'        
+                }),
+                options = {},
+                filter = tsw.context().createBiquadFilter();
 
-                // Attack
-                this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
+            if (isObject(arguments[0])) {
+                options.type = arguments[0].type || 'lowpass';
+                options.frequency = arguments[0].frequency || 1000;
+                options.Q = arguments[0].Q || 0;
+            } else if (isString(arguments[0])) {
+                options.type = arguments[0]; 
+            }
 
-                // Decay
-                this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime);
+            options.type = options.type || 'lowpass';
+            options.Q = options.Q || 0;
+
+            createGetSetter.call(filter, node, ['type', 'frequency', 'Q']);
+
+            node.type(options.type);
+            node.frequency(options.frequency || 1000);
+            node.Q(options.Q || 0);
+
+            tsw.connect(node.input, filter, node.output);
+
+            return node;
+        };
+
+        /*
+         * Create analyser node.
+         *
+         * @method createAnalyser
+         * @return Analyser node.
+         */
+        tsw.analyser = function () {
+            return this.context().createAnalyser();
+        };
+
+        /*
+         * Creates compressor node.
+         * @param {object} settings Compressor settings.
+         * @return Created compressor node.
+         */
+        tsw.compressor = function (settings) {
+            /*
+             *  Compressor 
+             *  ==========
+             *  +----------+     +----------------------+     +---------------+
+             *  |  Input   |-->--|       Compressor     |-->--|     Output    |
+             *  | (Source) |     | (DynamicsCompressor) |     | (Destination) |
+             *  +----------+     +----------------------+     +---------------+
+             */
+            var node = tsw.createNode({nodeType: 'compressor'}),
+                compressor = this.context().createDynamicsCompressor(),
+                defaults = {
+                    threshold: -24,     // dbs (min: -100, max: 0)
+                    knee: 30,           // dbs (min: 0, max: 40)
+                    ratio: 12,          // ratio (min: 1, max: 20)
+                    attack: 0.003,      // seconds (min: 0, max: 1)
+                    release: 0.25       // seconds (min: 0, max: 1)
+                };
+
+            settings = applyObject(defaults, settings);
+            applySettings(compressor, settings);
+
+            return node;
+        };
+
+        /*
+         * Create processor node.
+         * @return Script Processor node.
+         */
+        tsw.processor = function (bs, callback) {
+            var bufferSize = bs || 1024,
+                processor =  tsw.context().createScriptProcessor(bufferSize, 1, 1);
+
+            if (typeof callback === 'function') {
+                processor.onaudioprocess = function (e) {
+                    callback(e);
+                };
+            }
+
+            return processor;
+        };
+
+        /*
+         * Create waveshaper.
+         */
+        tsw.waveShaper = function () {
+            var curve = new Float32Array(65536);
+
+            for (var i = 0; i < 65536 / 2; i++) {
+                if (i < 30000) {
+                    curve[i] = 0.1;
+                } else {
+                    curve[i] = -1;
+                }
+            }
+
+            var waveShaper = this.context().createWaveShaper();
+            waveShaper.curve = curve;
+
+            return waveShaper;
+        };
+
+        /*
+         * Create envelope.
+         * @param {object} envelopeParams Envelope parameters.
+         * @return Envelope filter.
+         */
+        tsw.envelope = function (settings) {
+            var envelope = {};
+
+            settings = settings || {};
+
+            // Initial levels
+            envelope.name = settings.name|| '';
+            envelope.startLevel = settings.startLevel || 0;
+            envelope.maxLevel = settings.maxLevel || 1;
+            envelope.minLevel = settings.minLevel || 0;
+
+            // Envelope values
+            envelope.attackTime = settings.attackTime || 0;
+            envelope.decayTime = settings.decayTime || 0;
+            envelope.sustainLevel = settings.sustainLevel || 0;
+            envelope.releaseTime = settings.releaseTime || 0;
+            
+            // Automation parameters 
+            envelope.param = settings.param || {};
+            envelope.param.value = envelope.startLevel;
+
+            // Should the release kick-in automatically
+            settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
+
+            envelope.start = function (timeToStart) {
+                // Calculate times
+                var startTime = timeToStart || tsw.now(),
+                    attackTime = startTime + this.attackTime,
+                    decayTime = attackTime + this.decayTime,
+                    releaseTime = decayTime + this.releaseTime;
+
+                // Calculate levels
+                this.maxLevel = this.startLevel + this.maxLevel;
+                this.sustainLevel = this.startLevel + this.sustainLevel;
+
+                // Param is actual AudioParam
+                if ('setValueAtTime' in this.param) {
+                    // Initialise
+                    this.param.cancelScheduledValues(startTime);
+                    this.param.setValueAtTime(this.startLevel, startTime);
+
+                    // Attack
+                    this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
+
+                    // Decay
+                    this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime);
+
+                    // Release
+                    if (this.autoStop) {
+                        this.param.linearRampToValueAtTime(this.minLevel, releaseTime);
+                        this.stop(releaseTime);
+                    }
+                }
+            };
+
+            envelope.stop = function (timeToStop) {
+                timeToStop = timeToStop || tsw.now();
+                timeToStop += this.releaseTime;
 
                 // Release
-                if (this.autoStop) {
-                    this.param.linearRampToValueAtTime(this.minLevel, releaseTime);
-                    this.stop(releaseTime);
+                if (!this.autoStop && isAudioParam(this.param)) {
+                    this.param.linearRampToValueAtTime(this.minLevel, timeToStop);
                 }
-            }
-        };
-
-        envelope.stop = function (timeToStop) {
-            timeToStop = timeToStop || tsw.now();
-            timeToStop += this.releaseTime;
-
-            // Release
-            if (!this.autoStop && isAudioParam(this.param)) {
-                this.param.linearRampToValueAtTime(this.minLevel, timeToStop);
-            }
-        };
-
-        return envelope;
-    };
-
-    /*
-     * Create noise.
-     * @param {string} colour Type of noise.
-     * @return Noise generating node.
-     */
-    tsw.createNoise = function (colour) {
-        var noise_node = tsw.createNode(),
-            noise_source = this.createBufferSource(tsw.noise_buffer),
-            filter = tsw.createFilter('lowpass');
-
-        noise_source.loop = true;
-
-        noise_node.nodeType = 'noise';
-        noise_node.color = colour || 'white';
-
-        if (noise_node.color === 'pink') {
-            filter.frequency = 1000;
-        } else {
-            filter.frequency = 10000;
-        }
-
-        initialiseNode(noise_node, {sourceNode: noise_source});
-
-        tsw.connect(noise_source, filter, noise_node.output);
-
-        return noise_node;
-    };
-
-    /*
-     * Create LFO.
-     * @param {object} settings LFO settings.
-     */
-    tsw.createLFO = function (settings) {
-
-        /*********************************
-
-        LFO 
-        ===
-        +----------+     +--------------+
-        |    LFO   |-->--|    Target    |
-        | (Source) |     | (AudioParam) |
-        +----------+     +--------------+
-
-        *********************************/
-
-        var effectObj = {},
-            lfo = tsw.createOscillator(),
-            depth = this.createGain(),
-            defaults = {
-                frequency: 0,
-                waveType: 'triangle',
-                depth: 1,
-                target: null,
-                autoStart: false
             };
 
-        // Merge passed settings with defaults
-        settings = applyObject(defaults, settings);
-
-        lfo.type = lfo[settings.waveType] || lfo['TRIANGLE'];
-
-        depth.gain.value = settings.depth;
-        lfo.frequency.value = settings.frequency;
-
-        if (settings.autoStart) {
-            lfo.start(tsw.now());
-        }
-
-        lfo.modulate = function (target) {
-            this.connect(depth);
-            depth.connect(target);
+            return envelope;
         };
 
-        lfo.setWaveType = function (waveType) {
-            lfo.type = lfo[waveType.toUpperCase()];
-        };
+        /*
+         * Create noise.
+         * @param {string} colour Type of noise.
+         * @return Noise generating node.
+         */
+        tsw.noise = function (colour) {
+            var node,
+                noise_source = this.createBufferSource(tsw.noise_buffer);
 
-        lfo.frequency = function (f) {
-            if (typeof f === 'undefined') {
-                return lfo.frequency.value; 
-            } else {
-                lfo.frequency.value = f;
-            }
-        };
-
-        lfo.setDepth = function (d) {
-            depth.gain.value = d;
-        };
-        
-        lfo.modulate(settings.target);
-
-        return lfo;
-    };
-
-    /*
-     * Get user's audio input.
-     * @param {function} Callback function with streaming node passed as param;
-     */
-    tsw.getUserAudio = function (callback) {
-        var audioStream = function (stream) {
-            var streamNode = tsw.context.createMediaStreamSource(stream);
-
-            callback(streamNode);
-        };
-
-        navigator.webkitGetUserMedia({audio: true}, audioStream);
-    };
-
-    /*
-     * Time manager
-     */
-    var timeManager = function () {
-        (function loop () {
-            nodes_to_disconnect.forEach(function (nodeToDisconnect) {
-                if (nodeToDisconnect.time < tsw.now()) {
-                    tsw.disconnect(nodeToDisconnect.node);
-                }
+            node = tsw.createNode({
+                nodeType: 'noise',
+                sourceNode: noise_source
             });
-            setTimeout(loop, 500);
-        })();
-    };
 
-    /*
-     * Kick everything off.
-     */
-    (function () {
-        checkBrowserSupport(function () {
-            // Browser is compatible.
-            mapToSoundWorld();
-            initialise();
-            timeManager();
-        }, function (error) {
-            // Browser is not compatible.
-            console.log(error);
-        });
+            noise_source.buffer = tsw.noise_buffer.buffer();
+
+            node.color = colour || 'white';
+            noise_source.loop = true;
+
+            noise_source.nodeType = function () {
+                return 'noise';
+            }
+
+            noise_source.color = function (val) {
+                if (typeof val === 'undefined') {
+                    return node.color; 
+                } else {
+                    if (typeof val === 'string') {
+                        node.color = val;
+                    }
+                }
+            };
+
+            noise_source.play = function (timeToStart) {
+                noise_source.start(timeToStart);
+            };
+
+            return noise_source;
+        };
+
+        /*
+         * Create LFO.
+         * @param {object} settings LFO settings.
+         */
+        tsw.lfo = function (settings) {
+
+            /*********************************
+
+            LFO 
+            ===
+            +----------+     +--------------+
+            |    LFO   |-->--|    Target    |
+            | (Source) |     | (AudioParam) |
+            +----------+     +--------------+
+
+            *********************************/
+
+            var effectObj = {},
+                lfo = tsw.createOscillator(),
+                depth = this.createGain(),
+                defaults = {
+                    frequency: 0,
+                    waveType: 'triangle',
+                    depth: 1,
+                    target: null,
+                    autoStart: false
+                };
+
+            // Merge passed settings with defaults
+            settings = applyObject(defaults, settings);
+
+            lfo.type = lfo[settings.waveType] || lfo['TRIANGLE'];
+
+            depth.gain.value = settings.depth;
+            lfo.frequency.value = settings.frequency;
+
+            if (settings.autoStart) {
+                lfo.start(tsw.now());
+            }
+
+            lfo.modulate = function (target) {
+                this.connect(depth);
+                depth.connect(target);
+            };
+
+            lfo.setWaveType = function (waveType) {
+                lfo.type = lfo[waveType.toUpperCase()];
+            };
+
+            lfo.frequency = function (f) {
+                if (typeof f === 'undefined') {
+                    return lfo.frequency.value; 
+                } else {
+                    lfo.frequency.value = f;
+                }
+            };
+
+            lfo.setDepth = function (d) {
+                depth.gain.value = d;
+            };
+            
+            lfo.modulate(settings.target);
+
+            return lfo;
+        };
+
+        /*
+         * Get user's audio input.
+         * @param {function} Callback function with streaming node passed as param;
+         */
+        tsw.getUserAudio = function (callback) {
+            var audioStream = function (stream) {
+                var streamNode = tsw.context().createMediaStreamSource(stream);
+
+                callback(streamNode);
+            };
+
+            navigator.webkitGetUserMedia({audio: true}, audioStream);
+        };
+
+        /*
+         * Time manager
+         */
+        var timeManager = function () {
+            (function loop () {
+                nodes_to_disconnect.forEach(function (nodeToDisconnect) {
+                    if (nodeToDisconnect.time < tsw.now()) {
+                        tsw.disconnect(nodeToDisconnect.node);
+                    }
+                });
+                setTimeout(loop, 500);
+            })();
+        };
+
+        /*
+         * Kick everything off.
+         */
+        tsw.init = function () {
+            checkBrowserSupport(function () {
+                // Browser is compatible.
+                mapToSoundWorld();
+                initialise();
+                timeManager();
+            }, function (error) {
+                // Browser is not compatible.
+                console.log(error);
+            });
+        };
+
+        return (window.tsw = tsw) ;
     })();
 
-    return tsw;
+    tsw.init();
+
 })(window);
 
 /**********************************
  * Theresas's Sound World - Effects
  * tsw-effects.js
  * Dependencies: tsw-core.js
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  **********************************/
 
 (function (window, undefined) {
     'use strict';
 
     window.tsw = tsw || {};
+    var fx = {};
 
     /*
      * Creates delay node.
@@ -985,7 +1178,7 @@ window.tsw = (function (window, undefined) {
      * @param {object} settings Delay settings.
      * @return {AudioNode} Created delay node.
      */
-    tsw.createDelay = function (settings) {
+    fx.createDelay = function (settings) {
 
         /*
          *  Delay effect
@@ -1009,15 +1202,13 @@ window.tsw = (function (window, undefined) {
          *  Effect Level: Volume of effect mixed back into signal
          */
 
-        var effect = {},
-            delay = tsw.context.createDelay(),
-            feedback = tsw.context.createGain(),
-            effectLevel = tsw.context.createGain(),
+        var node = tsw.createNode(),
+            delay = tsw.createDelay(),
+            feedback = tsw.createGain(),
+            effectLevel = tsw.createGain(),
             gain = tsw.createGain();
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
-        effect.settings = {
+        node.settings = {
             delayTime: 0.5,
             feedback: 0.5,
             effectLevel: 0.5,
@@ -1025,14 +1216,14 @@ window.tsw = (function (window, undefined) {
 
         // Set values
         settings = settings || {};
-        delay.delayTime.value =  settings.delayTime || effect.settings.delayTime;
-        feedback.gain.value = settings.feedback || effect.settings.feedback;
-        effectLevel.gain.value = settings.effectLevel || effect.settings.effectLevel;
+        delay.delayTime.value =  settings.delayTime || node.settings.delayTime;
+        feedback.gain.value = settings.feedback || node.settings.feedback;
+        effectLevel.gain.value = settings.effectLevel || node.settings.effectLevel;
 
-        tsw.connect(effect.input, gain, delay, feedback, delay, effectLevel, effect.output);
+        tsw.connect(node.input, gain, delay, feedback, delay, effectLevel, node.output);
         tsw.connect(gain, delay);
 
-        return effect;
+        return node;
     };
 
     /*
@@ -1042,7 +1233,7 @@ window.tsw = (function (window, undefined) {
      * @param {object} settings Distortion settings.
      * @return Created distortion node.
      */
-    tsw.createDistortion = function (settings) {
+    fx.createDistortion = function (settings) {
 
         /*
          *  Distortion
@@ -1085,37 +1276,13 @@ window.tsw = (function (window, undefined) {
     };
 
     /*
-     * Creates flange effect. Y'know, like in Come As You Are.
-     *
-     * @method createFlanger
-     * @param {object} settings Flanger settings.
-     * @return
-     */
-    tsw.createFlanger = function (settings) {
-
-        /*
-         *  Flanger 
-         *  =======
-         *  +----------+
-         *  |  Input   |
-         *  | (Source) |
-         *  +----------+
-         *
-         */
-
-        var effect = {};
-
-        return effect;
-    };
-    
-    /*
      * Creates a phaser node.
      *
      * @method createPhaser
      * @param {object} settings Phaser settings
      * @return {AudioNode} Created phaser node.
      */
-    tsw.createPhaser = function (settings) {
+    fx.createPhaser = function (settings) {
 
         /****************************
         Phaser
@@ -1184,7 +1351,7 @@ window.tsw = (function (window, undefined) {
      * @param {object} settings Reverb settings.
      * @return {AudioNode} The created reverb node.
      */
-    tsw.createReverb = function (settings) {
+    fx.createReverb = function (settings) {
 
         /***********************************
 
@@ -1250,7 +1417,7 @@ window.tsw = (function (window, undefined) {
      * @param {object} settings Tremolo settings.
      * @return {AudioNode} Created tremolo node.
      */
-    tsw.createTremolo = function (settings) {
+    fx.createTremolo = function (settings) {
 
         /******************************
         
@@ -1290,25 +1457,25 @@ window.tsw = (function (window, undefined) {
         return mmNode;
     };
 
-    console.log(tsw)
+    tsw.fx = fx;
 
 })(window);
 
 /*********************************
  * Theresas's Sound World - Music
- * tsw-music.js
+ * tsw.js
  * Dependencies: tsw-core.js
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  ********************************/
 
 (function (window, undefined) {
     'use strict';
 
-    var notes = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'],
+    var music = {},
+        notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'],
         natural_notes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     // append list of notes to itself to avoid worrying about writing wraparound code
 
-    notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
     notes.push.apply(notes, notes);
 
     var intervals = ['unison', 'flat 2nd', '2nd', 'minor 3rd', 'major 3rd', 'perfect 4th',
@@ -1348,7 +1515,7 @@ window.tsw = (function (window, undefined) {
     var getMajorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
-        
+
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
         scale.push(notes[positionOnScale + 4]);
@@ -1401,11 +1568,11 @@ window.tsw = (function (window, undefined) {
     /*
      * Parses a chord name into a detailed object.
      *
-     * @method parseChord 
+     * @method getChord
      * @param {string} chord Name of chord to turn into object.
      * return {object} Detailed chord object.
      */
-    tsw.parseChord = function (chord) {
+    tsw.chord = function (chord) {
         var chordObj = {},
             notePositions = [],
             rootNotePosition = 0;
@@ -1426,9 +1593,9 @@ window.tsw = (function (window, undefined) {
             chordObj.octave = chord.match(/\d/g);
         }
 
-        if (!chordObj.isMajor && !chordObj.isMinor) {
-            // Hey! This aint no chord that I've ever seen!
-            return false;
+        if (!chordObj.isMajor && !chordObj.isMinor && !chord.is7th) {
+            // Hey! This aint no chord that I've ever seen! Default to major.
+            chordObj.isMajor = true;
         }
 
         rootNotePosition = getNotePosition(chordObj.rootNote);
@@ -1453,12 +1620,12 @@ window.tsw = (function (window, undefined) {
     /*
      * Returns a list of notes in a given scale.
      * 
-     * @method getScale
+     * @method scale 
      * @param {string} rootNote Root note to base scale on.
      * @param {string} scaleType Type of scale to return.
      * @return {array} List of notes in scale.
      */
-    tsw.getScale = function (rootNote, scaleType) {
+    tsw.scale = function (rootNote, scaleType) {
         if (scaleType === 'minor') {
             return getMinorScale(rootNote);
         } else {
@@ -1473,7 +1640,7 @@ window.tsw = (function (window, undefined) {
      * @param {string} interval The name of the interval
      * @return {number} Number of semitones of interval from a base note.
      */
-    tsw.getSemitoneDifference = function (interval) {
+    tsw.semitoneDifference = function (interval) {
         var numberOfIntervals = intervals.length;
 
         for (var i = 0; i < numberOfIntervals; i++) {
@@ -1483,31 +1650,14 @@ window.tsw = (function (window, undefined) {
         }
     };
 
-    tsw.getChord = function (str) {
-        return this.parseChord(str);
-    };
-
-    /*
-     * Returns a list of notes in a given chord.
-     *
-     * @method chordToNotes
-     * @param {string} chord Name of chord to turn into string.
-     * @return {array} List of notes in chord.
-     */
-    tsw.chordToNotes = function (chord) {
-        chord = this.parseChord(chord);
-
-        return chord.notes;
-    };
-
     /*
      * Returns the flat equivalent of a given note.
      *
-     * @method sharpToFlat
+     * @method getFlat
      * @param {string} note Note to convert.
      * @return {string} New flat note.
      */
-    tsw.sharpToFlat = function (note) {
+    tsw.flat = function (note) {
         var new_note;
 
         note = note.replace('#', 'b');
@@ -1525,11 +1675,11 @@ window.tsw = (function (window, undefined) {
     /*
      * Returns the sharp equivalent of a given note.
      *
-     * @method flatToSharp
+     * @method getSharp
      * @param {string} note Note to convert.
      * @return {string} New sharp note.
      */
-    tsw.flatToSharp = function (note) {
+    tsw.sharp = function (note) {
         var new_note,
             num_index = 0;
 
@@ -1567,7 +1717,7 @@ window.tsw = (function (window, undefined) {
      * @param {string} note Note to convert to frequency
      * @return {number} Frequency of note
      */
-    tsw.getFrequency = function (note) {
+    tsw.frequency = function (note) {
         var octave,
             keyNumber,
             note_index,
@@ -1584,28 +1734,8 @@ window.tsw = (function (window, undefined) {
             octave = 4;
         } 
 
-        note = this.flatToSharp(note);
+        note = this.getSharp(note);
         note_without_octave = note;
-
-        /*
-        switch (note.length) {
-            case 1:
-                noteLetter = note[0];
-                break;
-            case 2:
-                if (note.indexOf('#')) {
-                    noteLetter = note;
-                } else {
-                    noteLetter = note[0];
-                }
-                break;
-            case 3:
-                noteLetter = note.slice(0, 2);
-                break;
-            default:
-                return 'This doesn\'t look like any note I\'ve seen';
-        }
-        */
 
         if (note_index > -1) {
             note_without_octave = note.substr(0, note_index);
@@ -1617,8 +1747,7 @@ window.tsw = (function (window, undefined) {
         // Return frequency of note
         return parseFloat((440 * Math.pow(2, (keyNumber - 57) / 12)), 10);
     };
-
- })(window);
+})(window);
 
 /*******************************
  * Theresas's Sound World - MIDI
@@ -1630,37 +1759,31 @@ window.tsw = (function (window, undefined) {
  (function (window, undefined) {
     'use strict';
 
-   var MIDI = (function () {
-        /*
-         * Creates an instance of MIDI
-         *
-         * @param {AudioContext} Current audio context
-         */
-        var MIDI = function (context) {
-            this.context = context;
-        };
+    tsw = tsw || {};
+    var midi = {};
 
-        /*
-         * Initiate MIDI input/output if available.
-         *
-         * @method startMIDI
-         * @param {function} success
-         * @param {function} failure
-         */
-        MIDI.prototype.getUserMIDI = function (success, failure) {
-            navigator.requestMIDIAccess().then(success, failure);
-        };
+    tsw.MIDISupport = function () {
+        return typeof navigator.requestMIDIAccess === 'function';
+    }
 
-        MIDI.prototype.MIDINumberToNote = function (number) {
-            var noteOnScale = number % 12,
-                octave = Math.floor(number / 12),
-                notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    /*
+     * Initiate MIDI input/output if available.
+     *
+     * @method startMIDI
+     * @param {function} success
+     * @param {function} failure
+     */
+    tsw.getUserMIDI = function (success, failure) {
+        navigator.requestMIDIAccess().then(success, failure);
+    };
 
-            return notes[noteOnScale] + octave;
-        };
+    tsw.note = function (number) {
+        var noteOnScale = number % 12,
+            octave = Math.floor(number / 12),
+            notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 
-        return MIDI;
-    })();
+        notes.push.apply(notes, notes);
 
-    window.tsw.midi = new MIDI();
+        return notes[noteOnScale] + octave;
+    };
 })(window);

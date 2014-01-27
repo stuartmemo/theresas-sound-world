@@ -2,7 +2,7 @@
  * Theresas's Sound World - Effects
  * tsw-effects.js
  * Dependencies: tsw-core.js
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  **********************************/
 
 (function (window, undefined) {
@@ -42,15 +42,13 @@
          *  Effect Level: Volume of effect mixed back into signal
          */
 
-        var effect = {},
-            delay = tsw.context.createDelay(),
-            feedback = tsw.context.createGain(),
-            effectLevel = tsw.context.createGain(),
+        var node = tsw.createNode(),
+            delay = tsw.createDelay(),
+            feedback = tsw.createGain(),
+            effectLevel = tsw.createGain(),
             gain = tsw.createGain();
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
-        effect.settings = {
+        node.settings = {
             delayTime: 0.5,
             feedback: 0.5,
             effectLevel: 0.5,
@@ -58,14 +56,14 @@
 
         // Set values
         settings = settings || {};
-        delay.delayTime.value =  settings.delayTime || effect.settings.delayTime;
-        feedback.gain.value = settings.feedback || effect.settings.feedback;
-        effectLevel.gain.value = settings.effectLevel || effect.settings.effectLevel;
+        delay.delayTime.value =  settings.delayTime || node.settings.delayTime;
+        feedback.gain.value = settings.feedback || node.settings.feedback;
+        effectLevel.gain.value = settings.effectLevel || node.settings.effectLevel;
 
-        tsw.connect(effect.input, gain, delay, feedback, delay, effectLevel, effect.output);
+        tsw.connect(node.input, gain, delay, feedback, delay, effectLevel, node.output);
         tsw.connect(gain, delay);
 
-        return effect;
+        return node;
     };
 
     /*
@@ -117,30 +115,6 @@
         return effect;
     };
 
-    /*
-     * Creates flange effect. Y'know, like in Come As You Are.
-     *
-     * @method createFlanger
-     * @param {object} settings Flanger settings.
-     * @return
-     */
-    fx.createFlanger = function (settings) {
-
-        /*
-         *  Flanger 
-         *  =======
-         *  +----------+
-         *  |  Input   |
-         *  | (Source) |
-         *  +----------+
-         *
-         */
-
-        var effect = {};
-
-        return effect;
-    };
-    
     /*
      * Creates a phaser node.
      *

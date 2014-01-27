@@ -1,8 +1,8 @@
 /*********************************
  * Theresas's Sound World - Music
- * music.js
+ * tsw.js
  * Dependencies: tsw-core.js
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  ********************************/
 
 (function (window, undefined) {
@@ -52,7 +52,7 @@
     var getMajorScale = function (rootNote) {
         var scale = [],
             positionOnScale = getNotePosition(rootNote);
-        
+
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
         scale.push(notes[positionOnScale + 4]);
@@ -109,7 +109,7 @@
      * @param {string} chord Name of chord to turn into object.
      * return {object} Detailed chord object.
      */
-    music.getChord = function (chord) {
+    tsw.chord = function (chord) {
         var chordObj = {},
             notePositions = [],
             rootNotePosition = 0;
@@ -139,13 +139,13 @@
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
-            notePositions.push(rootNotePosition + music.getSemitoneDifference('minor 3rd'));
+            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('minor 3rd'));
         } else {
-            notePositions.push(rootNotePosition + music.getSemitoneDifference('major 3rd'));
+            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('major 3rd'));
         }
 
-        notePositions.push(rootNotePosition + music.getSemitoneDifference('perfect 5th'));
-        notePositions.push(rootNotePosition + music.getSemitoneDifference('octave'));
+        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('perfect 5th'));
+        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('octave'));
 
         notePositions.forEach(function (position) {
             chordObj.notes.push(notes[position]);
@@ -157,12 +157,12 @@
     /*
      * Returns a list of notes in a given scale.
      * 
-     * @method getScale
+     * @method scale 
      * @param {string} rootNote Root note to base scale on.
      * @param {string} scaleType Type of scale to return.
      * @return {array} List of notes in scale.
      */
-    music.getScale = function (rootNote, scaleType) {
+    tsw.scale = function (rootNote, scaleType) {
         if (scaleType === 'minor') {
             return getMinorScale(rootNote);
         } else {
@@ -177,7 +177,7 @@
      * @param {string} interval The name of the interval
      * @return {number} Number of semitones of interval from a base note.
      */
-    music.getSemitoneDifference = function (interval) {
+    tsw.semitoneDifference = function (interval) {
         var numberOfIntervals = intervals.length;
 
         for (var i = 0; i < numberOfIntervals; i++) {
@@ -194,7 +194,7 @@
      * @param {string} note Note to convert.
      * @return {string} New flat note.
      */
-    music.getFlat = function (note) {
+    tsw.flat = function (note) {
         var new_note;
 
         note = note.replace('#', 'b');
@@ -216,7 +216,7 @@
      * @param {string} note Note to convert.
      * @return {string} New sharp note.
      */
-    music.getSharp = function (note) {
+    tsw.sharp = function (note) {
         var new_note,
             num_index = 0;
 
@@ -254,7 +254,7 @@
      * @param {string} note Note to convert to frequency
      * @return {number} Frequency of note
      */
-    music.getFrequency = function (note) {
+    tsw.frequency = function (note) {
         var octave,
             keyNumber,
             note_index,
@@ -274,26 +274,6 @@
         note = this.getSharp(note);
         note_without_octave = note;
 
-        /*
-        switch (note.length) {
-            case 1:
-                noteLetter = note[0];
-                break;
-            case 2:
-                if (note.indexOf('#')) {
-                    noteLetter = note;
-                } else {
-                    noteLetter = note[0];
-                }
-                break;
-            case 3:
-                noteLetter = note.slice(0, 2);
-                break;
-            default:
-                return 'This doesn\'t look like any note I\'ve seen';
-        }
-        */
-
         if (note_index > -1) {
             note_without_octave = note.substr(0, note_index);
         }
@@ -304,7 +284,4 @@
         // Return frequency of note
         return parseFloat((440 * Math.pow(2, (keyNumber - 57) / 12)), 10);
     };
-
-    tsw.music = music;
-
- })(window);
+})(window);
