@@ -444,6 +444,10 @@
                     console.log('Error decoding audio data', error);
                 };
 
+                request.onerror = function () {
+                    console.log('totally didn\'t work');
+                };
+
                 request.send();
             };
 
@@ -1602,13 +1606,13 @@
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
-            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('minor 3rd'));
+            notePositions.push(rootNotePosition + tsw.semitoneDifference('minor 3rd'));
         } else {
-            notePositions.push(rootNotePosition + tsw.getSemitoneDifference('major 3rd'));
+            notePositions.push(rootNotePosition + tsw.semitoneDifference('major 3rd'));
         }
 
-        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('perfect 5th'));
-        notePositions.push(rootNotePosition + tsw.getSemitoneDifference('octave'));
+        notePositions.push(rootNotePosition + tsw.semitoneDifference('perfect 5th'));
+        notePositions.push(rootNotePosition + tsw.semitoneDifference('octave'));
 
         notePositions.forEach(function (position) {
             chordObj.notes.push(notes[position]);
@@ -1636,7 +1640,7 @@
     /*
      * Returns the number of semitones an interval is from a base note.
      *
-     * @method getSemitoneDifference
+     * @method semitoneDifference
      * @param {string} interval The name of the interval
      * @return {number} Number of semitones of interval from a base note.
      */
@@ -1653,7 +1657,7 @@
     /*
      * Returns the flat equivalent of a given note.
      *
-     * @method getFlat
+     * @method flat 
      * @param {string} note Note to convert.
      * @return {string} New flat note.
      */
@@ -1675,7 +1679,7 @@
     /*
      * Returns the sharp equivalent of a given note.
      *
-     * @method getSharp
+     * @method sharp 
      * @param {string} note Note to convert.
      * @return {string} New sharp note.
      */
@@ -1734,7 +1738,7 @@
             octave = 4;
         } 
 
-        note = this.getSharp(note);
+        note = this.sharp(note);
         note_without_octave = note;
 
         if (note_index > -1) {
