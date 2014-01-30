@@ -128,7 +128,6 @@
          * Enable jQuery style getters & setters.
          * @param paramToGetSet
          */
-
         var createGetSetter = function (node, arrayOfParams) {
             var that = this;
 
@@ -252,7 +251,7 @@
             return this.context().currentTime;
         };
 
-        tsw.createChannelMerger = function (channels) {
+        tsw.channelMerger = function (channels) {
             return tsw.context().createChannelMerger(channels);
         };
 
@@ -474,9 +473,9 @@
         };
 
         /*
-         * Create a delay node.
+         * Create a wait/delay node.
          */
-        tsw.createDelay = function (delayTime) {
+        tsw.wait = function (delayTime) {
             var node,
                 delayNode = this.context().createDelay();
 
@@ -515,7 +514,7 @@
          * -1 is fully left. 1 is fully right.
          * @param {number} pan
          */
-        tsw.createPanner = function (pan) {
+        tsw.panner = function (pan) {
             var panner = {},
                 left_gain = tsw.createGain(1),
                 right_gain = tsw.createGain(0),
@@ -804,7 +803,7 @@
          * Create buffer source node.
          * @return BufferSource node.
          */
-        tsw.createBufferSource = function (buff) {
+        tsw.bufferSource = function (buff) {
             var source = this.context().createBufferSource();
 
             source.buffer = buff.buffer();
