@@ -443,6 +443,10 @@
                     console.log('Error decoding audio data', error);
                 };
 
+                request.onerror = function () {
+                    console.log('totally didn\'t work');
+                };
+
                 request.send();
             };
 
