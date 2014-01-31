@@ -418,40 +418,43 @@
                 basePath = '',
                 extensions = [],        
                 files_loaded = 0,
+                files_failed= 0,
                 number_of_files = 0,
-                callback,
+                successCallback,
+                failCallback,
                 that = this;
 
             // Load a single file
-            var loadFile = function (basePath, fileKey, filePath, returnObj, callback) {
+            var loadFile = function (basePath, fileKey, filePath, returnObj, successCallback, failCallback) {
                 var request = new XMLHttpRequest();
 
                 request.open('GET', basePath + filePath, true);
                 request.responseType = 'arraybuffer';
 
-                request.onreadystatechange = function () {
-                    if (request.readyState === 4) {
-                        if (isFunction(failureCallback)) {
-                            failureCallback();
-                        } else {
-                            console.log('There was an error loading your file(s)', request.status);
-                        }
-                    }
-                };
-
-                request.onload = function () {
-
+                var success = function () {
                     files_loaded++;
 
                     that.context().decodeAudioData(request.response, function (decodedBuffer) {
                         returnObj[fileKey] = decodedBuffer;
 
                         if (Object.keys(returnObj).length === number_of_files) {
-                            callback(returnObj);
+                            successCallback(returnObj);
                         }
                     });
-                }, function (error) {
-                    console.log('Error decoding audio data', error);
+                };
+
+                var fail = function () {
+                    if (isFunction(failCallback)) {
+                        failCallback();
+                    } else {
+                        console.log('There was an error loading your file(s)', request.status);
+                    }
+                }
+
+                request.onreadystatechange = function () {
+                    if (request.readyState === 4) {
+                        request.status === 200 ? success() : fail();
+                    }
                 };
 
                 request.send();
@@ -462,23 +465,23 @@
                 basePath = arguments[1].path || '';
                 extensions = arguments[1].extensions || [];
             } else if (typeof arguments[1] === 'function') {
-                callback = arguments[1];
+                successCallback = arguments[1];
             }
 
-            // Is 3rd argument is the callback?
+            // Is 3rd argument is the failure callback?
             if (typeof arguments[2] === 'function') {
-                callback = arguments[2];
+                failCallback = arguments[2];
             }
 
             // 1st argument is files object
             if (typeof files === 'object') {
                 number_of_files = Object.keys(files).length;
                 for (var file in files) {
-                    loadFile(basePath, file, files[file], returnObj, callback);
+                    loadFile(basePath, file, files[file], returnObj, successCallback, failCallback);
                 }
             } else if (typeof files === 'string') {
                 number_of_files = 1;
-                loadFile(basePath, file, files[file], returnObj, callback);
+                loadFile(basePath, file, files[file], returnObj, successCallback);
             } else {
                 throw new Error('Files must be an array or a valid string.');
             }
@@ -658,6 +661,8 @@
                 return options.nodeType || 'default';
             };
 
+            node.attributes = options.attributes;
+
             // Keep a list of nodes this node is connected to.
             node.connectedTo = [];
 
@@ -815,7 +820,7 @@
          * Create buffer source node.
          * @return BufferSource node.
          */
-        tsw.createBufferSource = function (buff) {
+        tsw.bufferSource = function (buff) {
             var source = this.context().createBufferSource();
 
             source.buffer = buff.buffer();
@@ -1019,37 +1024,37 @@
          */
         tsw.noise = function (colour) {
             var node,
-                noise_source = this.createBufferSource(tsw.noise_buffer);
+                noise_source = this.bufferSource(tsw.noise_buffer);
 
             node = tsw.createNode({
                 nodeType: 'noise',
-                sourceNode: noise_source
+                sourceNode: noise_source,
+                attributes: {
+                    color: 'white'
+                }
             });
 
-            noise_source.buffer = tsw.noise_buffer.buffer();
-
-            node.color = colour || 'white';
             noise_source.loop = true;
 
-            noise_source.nodeType = function () {
+            createGetSetter.call(noise_source, node, ['buffer']);
+
+            node.color = node.colour = function (color) {
+                if (typeof color === 'undefined') {
+                    return node.attributes.color;
+                } else {
+                    node.attributes.color = color;
+                }
+            }
+
+            node.nodeType = function () {
                 return 'noise';
             }
 
-            noise_source.color = function (val) {
-                if (typeof val === 'undefined') {
-                    return node.color; 
-                } else {
-                    if (typeof val === 'string') {
-                        node.color = val;
-                    }
-                }
-            };
-
-            noise_source.play = function (timeToStart) {
+            node.play = function (timeToStart) {
                 noise_source.start(timeToStart);
             };
 
-            return noise_source;
+            return node;
         };
 
         /*
@@ -1070,8 +1075,8 @@
             *********************************/
 
             var effectObj = {},
-                lfo = tsw.createOscillator(),
-                depth = this.createGain(),
+                lfo = tsw.oscillator(),
+                depth = this.gain(),
                 defaults = {
                     frequency: 0,
                     waveType: 'triangle',
