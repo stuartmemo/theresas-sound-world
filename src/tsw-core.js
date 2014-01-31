@@ -429,7 +429,18 @@
                 request.open('GET', basePath + filePath, true);
                 request.responseType = 'arraybuffer';
 
+                request.onreadystatechange = function () {
+                    if (request.readyState === 4) {
+                        if (isFunction(failureCallback)) {
+                            failureCallback();
+                        } else {
+                            console.log('There was an error loading your file(s)', request.status);
+                        }
+                    }
+                };
+
                 request.onload = function () {
+
                     files_loaded++;
 
                     that.context().decodeAudioData(request.response, function (decodedBuffer) {
@@ -441,10 +452,6 @@
                     });
                 }, function (error) {
                     console.log('Error decoding audio data', error);
-                };
-
-                request.onerror = function () {
-                    console.log('totally didn\'t work');
                 };
 
                 request.send();
