@@ -103,19 +103,19 @@ describe('Theresa\'s Sound World', function () {
 		describe('Create Delay', function () {
 
 			it('Node should be a delay node', function () {
-				expect(tsw.createDelay().nodeType()).toEqual('delay');
+				expect(tsw.wait().nodeType()).toEqual('delay');
 			});
 
 			it('Default delayTime value should be 1', function () {
-				expect(tsw.createDelay().delayTime()).toEqual(1);
+				expect(tsw.wait().delayTime()).toEqual(1);
 			});
 
 			it('Create delay node with different delayTime than default', function () {
-				expect(tsw.createDelay(0.5).delayTime()).toEqual(0.5);
+				expect(tsw.wait(0.5).delayTime()).toEqual(0.5);
 			});
 
 			it('Create delay node and change delayTime after creation', function () {
-				var delay = tsw.createDelay();
+				var delay = tsw.wait();
 				delay.delayTime(0.2);
 				expect(delay.delayTime()).toEqual(0.20000000298023224);
 			});
@@ -178,6 +178,25 @@ describe('Theresa\'s Sound World', function () {
             expect(tsw.compressor().nodeType()).toEqual('compressor');
         });
 
+        describe('Create Envelope', function () {
+        	var osc = tsw.oscillator(),
+        		volume = tsw.gain(0.1),
+        		envelope = tsw.envelope({
+        			param: volume.params.gain,
+        			startLevel: 0,
+        			maxLevel: 1,
+        			attackTime: 1,
+
+        		});
+
+        	tsw.connect(osc, volume, tsw.speakers);
+        	osc.start(tsw.now());
+        	envelope.start(tsw.now());
+        	osc.stop(tsw.now() + 6);
+
+        	expect(tsw.envelope().nodeType()).toEqual('envelope');
+        });
+
 		describe('Create Noise', function () {
 
 			it('Node nodeType is "noise"', function () {
@@ -193,9 +212,11 @@ describe('Theresa\'s Sound World', function () {
 
 			it('Load some mp3s', function () {
 				tsw.load({
-					sample_one: 'samples/tsw1.mp3',
-					sample_two: 'samples/tsw2.mp3',
-					sample_three: 'samples/tsw3.mp3',
+					files: {
+						sample_one: 'samples/tsw1.mp3',
+						sample_two: 'samples/tsw2.mp3',
+						sample_three: 'samples/tsw3.mp3',
+					}
 				}, function (success) {
 					expect(Object.keys(success).length === 3);
 				});

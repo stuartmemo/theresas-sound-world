@@ -23,7 +23,9 @@
      * @param {function} failure
      */
     tsw.getUserMIDI = function (success, failure) {
-        navigator.requestMIDIAccess().then(success, failure);
+        if (tsw.MIDISupport()) {
+            navigator.requestMIDIAccess().then(success, failure);
+        }
     };
 
     tsw.note = function (number) {

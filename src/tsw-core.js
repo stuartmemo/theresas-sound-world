@@ -174,7 +174,6 @@
             for (var i = 0; i < tsw.noise_buffer.buffer().length; i++) {
                 tsw.noise_buffer.buffer().getChannelData(0)[i] = (Math.random() * 2) - 1;
             }
-            tsw.noise_buffer
         };
 
         /*
@@ -413,8 +412,8 @@
         */
         tsw.load = function () {
             var returnObj = {},
-                files = arguments[0],
-                basePath = '',
+                files = arguments[0].files,
+                basePath = arguments[0].path || '',
                 extensions = [],        
                 files_loaded = 0,
                 number_of_files = 0,
@@ -697,15 +696,10 @@
                 return this;
             };
 
-            /*
-            node.type = function (wt) {
-                if (typeof wt === 'undefined') {
-                    return osc.type;
-                } else {
-                    osc.type = wt.toLowerCase();
-                }
+            node.detune = function (amount) {
+                osc.detune.value = amount;
+                return this;
             };
-            */
 
             node.type(node.waveType.toLowerCase());
 
@@ -743,6 +737,10 @@
             node = tsw.createNode({
                 nodeType: 'gain'
             });
+
+            node.params = {
+                gain: gainNode.gain
+            };
 
             createGetSetter.call(gainNode, node, ['gain']);
 
@@ -807,10 +805,10 @@
          * Create buffer source node.
          * @return BufferSource node.
          */
-        tsw.bufferSource = function (buff) {
+        tsw.bufferPlayer = function (buff) {
             var source = this.context().createBufferSource();
 
-            source.buffer = buff.buffer();
+            source.buffer = buff;
 
             if (typeof source.start === 'undefined') {
                 source.start = source.noteOn;
@@ -891,6 +889,8 @@
             settings = applyObject(defaults, settings);
             applySettings(compressor, settings);
 
+            tsw.connect(node.input, compressor, node.output);
+
             return node;
         };
 
@@ -946,10 +946,13 @@
             envelope.startLevel = settings.startLevel || 0;
             envelope.maxLevel = settings.maxLevel || 1;
             envelope.minLevel = settings.minLevel || 0;
+            envelope.nodeType = function () {
+                return 'envelope';
+            }
 
             // Envelope values
-            envelope.attackTime = settings.attackTime || 0;
-            envelope.decayTime = settings.decayTime || 0;
+            envelope.attackTime = settings.attackTime || 1;
+            envelope.decayTime = settings.decayTime || 1;
             envelope.sustainLevel = settings.sustainLevel || 0;
             envelope.releaseTime = settings.releaseTime || 0;
             
@@ -967,17 +970,24 @@
                     decayTime = attackTime + this.decayTime,
                     releaseTime = decayTime + this.releaseTime;
 
+                console.log('Start', startTime);
+                console.log('Attack', attackTime);
+                console.log('Decay', decayTime);
+                console.log('Release', releaseTime);
+
                 // Calculate levels
                 this.maxLevel = this.startLevel + this.maxLevel;
                 this.sustainLevel = this.startLevel + this.sustainLevel;
 
                 // Param is actual AudioParam
                 if ('setValueAtTime' in this.param) {
+
                     // Initialise
                     this.param.cancelScheduledValues(startTime);
                     this.param.setValueAtTime(this.startLevel, startTime);
 
                     // Attack
+                    console.log(tsw.now(), attackTime)
                     this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
 
                     // Decay
@@ -1011,14 +1021,12 @@
          */
         tsw.noise = function (colour) {
             var node,
-                noise_source = this.createBufferSource(tsw.noise_buffer);
+                noise_source = this.bufferPlayer(tsw.noise_buffer.buffer());
 
             node = tsw.createNode({
                 nodeType: 'noise',
                 sourceNode: noise_source
             });
-
-            noise_source.buffer = tsw.noise_buffer.buffer();
 
             node.color = colour || 'white';
             noise_source.loop = true;
@@ -1061,9 +1069,10 @@
 
             *********************************/
 
-            var effectObj = {},
-                lfo = tsw.createOscillator(),
-                depth = this.createGain(),
+            var node,
+                lfo = tsw.oscillator(),
+                depth = this.gain(),
+                noise_source = this.bufferPlayer(tsw.noise_buffer.buffer()),
                 defaults = {
                     frequency: 0,
                     waveType: 'triangle',
@@ -1072,21 +1081,24 @@
                     autoStart: false
                 };
 
+            node = tsw.createNode({
+                nodeType: 'noise',
+                sourceNode: noise_source
+            });
+
             // Merge passed settings with defaults
             settings = applyObject(defaults, settings);
 
-            lfo.type = lfo[settings.waveType] || lfo['TRIANGLE'];
-
-            depth.gain.value = settings.depth;
-            lfo.frequency.value = settings.frequency;
+            lfo.type(settings.waveType || 'triangle');
+            depth.gain(settings.depth);
+            lfo.frequency(settings.frequency);
 
             if (settings.autoStart) {
                 lfo.start(tsw.now());
             }
 
             lfo.modulate = function (target) {
-                this.connect(depth);
-                depth.connect(target);
+                tsw.connect(depth, target);
             };
 
             lfo.setWaveType = function (waveType) {
@@ -1104,7 +1116,7 @@
             lfo.setDepth = function (d) {
                 depth.gain.value = d;
             };
-            
+
             lfo.modulate(settings.target);
 
             return lfo;
