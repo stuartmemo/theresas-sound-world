@@ -221,6 +221,18 @@ describe('Theresa\'s Sound World', function () {
 					expect(Object.keys(success).length === 3);
 				});
 			});
+
+			it('Load some files that don\'t exist', function () {
+				tsw.load({
+					sample_one: 'samples/nope1.mp3',
+					sample_two: 'samples/nope2.mp3',
+					sample_three: 'samples/nope3.mp3',
+				}, function (success) {
+                    // do nothing
+				}, function () {
+                    expect(true).toEqual(true);
+                });
+			});
 		});
 
 		describe('Fade In', function () {
