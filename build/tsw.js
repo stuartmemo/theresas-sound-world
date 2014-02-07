@@ -966,8 +966,8 @@
             // Envelope values
             envelope.attackTime = settings.attackTime || 1;
             envelope.decayTime = settings.decayTime || 1;
-            envelope.sustainLevel = settings.sustainLevel || 0;
-            envelope.releaseTime = settings.releaseTime || 0;
+            envelope.sustainLevel = settings.sustainLevel || 1;
+            envelope.releaseTime = settings.releaseTime || 1;
             
             // Automation parameters 
             envelope.param = settings.param || {};
@@ -993,35 +993,45 @@
                 this.sustainLevel = this.startLevel + this.sustainLevel;
 
                 // Param is actual AudioParam
-                if ('setValueAtTime' in this.param) {
+                if (isAudioParam(this.param)) {
 
+                    console.log('Current time', tsw.now()); 
                     // Initialise
-                    this.param.cancelScheduledValues(startTime);
-                    this.param.setValueAtTime(this.startLevel, startTime);
+                    console.log('Setting value at', startTime);
+                    this.param.setValueAtTime(this.startLevel, startTime + 2);
 
                     // Attack
-                    console.log(tsw.now(), attackTime)
-                    this.param.linearRampToValueAtTime(this.maxLevel, attackTime);
+                    console.log('Ramping to value at', attackTime);
+                    this.param.exponentialRampToValueAtTime(this.maxLevel, attackTime);
 
                     // Decay
-                    this.param.linearRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime);
+                    this.param.exponentialRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime);
 
                     // Release
                     if (this.autoStop) {
-                        this.param.linearRampToValueAtTime(this.minLevel, releaseTime);
+                        console.log(this.param);
+                        this.param.exponentialRampToValueAtTime(this.minLevel, releaseTime);
                         this.stop(releaseTime);
                     }
                 }
             };
 
-            envelope.stop = function (timeToStop) {
+            envelope.startRelease = function (timeToStop) {
                 timeToStop = timeToStop || tsw.now();
                 timeToStop += this.releaseTime;
 
+                /*
+
+                console.log('releasing');
                 // Release
                 if (!this.autoStop && isAudioParam(this.param)) {
-                    this.param.linearRampToValueAtTime(this.minLevel, timeToStop);
+                    console.log('current value', this.param.value);
+                    console.log('current time', tsw.now());
+                    console.log('ramping to ', this.minLevel, 'at', timeToStop);;
+                    this.param.setValueAtTime(this.sustainLevel, tsw.now());
+                    this.param.exponentialRampToValueAtTime(this.minLevel, timeToStop);
                 }
+                */
             };
 
             return envelope;

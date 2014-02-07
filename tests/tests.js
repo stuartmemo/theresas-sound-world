@@ -185,14 +185,58 @@ describe('Theresa\'s Sound World', function () {
         			param: volume.params.gain,
         			startLevel: 0,
         			maxLevel: 1,
-        			attackTime: 1,
-
+                    sustainLevel: 0.6,
+        			attackTime: 1.1,
+                    decayTime: 1,
+                    autoStop: false
         		});
 
         	tsw.connect(osc, volume, tsw.speakers);
+
         	osc.start(tsw.now());
-        	envelope.start(tsw.now());
-        	osc.stop(tsw.now() + 6);
+        	osc.stop(tsw.now() + 8);
+
+            // Start Level
+            expect(volume.gain()).toEqual(0);
+        	envelope.start();
+
+            waits(1000);
+
+            // Attack
+            runs(function () {
+                expect(volume.gain()).toBeGreaterThan(0);
+            });
+
+            waits(1000);
+
+            // Decay
+            runs(function () {
+                expect(parseFloat(volume.gain().toFixed(1))).toBeLessThan(1);
+            });
+
+            waits(1000);
+
+            // Sustain
+            runs(function () {
+                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+            });
+
+            waits(1000);
+
+            // Still sustaining?
+            runs(function () {
+                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                envelope.startRelease();
+                console.log('Starting release',tsw.now());
+            });
+
+            waits(1000);
+
+            // Release
+            runs(function () {
+                console.log(tsw.now());
+                expect(volume.gain()).toBeLessThan(0.6);
+            });
 
         	expect(tsw.envelope().nodeType()).toEqual('envelope');
         });
@@ -224,9 +268,11 @@ describe('Theresa\'s Sound World', function () {
 
 			it('Load some files that don\'t exist', function () {
 				tsw.load({
-					sample_one: 'samples/nope1.mp3',
-					sample_two: 'samples/nope2.mp3',
-					sample_three: 'samples/nope3.mp3',
+                    files: {
+                        sample_one: 'samples/nope1.mp3',
+                        sample_two: 'samples/nope2.mp3',
+                        sample_three: 'samples/nope3.mp3',
+                    }
 				}, function (success) {
                     // do nothing
 				}, function () {
