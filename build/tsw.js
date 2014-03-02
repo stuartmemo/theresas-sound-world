@@ -67,10 +67,18 @@
 
         /*
          * Is an argument a string?
-         * @param thing Argument to check if it's an string.
+         * @param thing Argument to check if it's a string.
          */
         var isString = function (thing) {
             return typeof thing === 'string';
+        };
+
+        /*
+         * Is an argument a number?
+         * @param thing Argument to check if it's a number.
+         */
+        var isNumber = function (thing) {
+            return typeof thing === 'number';
         };
 
         /*
@@ -230,7 +238,7 @@
         var fadeIn = function (thingToFadeIn) {
             thingToFadeIn.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeIn.output.gain.setValueAtTime(0, tsw.now());
-            thingToFadeIn.output.gain.linearRampToValueAtTime(1, tsw.now() + 2);
+            thingToFadeIn.output.gain.exponentialRampToValueAtTime(1, tsw.now() + 2);
         };
 
         /*
@@ -240,7 +248,7 @@
         var fadeOut = function (thingToFadeOut) {
             thingToFadeOut.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeOut.output.gain.setValueAtTime(1, tsw.now());
-            thingToFadeOut.output.gain.linearRampToValueAtTime(0, tsw.now() + 2);
+            thingToFadeOut.output.gain.exponentialRampToValueAtTime(0, tsw.now() + 2);
         };
 
         /*
@@ -844,9 +852,9 @@
                 filter = tsw.context().createBiquadFilter();
 
             if (isObject(arguments[0])) {
-                options.type = arguments[0].type || 'lowpass';
+                options.type = arguments[0].type;
                 options.frequency = arguments[0].frequency || 1000;
-                options.Q = arguments[0].Q || 0;
+                options.Q = arguments[0].Q;
             } else if (isString(arguments[0])) {
                 options.type = arguments[0]; 
             }
@@ -928,7 +936,8 @@
          * Create waveshaper.
          */
         tsw.waveShaper = function () {
-            var curve = new Float32Array(65536);
+            var waveShaper = this.context().createWaveShaper(),
+                curve = new Float32Array(65536);
 
             for (var i = 0; i < 65536 / 2; i++) {
                 if (i < 30000) {
@@ -938,7 +947,6 @@
                 }
             }
 
-            var waveShaper = this.context().createWaveShaper();
             waveShaper.curve = curve;
 
             return waveShaper;
@@ -959,34 +967,29 @@
             envelope.startLevel = settings.startLevel || 0;
             envelope.maxLevel = settings.maxLevel || 1;
             envelope.minLevel = settings.minLevel || 0;
+            envelope.param = settings.param || null;
             envelope.nodeType = function () {
                 return 'envelope';
             }
 
             // Envelope values
-            envelope.attackTime = settings.attackTime || 1;
+            envelope.attackTime = settings.attackTime || 0;
             envelope.decayTime = settings.decayTime || 1;
             envelope.sustainLevel = settings.sustainLevel || 1;
             envelope.releaseTime = settings.releaseTime || 1;
-            
+
             // Automation parameters 
-            envelope.param = settings.param || {};
-            envelope.param.value = envelope.startLevel;
+            if (isAudioParam(settings.param)) {
+                envelope.param = settings.param;
+            }
 
             // Should the release kick-in automatically
             settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
 
             envelope.start = function (timeToStart) {
                 // Calculate times
-                var startTime = timeToStart || tsw.now(),
-                    attackTime = startTime + this.attackTime,
-                    decayTime = attackTime + this.decayTime,
+                var decayTime = this.attackTime + this.decayTime,
                     releaseTime = decayTime + this.releaseTime;
-
-                console.log('Start', startTime);
-                console.log('Attack', attackTime);
-                console.log('Decay', decayTime);
-                console.log('Release', releaseTime);
 
                 // Calculate levels
                 this.maxLevel = this.startLevel + this.maxLevel;
@@ -994,44 +997,23 @@
 
                 // Param is actual AudioParam
                 if (isAudioParam(this.param)) {
-
-                    console.log('Current time', tsw.now()); 
-                    // Initialise
-                    console.log('Setting value at', startTime);
-                    this.param.setValueAtTime(this.startLevel, startTime + 2);
-
                     // Attack
-                    console.log('Ramping to value at', attackTime);
-                    this.param.exponentialRampToValueAtTime(this.maxLevel, attackTime);
+                    this.param.setValueAtTime(0, tsw.now());
+                    this.param.linearRampToValueAtTime(this.maxLevel, tsw.now() + this.attackTime);
 
                     // Decay
-                    this.param.exponentialRampToValueAtTime(this.startLevel + this.sustainLevel, decayTime);
-
-                    // Release
-                    if (this.autoStop) {
-                        console.log(this.param);
-                        this.param.exponentialRampToValueAtTime(this.minLevel, releaseTime);
-                        this.stop(releaseTime);
-                    }
+                    this.param.setTargetAtTime(this.sustainLevel, tsw.now(), this.decayTime);
                 }
             };
 
-            envelope.startRelease = function (timeToStop) {
+            envelope.stop = function (timeToStop) {
                 timeToStop = timeToStop || tsw.now();
                 timeToStop += this.releaseTime;
 
-                /*
-
-                console.log('releasing');
                 // Release
                 if (!this.autoStop && isAudioParam(this.param)) {
-                    console.log('current value', this.param.value);
-                    console.log('current time', tsw.now());
-                    console.log('ramping to ', this.minLevel, 'at', timeToStop);;
-                    this.param.setValueAtTime(this.sustainLevel, tsw.now());
-                    this.param.exponentialRampToValueAtTime(this.minLevel, timeToStop);
+                    this.param.setTargetAtTime(this.minLevel, tsw.now(), this.releaseTime / 10);
                 }
-                */
             };
 
             return envelope;
@@ -1174,6 +1156,10 @@
                 setTimeout(loop, 500);
             })();
         };
+
+        // Expose helper functions.
+        tsw.isString = isString;
+        tsw.isNumber = isNumber;
 
         /*
          * Kick everything off.
@@ -1812,13 +1798,18 @@
      * @param {function} success
      * @param {function} failure
      */
-    tsw.getUserMIDI = function (success, failure) {
+
+    tsw.getUserMidi = function (success, failure) {
         if (tsw.MIDISupport()) {
             navigator.requestMIDIAccess().then(success, failure);
         }
     };
 
-    tsw.note = function (number) {
+    var noteToMidi = function (noteLetter) {
+        return noteLetter;
+    };
+
+    var midiToNote = function (midiNumber) {
         var noteOnScale = number % 12,
             octave = Math.floor(number / 12),
             notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -1826,5 +1817,15 @@
         notes.push.apply(notes, notes);
 
         return notes[noteOnScale] + octave;
+    }
+
+    tsw.midiNote = function (thing_to_convert) {
+        if (tsw.isString(thing_to_convert)) {
+            return noteToMidi(thing_to_convert);
+        }
+
+        if (tsw.isNumber(thing_to_convert)) {
+            return midiToNote(thing_to_convert);
+        }
     };
 })(window);

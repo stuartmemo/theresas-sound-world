@@ -180,7 +180,7 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Create Envelope', function () {
         	var osc = tsw.oscillator(),
-        		volume = tsw.gain(0.1),
+        		volume = tsw.gain(),
         		envelope = tsw.envelope({
         			param: volume.params.gain,
         			startLevel: 0,
