@@ -1,15 +1,18 @@
-/*****************************
+/****************************************************
  * Theresa's Sound World
  * tsw.js
  * An audio library.
+ * http://theresassoundworld.com/
+ * https://github.com/stuartmemo/theresas-sound-world 
  * Copyright 2014 Stuart Memo
- *****************************/
+ ****************************************************/
+
 
 (function (window, undefined) {
     'use strict';
 
     var tsw,
-        version = '1.0.0';
+        version = '0.0.1';
 
     tsw = (function () {
 
@@ -322,23 +325,25 @@
                 var first_arg = arguments[i],
                     second_arg = arguments[i + 1];
 
-                // First arg is native node, second is tsw node.
+                // First argument is a native node, second is a tsw node.
                 if (isNativeNode(first_arg) && isTswNode(second_arg)) {
                     connectNativeNodeToTswNode(first_arg, second_arg);
                     continue;
                 }
 
-                // First arg is tsw node, second is native node.
+                // First argument is a tsw node, second is a native node.
                 if (isTswNode(first_arg) && isNativeNode(second_arg)) {
                     connectTswNodeToNativeNode(first_arg, second_arg);
                     continue;
                 }
 
+                // First arggument is native node, second is an array.
                 if (isNativeNode(first_arg) && isArray(second_arg)) {
                     connectNativeNodeToArray(first_arg, second_arg);
                     continue;
                 }
 
+                // First argument is an array, second is a native node.
                 if (isArray(first_arg) && isNativeNode(second_arg)) {
                     connectArrayToNativeNode(first_arg, second_arg);
                     continue;
@@ -356,13 +361,13 @@
                     continue;
                 }
 
-                // First arg is tsw node, second is array.
+                // First argument is a tsw node, second is an array.
                 if (isTswNode(first_arg) && isArray(second_arg)) {
                     connectTswNodeToArray(first_arg, second_arg);
                     continue;
                 }
 
-                // First arg is array, second is tsw node.
+                // First argument is array, second is a tsw node.
                 if (isArray(first_arg) && isTswNode(second_arg)) {
                     connectArrayToTswNode(first_arg, second_arg);
                     continue;
@@ -374,13 +379,13 @@
                     continue;
                 }
 
-                // First arg is object containing nodes, second is arrat.
+                // First argument is an object containing nodes, second is an array.
                 if (isObjectWithNode(first_arg) && isArray(second_arg)) {
                     connectObjectWithNodeToArray(first_arg, second_arg);
                     continue;
                 }
 
-                // First arg is array, second is object containing node.
+                // First argument is an array, second is an object containing nodes.
                 if (isArray(first_arg) && isObjectWithNode(second_arg)) {
                     connectArrayToObjectWithNode(first_arg, second_arg);
                     continue;
@@ -507,10 +512,9 @@
             });
 
             createGetSetter.call(delayNode, node, ['delayTime']);
-
             node.delayTime(delayTime);
-
             tsw.connect(node.input, delayNode, node.output);
+
 
             return node;
         };

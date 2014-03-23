@@ -1,31 +1,30 @@
 {
-  "name": "theresas-sound-world",
-  "version": "0.0.0",
-  "homepage": "https://github.com/stuartmemo/theresas-sound-world",
-  "authors": [
-    "Stuart Memo <stuartmemo@gmail.com>"
-  ],
-  "description": "Gold Soundz",
-  "main": "src/tsw-core.js",
-  "keywords": [
-    "theresas",
-    "sound",
-    "world",
-    "web",
-    "audio",
-    "audio"
-  ],
-  "license": "MIT",
-  "private": true,
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "app/bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "jasmine": "~1.3.1"
-  }
+    "name": "theresas-sound-world",
+    "version": "0.0.1",
+    "homepage": "https://github.com/stuartmemo/theresas-sound-world",
+    "authors": [
+        "Stuart Memo <stuartmemo@gmail.com>"
+    ],
+    "description":
+        "Theresa's Sound World is powerful way of manipulating audio in the browser in a quick and friendly manner. Built on top of the Web Audio API, it uses a modular routing system allowing you to make sophisticated audio applications and instruments.",
+    "main": "src/tsw-core.js",
+    "keywords": [
+        "sound",
+        "music",
+        "audio"
+        "processing"
+    ],
+    "license": "MIT",
+    "private": true,
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "app/bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "jasmine": "~1.3.1"
+    }
 }
