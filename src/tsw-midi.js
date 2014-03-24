@@ -2,25 +2,24 @@
  * Theresas's Sound World - MIDI
  * tsw-midi.js
  * Dependencies: tsw-core.js
- * Copyright 2013 Stuart Memo
+ * Copyright 2014 Stuart Memo
  *******************************/
 
  (function (window, undefined) {
     'use strict';
 
     tsw = tsw || {};
-    var midi = {};
 
     tsw.MIDISupport = function () {
         return typeof navigator.requestMIDIAccess === 'function';
-    }
+    };
 
     /*
      * Initiate MIDI input/output if available.
      *
      * @method startMIDI
-     * @param {function} success
-     * @param {function} failure
+     * @param {function} success Callback if MIDI has been initiated.
+     * @param {function} failure Callback if MIDI hasn't been initialed.
      */
 
     tsw.getUserMidi = function (success, failure) {
