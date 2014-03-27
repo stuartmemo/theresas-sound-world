@@ -142,7 +142,7 @@
         var createGetSetter = function (node, arrayOfParams) {
             var that = this;
 
-            arrayOfParams.forEach(function (param, index) {
+            arrayOfParams.forEach(function (param) {
                 node[param] = function (val, targetTime, transition) {
 
                     if (typeof val === 'undefined') {
@@ -164,7 +164,7 @@
                             that[param] = val;
                         }
                     }
-                }
+                };
             });
         };
 
@@ -413,7 +413,7 @@
 
         /*
          * Disconnects a node after a certain time.
-         * @param {int} Time to disconnect node.
+         * @param {number} Time to disconnect node in seconds.
          */
         tsw.disconnectAfterTime = function (nodeToDisconnect, timeToDisconnect) {
             nodes_to_disconnect.push({node: nodeToDisconnect, time: timeToDisconnect});
@@ -427,7 +427,7 @@
             var returnObj = {},
                 files = arguments[0].files,
                 basePath = arguments[0].path || '',
-                extensions = [],        
+                extensions = [],
                 files_loaded = 0,
                 files_failed= 0,
                 number_of_files = 0,
@@ -455,12 +455,14 @@
                 };
 
                 var fail = function () {
+                    files_failed++;
+
                     if (isFunction(failCallback)) {
                         failCallback();
                     } else {
                         console.log('There was an error loading your file(s)', request.status);
                     }
-                }
+                };
 
                 request.onreadystatechange = function () {
                     if (request.readyState === 4) {
@@ -492,6 +494,7 @@
                 }
             } else if (typeof files === 'string') {
                 number_of_files = 1;
+                /** THIS WONT WORK - NO FILE AT THIS POINT **/
                 loadFile(basePath, file, files[file], returnObj, successCallback);
             } else {
                 throw new Error('Files must be an array or a valid string.');
@@ -500,6 +503,8 @@
 
         /*
          * Create a wait/delay node.
+         * @param {number} delayTime Time to delay input in seconds.
+         * @return {node} delay node.
          */
         tsw.wait = function (delayTime) {
             var node,
@@ -514,7 +519,6 @@
             createGetSetter.call(delayNode, node, ['delayTime']);
             node.delayTime(delayTime);
             tsw.connect(node.input, delayNode, node.output);
-
 
             return node;
         };
@@ -543,7 +547,6 @@
             var panner = {},
                 left_gain = tsw.createGain(1),
                 right_gain = tsw.createGain(0),
-                left_percentage = 50,
                 merger = tsw.createChannelMerger(2);
 
             panner.input = tsw.createGain();
@@ -605,15 +608,22 @@
          * @param {buffer} AudioBuffer Preloaded audio buffer of sound to play.
          * @param {number} when
          */
-        tsw.play = function (buffer, when) {
+        tsw.play = function (buffers, when) {
             when = when || 0;
-            buffer.start(when);
+
+            if (isArray(buffers)) {
+                buffers.forEach(function (buffer) {
+                    buffer.start(when);
+                });
+            } else {
+                buffers.start(when);
+            }
         };
 
         /*
          * Stop buffer if it's currently playing.
          * @param {AudioBuffer} buffer
-         * @param {number} when 
+         * @param {number} when Time to stop in seconds.
          */
         tsw.stop = function (buffer, when) {
             when = when || 0;
@@ -623,6 +633,7 @@
         /*
          * Reverse a buffer
          * @param {AudioBuffer} buffer
+         * @return {node} Return node containing reversed buffer.
          */
         tsw.reverse = function (sourceNode) {
             // Reverse the array of each channel
@@ -640,23 +651,23 @@
         var updateMethods = function (options) {
             this.start = function (timeToStart) {
                 if (options.sourceNode.hasOwnProperty('start')) {
-                    options.sourceNode.start(timeToStart);  
+                    options.sourceNode.start(timeToStart);
                 } else {
                     options.sourceNode.noteOn(timeToStart);
                 }
 
                 return this;
-            }
+            };
 
             this.stop = function (timeToStop) {
                 if (options.sourceNode.hasOwnProperty('stop')) {
-                    options.sourceNode.stop(timeToStop);  
+                    options.sourceNode.stop(timeToStop);
                 } else {
                     options.sourceNode.noteOff(timeToStop);
                 }
 
                 return this;
-            }
+            };
         };
 
         tsw.createNode = function (options) {
@@ -689,7 +700,7 @@
          * Create oscillator node.
          * @param {string} waveType The type of wave form.
          * @param {number} frequency The starting frequency of the oscillator.
-         * @return Oscillator node of specified type.
+         * @return {node} Oscillator node of specified type.
          */
         tsw.oscillator = function (waveType, frequency) {
             var node,
@@ -737,7 +748,7 @@
 
             node.returnNode = function () {
                 return osc;
-            }
+            };
 
             tsw.connect(osc, node.output);
 
@@ -746,7 +757,7 @@
 
         /*
          * Create gain node.
-         * @return Gain node.
+         * @return {node} Gain node.
          */
         tsw.gain = function (volume) {
             var node,
@@ -770,7 +781,7 @@
 
             if (isObject(volume)) {
                 if (volume.hasOwnProperty('gain')) {
-                    volume = volume.gain.value;                
+                    volume = volume.gain.value;
                 }
             }
 
@@ -779,7 +790,7 @@
             }
 
             if (typeof volume === 'undefined') {
-                volume = 1; 
+                volume = 1;
             }
 
             node.gain(volume);
@@ -791,7 +802,7 @@
 
         /*
          * Create buffer node.
-         * @return Buffer node.
+         * @return {node} Buffer node.
          */
         tsw.buffer = function (no_channels, buffer_size, sample_rate) {
             var node = tsw.createNode({
@@ -807,8 +818,10 @@
             createGetSetter.call(buffer, node, ['numberOfChannels', 'bufferSize', 'sampleRate']);
 
             node.data = function (val) {
+                var channel_data;
+
                 if (typeof val === 'undefined') {
-                    var channel_data = [];      
+                    channel_data = [];
 
                     for (var i = 0; i < no_channels; i++) {
                         channel_data.push(buffer.getChannelData(i));
@@ -816,11 +829,11 @@
 
                     return channel_data;
                 }
-            }
+            };
 
             node.buffer = function () {
                 return buffer;
-            };            
+            };
 
             return node;
         };
@@ -845,11 +858,11 @@
         /*
          * Create filter node.
          * @param {string} filterType Type of filter.
-         * @return Filter node.
+         * @return {node} Filter node.
          */
         tsw.filter = function () {
             var node = tsw.createNode({
-                    nodeType: 'filter'        
+                    nodeType: 'filter'
                 }),
                 options = {},
                 filter = tsw.context().createBiquadFilter();
@@ -859,7 +872,7 @@
                 options.frequency = arguments[0].frequency || 1000;
                 options.Q = arguments[0].Q;
             } else if (isString(arguments[0])) {
-                options.type = arguments[0]; 
+                options.type = arguments[0];
             }
 
             options.type = options.type || 'lowpass';
@@ -973,7 +986,7 @@
             envelope.param = settings.param || null;
             envelope.nodeType = function () {
                 return 'envelope';
-            }
+            };
 
             // Envelope values
             envelope.attackTime = settings.attackTime || 0;
@@ -1027,7 +1040,7 @@
          * @param {string} colour Type of noise.
          * @return Noise generating node.
          */
-        tsw.noise = function (colour) {
+        tsw.noise = function () {
             var node,
                 noise_source = this.bufferPlayer(tsw.noise_buffer.buffer());
 
@@ -1049,11 +1062,11 @@
                 } else {
                     node.attributes.color = color;
                 }
-            }
+            };
 
             node.nodeType = function () {
                 return 'noise';
-            }
+            };
 
             node.play = function (timeToStart) {
                 noise_source.start(timeToStart);

@@ -9,7 +9,6 @@
     'use strict';
 
     window.tsw = tsw || {};
-    var fx = {};
 
     /*
      * Creates delay node.
@@ -18,7 +17,7 @@
      * @param {object} settings Delay settings.
      * @return {AudioNode} Created delay node.
      */
-    fx.createDelay = function (settings) {
+    tsw.delay = function (settings) {
 
         /*
          *  Delay effect
@@ -51,14 +50,14 @@
         node.settings = {
             delayTime: 0.5,
             feedback: 0.5,
-            effectLevel: 0.5,
+            level: 0.5,
         };
 
         // Set values
         settings = settings || {};
         delay.delayTime.value =  settings.delayTime || node.settings.delayTime;
         feedback.gain.value = settings.feedback || node.settings.feedback;
-        effectLevel.gain.value = settings.effectLevel || node.settings.effectLevel;
+        effectLevel.gain.value = settings.level || node.settings.level;
 
         tsw.connect(node.input, gain, delay, feedback, delay, effectLevel, node.output);
         tsw.connect(gain, delay);
@@ -73,7 +72,7 @@
      * @param {object} settings Distortion settings.
      * @return Created distortion node.
      */
-    fx.createDistortion = function (settings) {
+    tsw.distortion = function (settings) {
 
         /*
          *  Distortion
@@ -122,7 +121,7 @@
      * @param {object} settings Phaser settings
      * @return {AudioNode} Created phaser node.
      */
-    fx.createPhaser = function (settings) {
+    tsw.phaser = function (settings) {
 
         /****************************
         Phaser
@@ -191,7 +190,7 @@
      * @param {object} settings Reverb settings.
      * @return {AudioNode} The created reverb node.
      */
-    fx.createReverb = function (settings) {
+    tsw.reverb = function (settings) {
 
         /***********************************
 
@@ -257,7 +256,7 @@
      * @param {object} settings Tremolo settings.
      * @return {AudioNode} Created tremolo node.
      */
-    fx.createTremolo = function (settings) {
+    tsw.tremolo = function (settings) {
 
         /******************************
         

@@ -250,7 +250,7 @@
     /*
      * Calculates the frequency of a given note.
      *
-     * @method getFrequency
+     * @method frequency
      * @param {string} note Note to convert to frequency
      * @return {number} Frequency of note
      */

@@ -10,7 +10,7 @@
 
     tsw = tsw || {};
 
-    tsw.MIDISupport = function () {
+    tsw.isMidiSupported = function () {
         return typeof navigator.requestMIDIAccess === 'function';
     };
 
@@ -23,7 +23,7 @@
      */
 
     tsw.getUserMidi = function (success, failure) {
-        if (tsw.MIDISupport()) {
+        if (this.isMidiSupported()) {
             navigator.requestMIDIAccess().then(success, failure);
         }
     };
