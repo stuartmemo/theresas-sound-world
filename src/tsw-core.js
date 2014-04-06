@@ -237,7 +237,7 @@
          * Fade in an audio source.
          * @param thingToFadeOut Audio source to fade out.
          */
-        var fadeIn = function (thingToFadeIn) {
+        tsw.fadeIn = function (thingToFadeIn) {
             thingToFadeIn.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeIn.output.gain.setValueAtTime(0, tsw.now());
             thingToFadeIn.output.gain.exponentialRampToValueAtTime(1, tsw.now() + 2);
@@ -247,10 +247,11 @@
          * Fade out an audio source.
          * @param thingToFadeOut Audio source to fade out.
          */
-        var fadeOut = function (thingToFadeOut) {
+        tsw.fadeOut = function (thingToFadeOut) {
             thingToFadeOut.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeOut.output.gain.setValueAtTime(1, tsw.now());
-            thingToFadeOut.output.gain.exponentialRampToValueAtTime(0, tsw.now() + 2);
+            thingToFadeOut.output.gain.exponentialRampToValueAtTime(0.000001, tsw.now() + 2);
+            thingToFadeOut.output.gain.setValueAtTime(0, tsw.now() + 2.0001);
         };
 
         /*
@@ -722,12 +723,12 @@
             };
 
             node.fadeIn = function () {
-                fadeIn(this);
+                tsw.fadeIn(this);
                 return this;
             };
 
             node.fadeOut = function () {
-                fadeOut(this);
+                tsw.fadeOut(this);
                 return this;
             };
 
