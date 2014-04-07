@@ -175,70 +175,74 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Create Compressor', function () {
-            expect(tsw.compressor().nodeType()).toEqual('compressor');
+            it('Check compressor node type', function () {
+                expect(tsw.compressor().nodeType()).toEqual('compressor');
+            });
         });
 
         describe('Create Envelope', function () {
-        	var osc = tsw.oscillator(),
-        		volume = tsw.gain(),
-        		envelope = tsw.envelope({
-        			param: volume.params.gain,
-        			startLevel: 0,
-        			maxLevel: 1,
-                    sustainLevel: 0.6,
-        			attackTime: 1.1,
-                    decayTime: 1,
-                    autoStop: false
-        		});
+            it('Envelope behaves correctly', function () {
+                var osc = tsw.oscillator(),
+                    volume = tsw.gain(),
+                    envelope = tsw.envelope({
+                        param: volume.params.gain,
+                        startLevel: 0,
+                        maxLevel: 1,
+                        sustainLevel: 0.6,
+                        attackTime: 1.1,
+                        decayTime: 1,
+                        autoStop: false
+                    });
 
-        	tsw.connect(osc, volume, tsw.speakers);
+                tsw.connect(osc, volume, tsw.speakers);
 
-        	osc.start(tsw.now());
-        	osc.stop(tsw.now() + 8);
+                osc.start(tsw.now());
+                osc.stop(tsw.now() + 8);
 
-            // Start Level
-            expect(volume.gain()).toEqual(0);
-        	envelope.start();
+                // Start Level
+                expect(volume.gain()).toEqual(0);
 
-            waits(1000);
+                beforeEach(function(done) {
+                    setTimeout(function () {
+                        envelope.start();
+                        done();
+                    }, 1000);
+                });
 
-            // Attack
-            runs(function () {
-                expect(volume.gain()).toBeGreaterThan(0);
+                // Attack
+                it('Should attack', function () {
+                    expect(volume.gain()).toBeGreaterThan(0);
+                    done();
+                });
+
+                // Decay
+                runs(function () {
+                    expect(parseFloat(volume.gain().toFixed(1))).toBeLessThan(1);
+                });
+
+
+                // Sustain
+                runs(function () {
+                    expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                });
+
+
+                // Still sustaining?
+                runs(function () {
+                    expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                    envelope.startRelease();
+                    console.log('Starting release',tsw.now());
+                });
+
+
+                // Release
+                runs(function () {
+                    expect(volume.gain()).toBeLessThan(0.6);
+                });
+
+                expect(tsw.envelope().nodeType()).toEqual('envelope');
+
             });
-
-            waits(1000);
-
-            // Decay
-            runs(function () {
-                expect(parseFloat(volume.gain().toFixed(1))).toBeLessThan(1);
-            });
-
-            waits(1000);
-
-            // Sustain
-            runs(function () {
-                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-            });
-
-            waits(1000);
-
-            // Still sustaining?
-            runs(function () {
-                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-                envelope.startRelease();
-                console.log('Starting release',tsw.now());
-            });
-
-            waits(1000);
-
-            // Release
-            runs(function () {
-                console.log(tsw.now());
-                expect(volume.gain()).toBeLessThan(0.6);
-            });
-
-        	expect(tsw.envelope().nodeType()).toEqual('envelope');
         });
 
 		describe('Create Noise', function () {
@@ -255,15 +259,17 @@ describe('Theresa\'s Sound World', function () {
 		describe('Load files', function () {
 
 			it('Load some mp3s', function () {
-				tsw.load({
-					files: {
-						sample_one: 'samples/tsw1.mp3',
-						sample_two: 'samples/tsw2.mp3',
-						sample_three: 'samples/tsw3.mp3',
-					}
-				}, function (success) {
-					expect(Object.keys(success).length === 3);
-				});
+                runs(function () {
+                    tsw.load({
+                        files: {
+                            sample_one: 'samples/tsw1.mp3',
+                            sample_two: 'samples/tsw2.mp3',
+                            sample_three: 'samples/tsw3.mp3',
+                        }
+                    }, function (success) {
+                        expect(Object.keys(success).length).toEqual(3);
+                    });
+                });
 			});
 
 			it('Load some files that don\'t exist', function () {
@@ -276,7 +282,7 @@ describe('Theresa\'s Sound World', function () {
 				}, function (success) {
                     // do nothing
 				}, function () {
-                    expect(true).toEqual(true);
+                    //expect(true).toEqual(true);
                 });
 			});
 		});

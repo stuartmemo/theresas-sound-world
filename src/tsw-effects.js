@@ -295,7 +295,4 @@
 
         return mmNode;
     };
-
-    tsw.fx = fx;
-
 })(window);
