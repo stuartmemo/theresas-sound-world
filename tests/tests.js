@@ -1,19 +1,26 @@
+'use strict';
+/*global describe:true*/
+/*global expect:true*/
+/*global it:true*/
+/*global runs:true*/
+/*global tsw:true*/
+/*global waits:true*/
+
 describe('Theresa\'s Sound World', function () {
 	describe('Core', function () {
 
 		describe('Audio Context', function () {
 
 			it('Context exists', function () {
-				expect(typeof tsw['context']).toEqual('function');
-			})
+				expect(typeof tsw.context).toEqual('function');
+			});
 		});
 
 		describe('Output', function () {
-
 			it('Speakers exist', function () {
 				expect(typeof tsw.speakers).toEqual('object');
 			});
-		})
+		});
 
 		describe('Time', function () {
 
@@ -24,7 +31,6 @@ describe('Theresa\'s Sound World', function () {
 
 		describe('Nodes', function () {
 			it('Can create node', function () {
-				var wat = tsw.createNode();
 				expect(tsw.createNode().nodeType()).toEqual('default');
 			});
 		});
@@ -122,56 +128,7 @@ describe('Theresa\'s Sound World', function () {
 		});
 
         describe('Create Filter', function () {
-            it('Node should be a Filter', function () {
-                expect(tsw.filter().nodeType()).toEqual('filter');
-            });
 
-            it('Creates a lowpass filter by default', function () {
-                expect(tsw.filter().type()).toEqual('lowpass');
-            });
-
-            it('Create a highpass filter by passing string', function () {
-                expect(tsw.filter('highpass').type()).toEqual('highpass');
-            });
-
-            it('Create a highpass filter by changing filter type', function () {
-                var filter = tsw.filter();
-                filter.type('highpass');
-                expect(filter.type()).toEqual('highpass');
-            });
-
-            it('Filter cut-off frequency should default to 1000', function () {
-                expect(tsw.filter().frequency()).toEqual(1000);
-            });
-
-            it('Sets filter frequency', function () {
-                var filter = tsw.filter();
-                filter.frequency(500);
-                expect(filter.frequency()).toEqual(500);
-            });
-
-            it('Filter Q should default to 0', function () {
-                expect(tsw.filter().Q()).toEqual(0);
-            });
-
-            it('Sets Q', function () {
-                var filter = tsw.filter();
-                filter.Q(5);
-                expect(filter.Q()).toEqual(5);
-            });
-
-            it('Create filter with options object', function () {
-                var filter = tsw.filter(
-                    {
-                        frequency: 500,
-                        type: 'notch',
-                        Q: 10
-                    }
-                );
-                expect(filter.frequency()).toEqual(500);
-                expect(filter.type()).toEqual('notch');
-                expect(filter.Q()).toEqual(10);
-            });
         });
 
         describe('Create Compressor', function () {
@@ -208,6 +165,34 @@ describe('Theresa\'s Sound World', function () {
                         done();
                     }, 1000);
                 });
+=======
+            var osc = tsw.oscillator(),
+                volume = tsw.gain(),
+                envelope = tsw.envelope({
+                    param: volume.params.gain,
+                    startLevel: 0,
+                    maxLevel: 1,
+                    sustainLevel: 0.6,
+                    attackTime: 1.1,
+                    decayTime: 1,
+                    autoStop: false
+                });
+
+            tsw.connect(osc, volume, tsw.speakers);
+
+            osc.start(tsw.now());
+            osc.stop(tsw.now() + 8);
+
+            // Start Level
+            envelope.start();
+
+            waits(1000);
+
+            // Attack
+            runs(function () {
+                expect(volume.gain()).toBeGreaterThan(0);
+            });
+>>>>>>> b1f9da4d2adf0e0091efb0b6e1e1cf58dfcf5ad6
 
                 // Attack
                 it('Should attack', function () {
@@ -259,6 +244,7 @@ describe('Theresa\'s Sound World', function () {
 		describe('Load files', function () {
 
 			it('Load some mp3s', function () {
+<<<<<<< HEAD
                 runs(function () {
                     tsw.load({
                         files: {
@@ -270,16 +256,27 @@ describe('Theresa\'s Sound World', function () {
                         expect(Object.keys(success).length).toEqual(3);
                     });
                 });
+=======
+				tsw.load({
+					files: {
+						sampleOne: 'samples/tsw1.mp3',
+						sampleTwo: 'samples/tsw2.mp3',
+						sampleThree: 'samples/tsw3.mp3',
+					}
+				}, function (success) {
+					expect(Object.keys(success).length === 3);
+				});
+>>>>>>> b1f9da4d2adf0e0091efb0b6e1e1cf58dfcf5ad6
 			});
 
 			it('Load some files that don\'t exist', function () {
 				tsw.load({
                     files: {
-                        sample_one: 'samples/nope1.mp3',
-                        sample_two: 'samples/nope2.mp3',
-                        sample_three: 'samples/nope3.mp3',
+                        sampleOne: 'samples/nope1.mp3',
+                        sampleTwo: 'samples/nope2.mp3',
+                        sampleThree: 'samples/nope3.mp3',
                     }
-				}, function (success) {
+				}, function () {
                     // do nothing
 				}, function () {
                     //expect(true).toEqual(true);
@@ -333,15 +330,15 @@ describe('Theresa\'s Sound World', function () {
 	describe('Effects', function () {
 
         it('Create delay effect', function () {
-        	// tsw.delay();
+            // tsw.delay();
         });
 
         it('Create phaser effect', function () {
-        	// tsw.phaser();
+            // tsw.phaser();
         });
 
         it('Create tremolo effect', function () {
-        	// tsw.tremolo();
+            // tsw.tremolo();
         });
 	});
 
@@ -383,9 +380,9 @@ describe('Theresa\'s Sound World', function () {
 
 	describe('Midi', function () {
 		it('Gets note name from given number', function () {
-	        expect(tsw.note(0)).toEqual('C0');
-	        expect(tsw.note(48)).toEqual('C4');
-	        expect(tsw.note(30)).toEqual('F#2');
+	        expect(tsw.midiNote(0)).toEqual('C0');
+	        expect(tsw.midiNote(48)).toEqual('C4');
+	        expect(tsw.midiNote(30)).toEqual('F#2');
 		});
 	});
 });
