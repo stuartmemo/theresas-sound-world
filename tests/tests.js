@@ -2,9 +2,7 @@
 /*global describe:true*/
 /*global expect:true*/
 /*global it:true*/
-/*global runs:true*/
 /*global tsw:true*/
-/*global waits:true*/
 
 describe('Theresa\'s Sound World', function () {
 	describe('Core', function () {
@@ -17,6 +15,7 @@ describe('Theresa\'s Sound World', function () {
 		});
 
 		describe('Output', function () {
+
 			it('Speakers exist', function () {
 				expect(typeof tsw.speakers).toEqual('object');
 			});
@@ -42,6 +41,7 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Create Buffer', function () {
+
             it('Node is a Buffer', function () {
                 expect(tsw.buffer().nodeType()).toEqual('buffer');
             });
@@ -138,61 +138,62 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Create Envelope', function () {
-            it('Envelope behaves correctly', function () {
-                var osc = tsw.oscillator(),
-                    volume = tsw.gain(),
-                    envelope = tsw.envelope({
-                        param: volume.params.gain,
-                        startLevel: 0,
-                        maxLevel: 1,
-                        sustainLevel: 0.6,
-                        attackTime: 1.1,
-                        decayTime: 1,
-                        autoStop: false
-                    });
-
-                tsw.connect(osc, volume, tsw.speakers);
-
-                osc.start(tsw.now());
-                osc.stop(tsw.now() + 8);
-
-                // Start Level
-                expect(volume.gain()).toEqual(0);
-
-                // Attack
-                it('Should attack', function (done) {
-                    expect(volume.gain()).toBeGreaterThan(0);
-                    done();
+            var osc = tsw.oscillator(),
+                volume = tsw.gain(),
+                envelope = tsw.envelope({
+                    param: volume.params.gain,
+                    startLevel: 0,
+                    maxLevel: 1,
+                    sustainLevel: 0.6,
+                    attackTime: 1.1,
+                    decayTime: 1,
+                    autoStop: false
                 });
 
-                // Decay
-                runs(function () {
-                    expect(parseFloat(volume.gain().toFixed(1))).toBeLessThan(1);
-                });
+            tsw.connect(osc, volume, tsw.speakers);
 
+            osc.start(tsw.now());
+            osc.stop(tsw.now() + 8);
 
-                // Sustain
-                runs(function () {
-                    expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-                });
-
-
-                // Still sustaining?
-                runs(function () {
-                    expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-                    envelope.startRelease();
-                    console.log('Starting release',tsw.now());
-                });
-
-
-                // Release
-                runs(function () {
-                    expect(volume.gain()).toBeLessThan(0.6);
-                });
-
+            it('Should be an envelope', function () {
                 expect(tsw.envelope().nodeType()).toEqual('envelope');
-
             });
+
+            // Start Level
+            it('Start level should be zero', function () {
+                expect(volume.gain()).toEqual(0);
+            });
+
+            // Attack
+            it('Should attack', function (done) {
+                expect(volume.gain()).toBeGreaterThan(0);
+                done();
+            });
+
+            // Decay
+            it('Should decay', function (done) {
+                expect(parseFloat(volume.gain().toFixed(1))).toBeLessThan(1);
+                done();
+            });
+
+            // Sustain
+            it('Should sustain', function (done) {
+                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                done();
+            });
+
+            // Still sustaining?
+            it('Should still be sustaining', function (done) {
+                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                envelope.startRelease();
+                done();
+            });
+
+            // Release
+            it('Should release', function () {
+                expect(volume.gain()).toBeLessThan(0.6);
+            });
+
         });
 
 		describe('Create Noise', function () {
@@ -208,7 +209,9 @@ describe('Theresa\'s Sound World', function () {
 
 		describe('Load files', function () {
 
-			it('Load some mp3s', function () {
+            var my_success;
+
+			it('Load some mp3s', function (done) {
 				tsw.load({
 					files: {
 						sampleOne: 'samples/tsw1.mp3',
@@ -216,9 +219,14 @@ describe('Theresa\'s Sound World', function () {
 						sampleThree: 'samples/tsw3.mp3',
 					}
 				}, function (success) {
-					expect(Object.keys(success).length === 3);
+                    my_success = success;
+                    done()
 				});
 			});
+
+            it('mp3s should be loaded', function () {
+                expect(Object.keys(my_success).length).toEqual(3);
+            });
 
 			it('Load some files that don\'t exist', function () {
 				tsw.load({
@@ -249,11 +257,7 @@ describe('Theresa\'s Sound World', function () {
 
 				osc.stop(tsw.now() + 3);
 
-				waits(3000);
-
-				runs(function () {
-					expect(osc.output.gain.value).toEqual(1);
-				});
+                expect(osc.output.gain.value).toEqual(1);
 			});
 		});
 
@@ -269,11 +273,7 @@ describe('Theresa\'s Sound World', function () {
 					.start(tsw.now())
 					.fadeOut();
 
-				waits(3000);
-
-				runs(function () {
-					expect(osc.output.gain.value).toEqual(0);
-				});
+                expect(osc.output.gain.value).toEqual(0);
 			});
 		});
 	});
@@ -281,6 +281,7 @@ describe('Theresa\'s Sound World', function () {
 	describe('Effects', function () {
 
         it('Create delay effect', function () {
+
             // tsw.delay();
         });
 
