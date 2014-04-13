@@ -294,5 +294,4 @@
 
         return mmNode;
     };
-
 })(window);
