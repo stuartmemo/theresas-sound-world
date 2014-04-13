@@ -11,14 +11,14 @@ module.exports = function (grunt) {
                     'build/tsw.min.js': ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js']
                 },
                 options: {
-                    banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2013 Stuart Memo */\n'
+                    banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2014 Stuart Memo */\n'
                 }
             }
         },
 
         concat: {
             options: {
-                banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2013 Stuart Memo */\n'
+                banner: '/* <%= pkg.title %> <%= pkg.version %> (c) 2014 Stuart Memo */\n'
             },
             dist: {
                 src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],

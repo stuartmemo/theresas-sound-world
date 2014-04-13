@@ -1,4 +1,4 @@
-/* Theresa's Sound World 0.0.1 (c) 2013 Stuart Memo */
+/* Theresa's Sound World 0.0.1 (c) 2014 Stuart Memo */
 /****************************************************
  * Theresa's Sound World
  * tsw.js
