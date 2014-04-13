@@ -42,10 +42,10 @@
          */
 
         var node = tsw.createNode(),
-            delay = tsw.createDelay(),
-            feedback = tsw.createGain(),
-            effectLevel = tsw.createGain(),
-            gain = tsw.createGain();
+            delay = tsw.wait(),
+            feedback = tsw.gain(),
+            effectLevel = tsw.gain(),
+            gain = tsw.gain();
 
         node.settings = {
             delayTime: 0.5,
@@ -94,24 +94,21 @@
          *
          */
 
-        var effect = {},
-            distortion = tsw.context.createWaveShaper(),
-            lowpass = tsw.context.createBiquadFilter(),
-            highpass = tsw.context.createBiquadFilter();
+        var node = tsw.createNode(),
+            distortion = tsw.context().createWaveShaper(),
+            lowpass = tsw.context().createBiquadFilter(),
+            highpass = tsw.context().createBiquadFilter();
 
-        effect.settings = {
+        node.settings = {
             distortionLevel: 0.5
         };
 
         // Set values
         settings = settings || {};
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
+        tsw.connect(node.input, distortion, [lowpass, highpass], node.output);
 
-        tsw.connect(effect.input, distortion, [lowpass, highpass], effect.output);
-
-        return effect;
+        return node;
     };
 
     /*
@@ -144,43 +141,45 @@
         Resonance: Strength of the filter effect
         *****************************/
 
-        var effect = {},
+        var node = tsw.createNode(),
             allPassFilters = [],
-            feedback = tsw.createGain(),
-            defaults  = {
-                rate: 8,
-                depth: 0.5,
-                feedback: 0.8
-            };
+            feedback = tsw.gain(),
+            i = 0;
+
+        node.settings = {
+            rate: 8,
+            depth: 0.5,
+            feedback: 0.8
+        };
 
         // Set values
         settings = settings || {};
 
-        feedback.gain.value = settings.gain || defaults.gain;
+        feedback.gain.value = settings.feedback || node.settings.feedback;
 
-        for (var i = 0; i < defaults.rate; i++) {
-            allPassFilters[i] = tsw.context.createBiquadFilter();
+        for (i = 0; i < settings.rate; i++) {
+            allPassFilters[i] = tsw.context().createBiquadFilter();
             allPassFilters[i].type = 7;
             allPassFilters[i].frequency.value = 100 * i;
         }
 
-        effect.input = tsw.createGain();
-        effect.output = tsw.createGain();
+        node.input = tsw.gain();
+        node.output = tsw.gain();
 
-        for (var i = 0; i < allPassFilters.length - 1; i++) {
+        for (i = 0; i < allPassFilters.length - 1; i++) {
             tsw.connect(allPassFilters[i], allPassFilters[i + 1]);
         }
 
-        tsw.connect(effect.input, allPassFilters[0], allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
-        tsw.connect(allPassFilters[allPassFilters.length - 1], effect.output);
+        tsw.connect(node.input, allPassFilters[0], allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
+        tsw.connect(allPassFilters[allPassFilters.length - 1], node.output);
 
-        effect.setCutoff = function (c) {
+        node.setCutoff = function (c) {
             for (var i = 0; i < allPassFilters.length; i++) {
                 // allPassFilters[i].frequency.value = c;
             }
         };
 
-        return effect;
+        return node;
     };
 
     /*
@@ -217,8 +216,8 @@
 
         ***********************************/
 
-        var reverb = tsw.context.createConvolver(),
-            effectLevel = tsw.createGain(),
+        var reverb = tsw.context().createConvolver(),
+            effectLevel = tsw.gain(),
             effectObj = {},
             defaults = {
                 effectLevel: 0.5,
@@ -239,8 +238,8 @@
             defaults.reverbPath = buffers[defaults.reverbType];
             reverb.buffer = defaults.reverbPath;
 
-            effectObj.input = tsw.createGain();
-            effectObj.output = tsw.createGain();
+            effectObj.input = tsw.gain();
+            effectObj.output = tsw.gain();
 
             tsw.connect(effectObj.input, [effectObj.output, reverb]);
             tsw.connect(reverb, effectLevel);
@@ -271,13 +270,13 @@
 
         var mmNode = {},
             config = {},
-            tremolo = tsw.createGain(),
-            lfo = this.createLFO(),
+            tremolo = tsw.gain(),
+            lfo = this.lfo(),
             that = this;
 
         settings = settings || {};
 
-        mmNode.input = tsw.createGain();
+        mmNode.input = tsw.gain();
 
         mmNode.connect = function (output) {
             mmNode.input.connect(output);
@@ -286,11 +285,11 @@
         };
 
         mmNode.setRate = function (r) {
-            lfo.setFrequency(r);
+            lfo.frequency(r);
         };
 
         mmNode.setDepth = function (r) {
-            lfo.setDepth(r);
+            lfo.depth(r);
         };
 
         return mmNode;

@@ -402,13 +402,23 @@
 
         /*
          * Disconnects a node from everything it's connected to.
-         * @param {AudioNode} node
+         * @param {AudioNode} node First audio node
+         * @param {AudioNode} node Second audio node
+         * @param {AudioNode} node Third....etc.
          */
         tsw.disconnect = function () {
             var argumentsLength = arguments.length;
 
             for (var i = 0; i < argumentsLength; i++) {
-                arguments[i].disconnect();
+                if (arguments[i].hasOwnProperty('disconnect')) {
+                    arguments[i].disconnect();
+                }
+                if (arguments[i].hasOwnProperty('input')) {
+                    tsw.disconnect(arguments[i].input);
+                }
+                if (arguments[i].hasOwnProperty('ouput')) {
+                    tsw.disconnect(arguments[i].output);
+                }
             }
         };
 
@@ -1137,8 +1147,12 @@
                 }
             };
 
-            lfo.setDepth = function (d) {
-                depth.gain.value = d;
+            lfo.depth = function (d) {
+                if (typeof d === 'undefined') {
+                    return depth.gain.value; 
+                } else {
+                    depth.gain.value = d;
+                }
             };
 
             lfo.modulate(settings.target);
