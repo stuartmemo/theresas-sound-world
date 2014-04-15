@@ -663,9 +663,9 @@
         var updateMethods = function (options) {
             this.start = function (timeToStart) {
                 if (typeof options.sourceNode.start === 'undefined') {
-                    options.sourceNode.noteOn(timeToStart);
+                    options.sourceNode.noteOn(timeToStart || tsw.now());
                 } else {
-                    options.sourceNode.start(timeToStart);
+                    options.sourceNode.start(timeToStart || tsw.now());
                 }
 
                 return this;
@@ -673,9 +673,9 @@
 
             this.stop = function (timeToStop) {
                 if (typeof options.sourceNode.stop === 'undefined') {
-                    options.sourceNode.noteOff(timeToStop);
+                    options.sourceNode.noteOff(timeToStop || tsw.now());
                 } else {
-                    options.sourceNode.stop(timeToStop);
+                    options.sourceNode.stop(timeToStop || tsw.now());
                 }
 
                 return this;
