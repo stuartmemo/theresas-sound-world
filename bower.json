@@ -20,11 +20,9 @@
         "**/.*",
         "node_modules",
         "bower_components",
-        "app/bower_components",
-        "test",
-        "tests"
+        "app/bower_components"
     ],
-    "dependencies": {
+    "devDependencies": {
         "jasmine": "latest"
     }
 }
