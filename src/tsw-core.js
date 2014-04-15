@@ -146,13 +146,13 @@
                 node[param] = function (val, targetTime, transition) {
 
                     if (typeof val === 'undefined') {
-                        if (that[param].hasOwnProperty('value')) {
-                            return that[param].value;
-                        } else {
+                        if (typeof that[param].value === 'undefined') {
                             return that[param];
+                        } else {
+                            return that[param].value;
                         }
                     } else {
-                        if (that[param].hasOwnProperty('value')) {
+                        if (typeof that[param].value !== 'undefined') {
                             if (isDefined(targetTime)) {
                                 // Set current value first so we have a schedule.
                                 transition = transition || 0;
@@ -661,20 +661,20 @@
          */
         var updateMethods = function (options) {
             this.start = function (timeToStart) {
-                if (options.sourceNode.hasOwnProperty('start')) {
-                    options.sourceNode.start(timeToStart);
-                } else {
+                if (typeof options.sourceNode.start === 'undefined') {
                     options.sourceNode.noteOn(timeToStart);
+                } else {
+                    options.sourceNode.start(timeToStart);
                 }
 
                 return this;
             };
 
             this.stop = function (timeToStop) {
-                if (options.sourceNode.hasOwnProperty('stop')) {
-                    options.sourceNode.stop(timeToStop);
-                } else {
+                if (typeof options.sourceNode.stop === 'undefined') {
                     options.sourceNode.noteOff(timeToStop);
+                } else {
+                    options.sourceNode.stop(timeToStop);
                 }
 
                 return this;
