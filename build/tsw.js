@@ -1,4 +1,3 @@
-/* Theresa's Sound World 0.0.1 (c) 2014 Stuart Memo */
 /****************************************************
  * Theresa's Sound World
  * tsw.js
@@ -661,11 +660,11 @@
          * @param {object} Additional options.
          */
         var updateMethods = function (options) {
-            this.start = function (timeToStart) {
+            this.start = function (time_to_start) {
                 if (typeof options.sourceNode.start === 'undefined') {
-                    options.sourceNode.noteOn(timeToStart || tsw.now());
+                    options.sourceNode.noteOn(time_to_start || tsw.now());
                 } else {
-                    options.sourceNode.start(timeToStart || tsw.now());
+                    options.sourceNode.start(time_to_start || tsw.now());
                 }
 
                 return this;
@@ -1014,10 +1013,9 @@
             // Should the release kick-in automatically
             settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
 
-            envelope.start = function (timeToStart) {
-                // Calculate times
-                var decayTime = this.attackTime + this.decayTime,
-                    releaseTime = decayTime + this.releaseTime;
+            envelope.start = function (time_to_start) {
+                var decay_time = this.attackTime + this.decayTime,
+                    release_time = decay_time + this.releaseTime;
 
                 // Calculate levels
                 this.maxLevel = this.startLevel + this.maxLevel;
@@ -1025,12 +1023,16 @@
 
                 // Param is actual AudioParam
                 if (isAudioParam(this.param)) {
+                    time_to_start = time_to_start || tsw.now();
+
+                    // Set start level
+                    this.param.setValueAtTime(this.startLevel, time_to_start);
+
                     // Attack
-                    this.param.setValueAtTime(0, tsw.now());
-                    this.param.linearRampToValueAtTime(this.maxLevel, tsw.now() + this.attackTime);
+                    this.param.linearRampToValueAtTime(this.maxLevel, time_to_start + this.attackTime);
 
                     // Decay
-                    this.param.setTargetAtTime(this.sustainLevel, tsw.now(), this.decayTime);
+                    this.param.setTargetAtTime(this.sustainLevel, time_to_start + decay_time, 0.05);
                 }
             };
 
@@ -1080,8 +1082,8 @@
                 return 'noise';
             };
 
-            node.play = function (timeToStart) {
-                noise_source.start(timeToStart);
+            node.play = function (time_to_start) {
+                noise_source.start(time_to_start);
             };
 
             return node;

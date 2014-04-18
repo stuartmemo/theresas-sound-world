@@ -140,17 +140,18 @@ describe('Theresa\'s Sound World', function () {
         describe('Create Envelope', function () {
             var osc = tsw.oscillator(),
                 volume = tsw.gain(),
+                mute = tsw.gain(0),
                 envelope = tsw.envelope({
                     param: volume.params.gain,
                     startLevel: 0,
                     maxLevel: 1,
                     sustainLevel: 0.6,
-                    attackTime: 1.1,
+                    attackTime: 2,
                     decayTime: 1,
                     autoStop: false
                 });
 
-            tsw.connect(osc, volume, tsw.speakers);
+            tsw.connect(osc, volume, mute, tsw.speakers);
 
             osc.start(tsw.now());
             osc.stop(tsw.now() + 8);
@@ -160,14 +161,21 @@ describe('Theresa\'s Sound World', function () {
             });
 
             // Start Level
-            it('Start level should be zero', function () {
-                expect(volume.gain()).toEqual(0);
+            it('Start level should be zero-ish', function (done) {
+                envelope.start();
+
+                setTimeout(function () {
+                    expect(volume.gain()).toBeLessThan(0.1);
+                    done();
+                }, 100);
             });
 
             // Attack
             it('Should attack', function (done) {
-                expect(volume.gain()).toBeGreaterThan(0);
-                done();
+                setTimeout(function () {
+                    expect(volume.gain()).toBeGreaterThan(0.1);
+                    done();
+                }, 100);
             });
 
             // Decay
@@ -178,14 +186,16 @@ describe('Theresa\'s Sound World', function () {
 
             // Sustain
             it('Should sustain', function (done) {
-                expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-                done();
+                setTimeout(function () {
+                    expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
+                    done();
+                }, 3000);
             });
 
             // Still sustaining?
             it('Should still be sustaining', function (done) {
                 expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
-                envelope.startRelease();
+                envelope.stop();
                 done();
             });
 
@@ -273,7 +283,9 @@ describe('Theresa\'s Sound World', function () {
 					.start(tsw.now())
 					.fadeOut();
 
-                expect(osc.output.gain.value).toEqual(0);
+                setTimeout(function () {
+                    expect(osc.output.gain.value).toEqual(0);
+                }, 4000);
 			});
 		});
 	});
