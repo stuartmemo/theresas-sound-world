@@ -104,6 +104,15 @@ describe('Theresa\'s Sound World', function () {
 				volume.gain(0.2);
 				expect(volume.gain()).toEqual(0.20000000298023224);
 			});
+
+            it('Change gain at a specified time', function (done) {
+                var volume = tsw.gain(0.2);
+                volume.gain(0.5, tsw.now() + 2);
+                setTimeout(function () {
+                    expect(volume.gain()).toEqual(0.5); 
+                    done();
+                }, 2500);
+            });
 		});
 
 		describe('Create Delay', function () {
@@ -200,8 +209,11 @@ describe('Theresa\'s Sound World', function () {
             });
 
             // Release
-            it('Should release', function () {
-                expect(volume.gain()).toBeLessThan(0.6);
+            it('Should release', function (done) {
+                setTimeout(function () {
+                    expect(volume.gain()).toBeLessThan(0.6);
+                    done();
+                }, 1000);
             });
 
         });
@@ -255,11 +267,12 @@ describe('Theresa\'s Sound World', function () {
 
 		describe('Fade In', function () {
 
-			it('Oscillator node fades in', function () {
+			it('Oscillator node fades in', function (done) {
 				var osc = tsw.oscillator(),
 					mute = tsw.gain(0);
 
 				expect(osc.output.gain.value).toEqual(1);
+
 				tsw.connect(osc, mute, tsw.speakers);
 				osc
 					.start(tsw.now())
@@ -267,13 +280,17 @@ describe('Theresa\'s Sound World', function () {
 
 				osc.stop(tsw.now() + 3);
 
-                expect(osc.output.gain.value).toEqual(1);
+                setTimeout(function () {
+                    expect(osc.output.gain.value).toEqual(1);
+                    done();
+                }, 1000);
+
 			});
 		});
 
 		describe('Fade Out', function () {
 
-			it('Oscillator node fades out', function () {
+			it('Oscillator node fades out', function (done) {
 				var osc = tsw.oscillator(),
 					mute = tsw.gain(0);
 
@@ -285,6 +302,7 @@ describe('Theresa\'s Sound World', function () {
 
                 setTimeout(function () {
                     expect(osc.output.gain.value).toEqual(0);
+                    done();
                 }, 4000);
 			});
 		});
