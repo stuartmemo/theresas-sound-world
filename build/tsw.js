@@ -5,8 +5,7 @@
  * http://theresassoundworld.com/
  * https://github.com/stuartmemo/theresas-sound-world 
  * Copyright 2014 Stuart Memo
- ****************************************************/
-
+  ****************************************************/
 
 (function (window, undefined) {
     'use strict';
@@ -144,14 +143,15 @@
 
         /*
          * Enable jQuery style getters & setters.
-         * @param paramToGetSet
+         * @param {object}
          */
-        var createGetSetter = function (node, arrayOfParams) {
+        var createGetSetter = function (node, array_of_params) {
             var that = this;
 
-            arrayOfParams.forEach(function (param) {
-                node[param] = function (val, targetTime, transition) {
+            array_of_params.forEach(function (param) {
+                node[param] = function (val, target_time) {
 
+                    // User hasn't passed a value to set, so just return the requested value.
                     if (typeof val === 'undefined') {
                         if (typeof that[param].value === 'undefined') {
                             return that[param];
@@ -159,16 +159,14 @@
                             return that[param].value;
                         }
                     } else {
-                        if (typeof that[param].value !== 'undefined') {
-                            if (isDefined(targetTime)) {
-                                // Set current value first so we have a schedule.
-                                transition = transition || 0;
-                                that[param].setTargetAtTime(that[param].value, tsw.now(), transition);
-                                that[param].setTargetAtTime(val, targetTime, transition);
-                            }
-                            that[param].value = val;
-                        } else {
+                        if (typeof that[param].value === 'undefined') {
                             that[param] = val;
+                        } else {
+                            if (isDefined(target_time)) {
+                                that[param].setValueAtTime(val, target_time);
+                            } else {
+                                that[param].value = val;
+                            }
                         }
                     }
                 };
@@ -795,12 +793,12 @@
          */
         tsw.gain = function (volume, time_to_change) {
             var node,
-                gainNode;
+                gain_node;
 
             if (typeof this.context().createGain === 'function') {
-                gainNode = this.context().createGain();
+                gain_node = this.context().createGain();
             } else {
-                gainNode = this.context().createGainNode();
+                gain_node = this.context().createGainNode();
             }
 
             node = tsw.createNode({
@@ -808,10 +806,10 @@
             });
 
             node.params = {
-                gain: gainNode.gain
+                gain: gain_node.gain
             };
 
-            createGetSetter.call(gainNode, node, ['gain']);
+            createGetSetter.call(gain_node, node, ['gain']);
 
             if (isObject(volume)) {
                 if (volume.hasOwnProperty('gain')) {
@@ -827,9 +825,9 @@
                 volume = 1;
             }
 
-            node.gain(volume);
+            node.gain(volume, time_to_change);
 
-            tsw.connect(node.input, gainNode, node.output);
+            tsw.connect(node.input, gain_node, node.output);
 
             return node;
         };

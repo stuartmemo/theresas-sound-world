@@ -1,10 +1,11 @@
-'use strict';
 /*global describe:true*/
 /*global expect:true*/
 /*global it:true*/
 /*global tsw:true*/
 
 describe('Theresa\'s Sound World', function () {
+    'use strict';
+  
 	describe('Core', function () {
 
 		describe('Audio Context', function () {
@@ -106,12 +107,19 @@ describe('Theresa\'s Sound World', function () {
 			});
 
             it('Change gain at a specified time', function (done) {
-                var volume = tsw.gain(0.2);
-                volume.gain(0.5, tsw.now() + 2);
+                var osc = tsw.oscillator(),
+                    vol = tsw.gain(0.2),
+                    mute = tsw.gain(0);
+
+                tsw.connect(osc, vol, mute, tsw.speakers);
+                osc.start(tsw.now());
+                osc.stop(tsw.now() + 5);
+                vol.gain(0.5, tsw.now() + 2);
+
                 setTimeout(function () {
-                    expect(volume.gain()).toEqual(0.5); 
+                    expect(vol.gain()).toEqual(0.5); 
                     done();
-                }, 2500);
+                }, 3000);
             });
 		});
 
@@ -242,7 +250,7 @@ describe('Theresa\'s Sound World', function () {
 					}
 				}, function (success) {
                     my_success = success;
-                    done()
+                    done();
 				});
 			});
 
