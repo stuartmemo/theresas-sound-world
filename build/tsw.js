@@ -1229,8 +1229,9 @@
         };
 
         // Expose helper functions.
-        tsw.isString = isString;
-        tsw.isNumber = isNumber;
+        tsw.helper = {};
+        tsw.helper.isString = isString;
+        tsw.helper.isNumber = isNumber;
 
         /*
          * Kick everything off.
@@ -1579,11 +1580,11 @@
     /*
      * Get position of note in note array.
      *
-     * @method getNotePosition
+     * @function getNotePosition
      * @param {string} note Note to get position of.
      * @return {number} Position of note in note array.
      */
-    var getNotePosition = function (note) {
+    tsw.helper.getNotePosition = function (note) {
         var notesLength = notes.length,
             position_on_scale;
 
@@ -1607,7 +1608,7 @@
      */
     var getMajorScale = function (rootNote) {
         var scale = [],
-            positionOnScale = getNotePosition(rootNote);
+            positionOnScale = tsw.helper.getNotePosition(rootNote);
 
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
@@ -1630,7 +1631,7 @@
      */
     var getMinorScale = function (rootNote) {
         var scale = [],
-            positionOnScale = getNotePosition(rootNote);
+            positionOnScale = tsw.helper.getNotePosition(rootNote);
         
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
@@ -1656,7 +1657,7 @@
             return false;
         }
         return true;
-    }
+    };
 
     /*
      * Parses a chord name into a detailed object.
@@ -1691,7 +1692,7 @@
             chordObj.isMajor = true;
         }
 
-        rootNotePosition = getNotePosition(chordObj.rootNote);
+        rootNotePosition = tsw.helper.getNotePosition(chordObj.rootNote);
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
@@ -1861,19 +1862,22 @@
     /*
      * Initiate MIDI input/output if available.
      *
-     * @method startMIDI
+     * @method getUserMidi 
      * @param {function} success Callback if MIDI has been initiated.
      * @param {function} failure Callback if MIDI hasn't been initialed.
      */
-
     tsw.getUserMidi = function (success, failure) {
         if (this.isMidiSupported()) {
             navigator.requestMIDIAccess().then(success, failure);
         }
     };
 
-    var noteToMidi = function (noteLetter) {
-        return noteLetter;
+    var noteToMidi = function (note_letter) {
+        var note = note_letter.match(/^[A-g#]+/)[0],
+            octave = parseInt(note_letter.match(/\d+/g), 10),
+            note_position = tsw.helper.getNotePosition(note);
+
+        return note_position + (octave * 12);
     };
 
     var midiToNote = function (midi_number) {
@@ -1884,14 +1888,14 @@
         notes.push.apply(notes, notes);
 
         return notes[noteOnScale] + octave;
-    }
+    };
 
     tsw.midiNote = function (thing_to_convert) {
-        if (tsw.isString(thing_to_convert)) {
+        if (tsw.helper.isString(thing_to_convert)) {
             return noteToMidi(thing_to_convert);
         }
 
-        if (tsw.isNumber(thing_to_convert)) {
+        if (tsw.helper.isNumber(thing_to_convert)) {
             return midiToNote(thing_to_convert);
         }
     };

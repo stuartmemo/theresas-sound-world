@@ -373,6 +373,14 @@ describe('Theresa\'s Sound World', function () {
 	        expect(tsw.midiNote(0)).toEqual('C0');
 	        expect(tsw.midiNote(48)).toEqual('C4');
 	        expect(tsw.midiNote(30)).toEqual('F#2');
+            expect(tsw.midiNote(111)).toEqual('D#9');
 		});
+
+        it('Gets midi number from given note name', function () {
+            expect(tsw.midiNote('C0')).toEqual(0);
+            expect(tsw.midiNote('C4')).toEqual(48);
+            expect(tsw.midiNote('F#2')).toEqual(30);
+            expect(tsw.midiNote('d#9')).toEqual(111);
+        });
 	});
 });

@@ -17,19 +17,22 @@
     /*
      * Initiate MIDI input/output if available.
      *
-     * @method startMIDI
+     * @method getUserMidi 
      * @param {function} success Callback if MIDI has been initiated.
      * @param {function} failure Callback if MIDI hasn't been initialed.
      */
-
     tsw.getUserMidi = function (success, failure) {
         if (this.isMidiSupported()) {
             navigator.requestMIDIAccess().then(success, failure);
         }
     };
 
-    var noteToMidi = function (noteLetter) {
-        return noteLetter;
+    var noteToMidi = function (note_letter) {
+        var note = note_letter.match(/^[A-g#]+/)[0],
+            octave = parseInt(note_letter.match(/\d+/g), 10),
+            note_position = tsw.helper.getNotePosition(note);
+
+        return note_position + (octave * 12);
     };
 
     var midiToNote = function (midi_number) {
@@ -40,14 +43,14 @@
         notes.push.apply(notes, notes);
 
         return notes[noteOnScale] + octave;
-    }
+    };
 
     tsw.midiNote = function (thing_to_convert) {
-        if (tsw.isString(thing_to_convert)) {
+        if (tsw.helper.isString(thing_to_convert)) {
             return noteToMidi(thing_to_convert);
         }
 
-        if (tsw.isNumber(thing_to_convert)) {
+        if (tsw.helper.isNumber(thing_to_convert)) {
             return midiToNote(thing_to_convert);
         }
     };

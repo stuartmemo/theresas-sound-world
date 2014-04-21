@@ -1229,8 +1229,9 @@
         };
 
         // Expose helper functions.
-        tsw.isString = isString;
-        tsw.isNumber = isNumber;
+        tsw.helper = {};
+        tsw.helper.isString = isString;
+        tsw.helper.isNumber = isNumber;
 
         /*
          * Kick everything off.

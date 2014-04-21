@@ -23,11 +23,11 @@
     /*
      * Get position of note in note array.
      *
-     * @method getNotePosition
+     * @function getNotePosition
      * @param {string} note Note to get position of.
      * @return {number} Position of note in note array.
      */
-    var getNotePosition = function (note) {
+    tsw.helper.getNotePosition = function (note) {
         var notesLength = notes.length,
             position_on_scale;
 
@@ -51,7 +51,7 @@
      */
     var getMajorScale = function (rootNote) {
         var scale = [],
-            positionOnScale = getNotePosition(rootNote);
+            positionOnScale = tsw.helper.getNotePosition(rootNote);
 
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
@@ -74,7 +74,7 @@
      */
     var getMinorScale = function (rootNote) {
         var scale = [],
-            positionOnScale = getNotePosition(rootNote);
+            positionOnScale = tsw.helper.getNotePosition(rootNote);
         
         scale.push(notes[positionOnScale]);
         scale.push(notes[positionOnScale + 2]);
@@ -100,7 +100,7 @@
             return false;
         }
         return true;
-    }
+    };
 
     /*
      * Parses a chord name into a detailed object.
@@ -135,7 +135,7 @@
             chordObj.isMajor = true;
         }
 
-        rootNotePosition = getNotePosition(chordObj.rootNote);
+        rootNotePosition = tsw.helper.getNotePosition(chordObj.rootNote);
         notePositions.push(rootNotePosition);
 
         if (chord.isMinor) {
