@@ -14,6 +14,8 @@ Contributing
 
 There's so much to be done with Theresa's Sound World that I really need your help. If you have a problem or want to file a bug, [just create an issue](https://github.com/stuartmemo/theresas-sound-world/issues). Refactored some code or added something you think is amazing? [Request a pull](https://github.com/stuartmemo/theresas-sound-world/pulls)!
 
+If you'd like to contribute to the documentation site, please see: [theresas-sound-world-site](https://github.com/stuartmemo/theresas-sound-world-site).
+
 All feedback and contributions are very much appreciated.
 
 Baump Baump Wahoo.
