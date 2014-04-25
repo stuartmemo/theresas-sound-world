@@ -7,7 +7,7 @@
     ],
     "description":
         "Theresa's Sound World is powerful way of manipulating audio in the browser in a quick and friendly manner. Built on top of the Web Audio API, it uses a modular routing system allowing you to make sophisticated audio applications and instruments.",
-    "main": "src/tsw-core.js",
+    "main": "build/tsw.js",
     "keywords": [
         "sound",
         "music",
