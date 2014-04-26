@@ -1415,6 +1415,7 @@
         settings = settings || {};
 
         feedback.gain.value = settings.feedback || node.settings.feedback;
+        settings.rate = settings.rate || node.settings.rate;
 
         for (i = 0; i < settings.rate; i++) {
             allPassFilters[i] = tsw.context().createBiquadFilter();
@@ -1422,19 +1423,16 @@
             allPassFilters[i].frequency.value = 100 * i;
         }
 
-        node.input = tsw.gain();
-        node.output = tsw.gain();
-
         for (i = 0; i < allPassFilters.length - 1; i++) {
             tsw.connect(allPassFilters[i], allPassFilters[i + 1]);
         }
 
-        tsw.connect(node.input, allPassFilters[0], allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
+        tsw.connect(node.input, allPassFilters[allPassFilters.length - 1], feedback, allPassFilters[0]);
         tsw.connect(allPassFilters[allPassFilters.length - 1], node.output);
 
         node.setCutoff = function (c) {
             for (var i = 0; i < allPassFilters.length; i++) {
-                // allPassFilters[i].frequency.value = c;
+                allPassFilters[i].frequency.value = c;
             }
         };
 

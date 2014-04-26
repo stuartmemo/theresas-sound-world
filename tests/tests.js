@@ -319,12 +319,11 @@ describe('Theresa\'s Sound World', function () {
 	describe('Effects', function () {
 
         it('Create delay effect', function () {
-
             // tsw.delay();
         });
 
         it('Create phaser effect', function () {
-            // tsw.phaser();
+            tsw.phaser();
         });
 
         it('Create tremolo effect', function () {
