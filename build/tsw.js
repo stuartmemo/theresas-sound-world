@@ -1122,9 +1122,7 @@
                 return 'noise';
             };
 
-            node.play = function (time_to_start) {
-                noise_source.start(time_to_start);
-            };
+            tsw.connect(noise_source, node.output);
 
             return node;
         };
