@@ -18,8 +18,7 @@ If you'd like to contribute to the documentation site, please see: [theresas-sou
 
 All feedback and contributions are very much appreciated.
 
-Style Guide
-===========
+###Style Guide
 Theresa's Sound World follows [Airbnb's excellent style guide](https://github.com/airbnb/javascript), but uses [Douglas Crockford's suggestion](http://javascript.crockford.com/code.html) of 4 spaces instead of 2.
 
 Baump Baump Wahoo.
