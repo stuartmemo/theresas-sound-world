@@ -1,0 +1,7 @@
+# A sample Gemfile
+source "https://rubygems.org"
+
+group :development, :test do
+  gem 'jasmine'
+  gem 'jasmine_selenium_runner'
+end
