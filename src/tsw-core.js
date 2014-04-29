@@ -295,7 +295,7 @@
             };
 
             var connectNativeNodeToTswNode = function () {
-                arguments[0].connect(arguments[1].input);
+                arguments[0].connect(arguments[1].input, 0, arguments[2]);
             };
 
             var connectNativeNodeToArray = function () {
@@ -311,7 +311,7 @@
             };
 
             var connectTswNodeToTswNode = function () {
-                arguments[0].output.connect(arguments[1].input);
+                arguments[0].output.connect(arguments[1].input, 0, arguments[2]);
             };
 
             var connectTswNodeToNativeNode = function () {
@@ -407,8 +407,26 @@
 
                 // Both arguments are objects containing nodes.
                 if (isObjectWithNode(first_arg) && isObjectWithNode(second_arg)) {
-                    connectTswNodeToNativeNode(first_arg.node, second_arg.node, second_arg.channel);
-                    continue;
+
+                    if (isNativeNode(first_arg.node) && isNativeNode(second_arg.node)) {
+                        connectNativeNodeToNativeNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isTswNode(first_arg.node) && isNativeNode(second_arg.node)) {
+                        connectTswNodeToNativeNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isNativeNode(first_arg.node) && isTswNode(second_arg.node)) {
+                        connectNativeNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isTswNode(first_arg.node) && isTswNode(second_arg.node)) {
+                        connectTswNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
                 }
             }
         };
