@@ -1,0 +1,17 @@
+language: ruby
+
+rvm:
+  - 2.0.0
+
+gemfile: travis/Gemfile
+
+before_script:
+  - sh -e /etc/init.d/xvfb start
+
+script: DISPLAY=:99.0 bundle exec rake jasmine:ci -f travis/Rakefile
+
+env:
+  global:
+    - JASMINE_BROWSER=firefox
+    - BUNDLE_GEMFILE=travis/Gemfile
+    - JASMINE_CONFIG_PATH=travis/jasmine.yml
