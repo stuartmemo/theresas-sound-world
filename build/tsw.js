@@ -269,6 +269,10 @@
             return this.context().currentTime;
         };
 
+        tsw.channelSplitter = function () {
+            return tsw.context().createChannelSplitter();
+        };
+
         tsw.channelMerger = function (channels) {
             return tsw.context().createChannelMerger(channels);
         };
@@ -287,11 +291,11 @@
             };
 
             var connectNativeNodeToNativeNode = function () {
-                arguments[0].connect(arguments[1]);
+                arguments[0].connect(arguments[1], 0, arguments[2]);
             };
 
             var connectNativeNodeToTswNode = function () {
-                arguments[0].connect(arguments[1].input);
+                arguments[0].connect(arguments[1].input, 0, arguments[2]);
             };
 
             var connectNativeNodeToArray = function () {
@@ -307,11 +311,11 @@
             };
 
             var connectTswNodeToTswNode = function () {
-                arguments[0].output.connect(arguments[1].input);
+                arguments[0].output.connect(arguments[1].input, 0, arguments[2]);
             };
 
             var connectTswNodeToNativeNode = function () {
-                arguments[0].output.connect(arguments[1]);
+                arguments[0].output.connect(arguments[1], 0, arguments[2]);
             };
 
             var connectArrayToTswNode = function () {
@@ -327,7 +331,7 @@
             };
 
             var connectObjectWithNodeToObjectWithNode = function () {
-                tsw.connect(arguments[0].node, arguments[1].node);
+                tsw.connect(arguments[0].node, arguments[1].node, arguments[1].channel);
             };
 
             // Iterate over each argument.
@@ -403,8 +407,26 @@
 
                 // Both arguments are objects containing nodes.
                 if (isObjectWithNode(first_arg) && isObjectWithNode(second_arg)) {
-                    connectObjectWithNodeToObjectWithNode(first_arg, second_arg);
-                    continue;
+
+                    if (isNativeNode(first_arg.node) && isNativeNode(second_arg.node)) {
+                        connectNativeNodeToNativeNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isTswNode(first_arg.node) && isNativeNode(second_arg.node)) {
+                        connectTswNodeToNativeNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isNativeNode(first_arg.node) && isTswNode(second_arg.node)) {
+                        connectNativeNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
+
+                    if (isTswNode(first_arg.node) && isTswNode(second_arg.node)) {
+                        connectTswNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
+                        continue;
+                    }
                 }
             }
         };
@@ -601,13 +623,11 @@
             left_gain.gain(1 - (0.01 * ((1 + panner_node.value) / 2) * 100));
             right_gain.gain(1 - left_gain.gain());
 
-
             tsw.connect(panner_node.input, [left_gain, right_gain]);
 
             tsw.connect(
                 {
-                    node: left_gain,
-                    channel: 0
+                    node: left_gain
                 },
                 {
                     node:  merger,
@@ -617,8 +637,7 @@
 
             tsw.connect(
                 {
-                    node: right_gain,
-                    channel: 0
+                    node: right_gain
                 },
                 {
                     node:  merger,
