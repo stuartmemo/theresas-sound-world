@@ -243,8 +243,8 @@ describe('Theresa\'s Sound World', function () {
                 tsw.load({
                     files: {
                         sampleOne: 'samples/tsw1.mp3',
-                    sampleTwo: 'samples/tsw2.mp3',
-                    sampleThree: 'samples/tsw3.mp3',
+                        sampleTwo: 'samples/tsw2.mp3',
+                        sampleThree: 'samples/tsw3.mp3',
                     }
                 }, function (success) {
                     my_success = success;
@@ -260,8 +260,8 @@ describe('Theresa\'s Sound World', function () {
                 tsw.load({
                     files: {
                         sampleOne: 'samples/nope1.mp3',
-                    sampleTwo: 'samples/nope2.mp3',
-                    sampleThree: 'samples/nope3.mp3',
+                        sampleTwo: 'samples/nope2.mp3',
+                        sampleThree: 'samples/nope3.mp3'
                     }
                 }, function () {
                     // do nothing
@@ -271,26 +271,32 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
+    
+        /**
+        * Fade in/out has been removed while waiting for Firefox documentation.
+        * https://github.com/stuartmemo/theresas-sound-world/issues/18
+        */
+
+        /*
         describe('Fade In', function () {
 
             it('Oscillator node fades in', function (done) {
                 var osc = tsw.oscillator(),
-                mute = tsw.gain(0);
+                    mute = tsw.gain(0);
 
-            expect(osc.output.gain.value).toEqual(1);
-
-            tsw.connect(osc, mute, tsw.speakers);
-            osc
-                .start(tsw.now())
-                .fadeIn();
-
-            osc.stop(tsw.now() + 3);
-
-            setTimeout(function () {
                 expect(osc.output.gain.value).toEqual(1);
-                done();
-            }, 1000);
 
+                tsw.connect(osc, mute, tsw.speakers);
+                osc
+                    .start(tsw.now())
+                    .fadeIn();
+
+                osc.stop(tsw.now() + 3);
+
+                setTimeout(function () {
+                    expect(osc.output.gain.value).toEqual(1);
+                    done();
+                }, 1000);
             });
         });
 
@@ -298,20 +304,21 @@ describe('Theresa\'s Sound World', function () {
 
             it('Oscillator node fades out', function (done) {
                 var osc = tsw.oscillator(),
-                mute = tsw.gain(0);
+                    mute = tsw.gain(0);
 
-            expect(osc.output.gain.value).toEqual(1);
-            tsw.connect(osc, mute, tsw.speakers);
-            osc
-                .start(tsw.now())
-                .fadeOut();
+                expect(osc.output.gain.value).toEqual(1);
+                tsw.connect(osc, mute, tsw.speakers);
+                osc
+                    .start(tsw.now())
+                    .fadeOut();
 
-            setTimeout(function () {
-                expect(osc.output.gain.value).toEqual(0);
-                done();
-            }, 4000);
+                setTimeout(function () {
+                    expect(osc.output.gain.value).toEqual(0);
+                    done();
+                }, 4000);
             });
         });
+        */
     });
 
     describe('Effects', function () {

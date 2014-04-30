@@ -239,26 +239,35 @@
             tsw.speakers = tsw.context().destination;
         };
 
+        /**
+         * Fade in/out has been removed while waiting for Firefox documentation.
+         * https://github.com/stuartmemo/theresas-sound-world/issues/18
+         */
+
         /*
          * Fade in an audio source.
          * @param thingToFadeOut Audio source to fade out.
          */
+        /*
         tsw.fadeIn = function (thingToFadeIn) {
             thingToFadeIn.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeIn.output.gain.setValueAtTime(0, tsw.now());
             thingToFadeIn.output.gain.exponentialRampToValueAtTime(1, tsw.now() + 2);
         };
+        */
 
         /*
          * Fade out an audio source.
          * @param thingToFadeOut Audio source to fade out.
          */
+        /*
         tsw.fadeOut = function (thingToFadeOut) {
             thingToFadeOut.output.gain.cancelScheduledValues(tsw.now());
             thingToFadeOut.output.gain.setValueAtTime(1, tsw.now());
             thingToFadeOut.output.gain.exponentialRampToValueAtTime(0.000001, tsw.now() + 2);
             thingToFadeOut.output.gain.setValueAtTime(0, tsw.now() + 2.0001);
         };
+        */
 
         /*
          * Get the current time of the audio context().
@@ -773,16 +782,6 @@
 
             node.nodeType = function () {
                 return 'oscillator';
-            };
-
-            node.fadeIn = function () {
-                tsw.fadeIn(this);
-                return this;
-            };
-
-            node.fadeOut = function () {
-                tsw.fadeOut(this);
-                return this;
             };
 
             node.detune = function (amount) {
