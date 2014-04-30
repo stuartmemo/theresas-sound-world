@@ -784,16 +784,6 @@
                 return 'oscillator';
             };
 
-            node.fadeIn = function () {
-                tsw.fadeIn(this);
-                return this;
-            };
-
-            node.fadeOut = function () {
-                tsw.fadeOut(this);
-                return this;
-            };
-
             node.detune = function (amount) {
                 osc.detune.value = amount;
                 return this;
