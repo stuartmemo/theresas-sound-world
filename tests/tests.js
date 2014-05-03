@@ -30,7 +30,7 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Nodes', function () {
             it('Can create node', function () {
-                expect(tsw.createNode().nodeType()).toEqual('default');
+                expect(tsw.createNode().nodeType).toEqual('default');
             });
         });
 
@@ -42,14 +42,14 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Create Buffer', function () {
             it('Node is a Buffer', function () {
-                expect(tsw.buffer().nodeType()).toEqual('buffer');
+                expect(tsw.buffer().nodeType).toEqual('buffer');
             });
         });
 
         describe('Create Oscillator', function () {
 
             it('Node is an OscillatorNode', function () {
-                expect(tsw.oscillator().nodeType()).toEqual('oscillator');
+                expect(tsw.oscillator().nodeType).toEqual('oscillator');
             });
 
             it('Default type is a sine wave', function () {
@@ -87,7 +87,7 @@ describe('Theresa\'s Sound World', function () {
         describe('Create Gain', function () {
 
             it('Node should be a GainNode', function () {
-                expect(tsw.gain().nodeType()).toEqual('gain');
+                expect(tsw.gain().nodeType).toEqual('gain');
             });
 
             it('Default gain value should be 1', function () {
@@ -121,24 +121,24 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
-        describe('Create Delay', function () {
+        describe('Create Wait', function () {
 
-            it('Node should be a delay node', function () {
-                expect(tsw.wait().nodeType()).toEqual('delay');
+            it('Node should be a wait node', function () {
+                expect(tsw.wait().nodeType).toEqual('wait');
             });
 
             it('Default delayTime value should be 1', function () {
-                expect(tsw.wait().delayTime()).toEqual(1);
+                expect(tsw.wait().time()).toEqual(1);
             });
 
             it('Create delay node with different delayTime than default', function () {
-                expect(tsw.wait(0.5).delayTime()).toEqual(0.5);
+                expect(tsw.wait(0.5).time()).toEqual(0.5);
             });
 
             it('Create delay node and change delayTime after creation', function () {
                 var delay = tsw.wait();
-                delay.delayTime(0.2);
-                expect(delay.delayTime()).toEqual(0.20000000298023224);
+                delay.time(0.2);
+                expect(delay.time()).toEqual(0.20000000298023224);
             });
         });
 
@@ -148,7 +148,7 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Create Compressor', function () {
             it('Check compressor node type', function () {
-                expect(tsw.compressor().nodeType()).toEqual('compressor');
+                expect(tsw.compressor().nodeType).toEqual('compressor');
             });
         });
 
@@ -172,7 +172,7 @@ describe('Theresa\'s Sound World', function () {
             osc.stop(tsw.now() + 8);
 
             it('Should be an envelope', function () {
-                expect(tsw.envelope().nodeType()).toEqual('envelope');
+                expect(tsw.envelope().nodeType).toEqual('envelope');
             });
 
             // Start Level
@@ -227,11 +227,7 @@ describe('Theresa\'s Sound World', function () {
         describe('Create Noise', function () {
 
             it('Node nodeType is "noise"', function () {
-                expect(tsw.noise().nodeType()).toEqual('noise');
-            });
-
-            it('Default colour is "white"', function () {
-                expect(tsw.noise().color()).toEqual('white');
+                expect(tsw.noise().nodeType).toEqual('noise');
             });
         });
 
