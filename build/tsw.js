@@ -145,33 +145,30 @@
          * Enable jQuery style getters & setters.
          * @param {object}
          */
-        var createGetSetter = function (node, array_of_params) {
-            var that = this;
+        var createGetSetFunction = function (node, param_to_change) {
 
-            array_of_params.forEach(function (param) {
-                node[param] = function (val, target_time) {
-
-                    // User hasn't passed a value to set, so just return the requested value.
-                    if (typeof val === 'undefined') {
-                        if (typeof that[param].value === 'undefined') {
-                            return that[param];
+            return function (param_value, target_time) {
+                // User has passed a value, so set it.
+                if (isDefined(param_value)) {
+                    if (isDefined(node[param_to_change].value)) {
+                        if (isDefined(target_time)) {
+                            node[param_to_change].setValueAtTime(param_value, target_time);
                         } else {
-                            return that[param].value;
+                            node[param_to_change].value = param_value;
                         }
                     } else {
-                        if (typeof that[param].value === 'undefined') {
-                            that[param] = val;
-                        } else {
-                            if (isDefined(target_time)) {
-                                that[param].setValueAtTime(val, target_time);
-                            } else {
-                                that[param].value = val;
-                            }
-                        }
+                        node[param_to_change] = param_value;
                     }
-                };
-            });
+                } else {
+                    if (isDefined(node[param_to_change].value)) {
+                        return node[param_to_change].value;
+                    } else {
+                        return node[param_to_change];
+                    }
+                }
+            };
         };
+
 
         /***************
          * Sound World *
@@ -210,7 +207,7 @@
                     var ctx = webkitAudiocontext().prototype;
 
                     ctx.createGain  = ctx.createGainNode;
-                    ctx.createDelay  = ctx.createDelayNode;
+                    ctx.createDelay = ctx.createDelayNode;
                     ctx.createScriptProcessor = ctx.createJavaScriptNode;
                 }
             } else {
@@ -565,14 +562,12 @@
             var node,
                 delayNode = this.context().createDelay();
 
-            delayTime = delayTime || 1;
+            node = tsw.createNode();
 
-            node = tsw.createNode({
-                nodeType: 'delay'
-            });
+            node.nodeType = 'wait';
+            node.time = createGetSetFunction(delayNode, 'delayTime');
+            node.time(delayTime || 1);
 
-            createGetSetter.call(delayNode, node, ['delayTime']);
-            node.delayTime(delayTime);
             tsw.connect(node.input, delayNode, node.output);
 
             return node;
@@ -599,40 +594,54 @@
          * @param {number} pan
          */
         tsw.panner = function (pan) {
-            var panner_node,
-                left_gain = tsw.gain(1),
+            var node,
+                panner_node = tsw.gain(),
+                left_gain = tsw.gain(0),
                 right_gain = tsw.gain(0),
-                merger = tsw.channelMerger(2),
-                node;
+                merger = tsw.channelMerger(2);
 
-            panner_node = tsw.createNode({
-                nodeType: 'panner'
-            });
+            node = tsw.createNode();
+            node.nodeType = 'panner';
+            node.panAmount = 0;
 
-            panner_node.value = pan;
+            // Force max panning value.
+            var forceMaxPanningValue = function (pan_value) {
+                if (pan_value > 1) {
+                    pan_value = 1;
+                } else if (pan_value < -1) {
+                    pan_value = -1;
+                }
 
-            // Force max panning values.
-            if (panner_node.value > 1) {
-                panner_node.value = 1;
-            } else if (panner_node.value < -1) {
-                panner_node.value = -1;
-            }
+                return pan_value;
+            };
 
-            // 100% === 2
-            // Example value = -0.56
-            // (0.44 / 2) * 100 = 22% -> 78%
-            // Left gain = (1 / 100) * 78 = 0.78 
-            // Right gain = 1 - 0.78 =  0.22
+            node.pan = function (pan_value) {
 
-            // Example value = 0.2
-            // (1.2 / 2) * 100 = 60% -> 40%
-            // Left gain = (1 / 100) * 40 = 0.4
-            // Right gain = 1 - 0.4 = 0.6
+                if (isDefined(pan_value)) {
+                    pan_value = forceMaxPanningValue(pan_value || 0);
 
-            left_gain.gain(1 - (0.01 * ((1 + panner_node.value) / 2) * 100));
-            right_gain.gain(1 - left_gain.gain());
+                    // 100% === 2
+                    // Example value = -0.56
+                    // (0.44 / 2) * 100 = 22% -> 78%
+                    // Left gain = (1 / 100) * 78 = 0.78 
+                    // Right gain = 1 - 0.78 =  0.22
 
-            tsw.connect(panner_node.input, [left_gain, right_gain]);
+                    // Example value = 0.2
+                    // (1.2 / 2) * 100 = 60% -> 40%
+                    // Left gain = (1 / 100) * 40 = 0.4
+                    // Right gain = 1 - 0.4 = 0.6
+
+                    node.panAmount = pan_value;
+                    left_gain.gain(1 - (0.01 * ((1 + pan_value) / 2) * 100));
+                    right_gain.gain(1 - left_gain.gain());
+                } else {
+                    return node.panAmount;
+                }
+            };
+
+            node.pan(pan || 0);
+
+            tsw.connect(node.input, [left_gain, right_gain]);
 
             tsw.connect(
                 {
@@ -654,9 +663,9 @@
                 }
             );
 
-            tsw.connect(merger, panner_node.output);
+            tsw.connect(merger, node.output);
 
-            return panner_node;
+            return node;
         };
 
         /*
@@ -741,10 +750,7 @@
             node.input = tsw.context().createGain();
             node.output = tsw.context().createGain();
 
-            node.nodeType = function () {
-                return options.nodeType || 'default';
-            };
-
+            node.nodeType = options.nodeType || 'default';
             node.attributes = options.attributes;
 
             // Keep a list of nodes this node is connected to.
@@ -774,22 +780,12 @@
                 nodeType: 'oscillator'
             });
 
-            createGetSetter.call(osc, node, ['type', 'frequency', 'waveType']);
-            node.type(waveType || 'sine');
+            node.frequency = createGetSetFunction(osc, 'frequency');
+            node.type = createGetSetFunction(osc, 'type');
+            node.detune = createGetSetFunction(osc, 'detune');
+
             node.frequency(frequency || 440);
-
-            node.waveType = waveType || 'sine';
-
-            node.nodeType = function () {
-                return 'oscillator';
-            };
-
-            node.detune = function (amount) {
-                osc.detune.value = amount;
-                return this;
-            };
-
-            node.type(node.waveType.toLowerCase());
+            node.type((waveType || 'sine').toLowerCase());
 
             node.isPlaying = function () {
                 if (osc.playbackState === 2) {
@@ -797,10 +793,6 @@
                 } else {
                     return false;
                 }
-            };
-
-            node.returnNode = function () {
-                return osc;
             };
 
             this.connect(osc, node.output);
@@ -833,22 +825,7 @@
                 gain: gain_node.gain
             };
 
-            createGetSetter.call(gain_node, node, ['gain']);
-
-            if (isObject(volume)) {
-                if (volume.hasOwnProperty('gain')) {
-                    volume = volume.gain.value;
-                }
-            }
-
-            if (volume <= 0) {
-                volume = 0;
-            }
-
-            if (typeof volume === 'undefined') {
-                volume = 1;
-            }
-
+            node.gain = createGetSetFunction(gain_node, 'gain');
             node.gain(volume, time_to_change);
 
             this.connect(node.input, gain_node, node.output);
@@ -865,17 +842,21 @@
          * @return {node} Buffer node.
          */
         tsw.buffer = function (no_channels, buffer_size, sample_rate) {
-            var node = tsw.createNode({
-                nodeType: 'buffer'
-            });
+            var buffer,
+                node = tsw.createNode({
+                    nodeType: 'buffer'
+                }
+            );
 
             no_channels = no_channels || 1;
             buffer_size = buffer_size || 65536;
             sample_rate = sample_rate || 44100;
 
-            var buffer = this.context().createBuffer(no_channels, buffer_size, sample_rate);
+            buffer = this.context().createBuffer(no_channels, buffer_size, sample_rate);
 
-            createGetSetter.call(buffer, node, ['numberOfChannels', 'bufferSize', 'sampleRate']);
+            node.channels = createGetSetFunction(buffer, 'numberOfChannels');
+            node.bufferSize = createGetSetFunction(buffer, 'bufferSize');
+            node.sampleRate = createGetSetFunction(buffer, 'sampleRate');
 
             node.data = function (val) {
                 var channel_data;
@@ -925,7 +906,7 @@
          */
         tsw.filter = function () {
             var node = tsw.createNode({
-                    nodeType: 'filter'
+                    type: 'filter'
                 }),
                 options = {},
                 filter = tsw.context().createBiquadFilter();
@@ -938,12 +919,12 @@
                 options.type = arguments[0];
             }
 
-            options.type = options.type || 'lowpass';
-            options.Q = options.Q || 0;
+            node.nodeType = 'filter';
+            node.type = createGetSetFunction(filter, 'type');
+            node.frequency = createGetSetFunction(filter, 'frequency');
+            node.Q = createGetSetFunction(filter, 'Q');
 
-            createGetSetter.call(filter, node, ['type', 'frequency', 'Q']);
-
-            node.type(options.type);
+            node.type(options.type || 'lowpass');
             node.frequency(options.frequency || 1000);
             node.Q(options.Q || 0);
 
@@ -1048,13 +1029,11 @@
 
             // Initial levels
             envelope.name = settings.name|| '';
+            envelope.nodeType = 'envelope';
             envelope.startLevel = settings.startLevel || 0;
             envelope.maxLevel = settings.maxLevel || 1;
             envelope.minLevel = settings.minLevel || 0;
             envelope.param = settings.param || null;
-            envelope.nodeType = function () {
-                return 'envelope';
-            };
 
             // Envelope values
             envelope.attackTime = settings.attackTime || 0;
@@ -1126,19 +1105,9 @@
 
             noise_source.loop = true;
 
-            createGetSetter.call(noise_source, node, ['buffer']);
-
-            node.color = node.colour = function (color) {
-                if (typeof color === 'undefined') {
-                    return node.attributes.color;
-                } else {
-                    node.attributes.color = color;
-                }
-            };
-
-            node.nodeType = function () {
-                return 'noise';
-            };
+            node.buffer = createGetSetFunction(noise_source, 'buffer');
+            node.type = 'white';
+            node.nodeType = 'noise';
 
             tsw.connect(noise_source, node.output);
 
