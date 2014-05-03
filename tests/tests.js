@@ -131,19 +131,62 @@ describe('Theresa\'s Sound World', function () {
                 expect(tsw.wait().time()).toEqual(1);
             });
 
-            it('Create delay node with different delayTime than default', function () {
+            it('Create wait node with different wait time than default', function () {
                 expect(tsw.wait(0.5).time()).toEqual(0.5);
             });
 
-            it('Create delay node and change delayTime after creation', function () {
-                var delay = tsw.wait();
-                delay.time(0.2);
-                expect(delay.time()).toEqual(0.20000000298023224);
+            it('Create wait node and change wait time after creation', function () {
+                var wait = tsw.wait();
+                wait.time(0.2);
+                expect(wait.time()).toEqual(0.20000000298023224);
+            });
+        });
+
+        describe('Create Panner', function () {
+            it('Node should be a panner node', function () {
+                expect(tsw.panner().nodeType).toEqual('panner');
+            });
+
+            it('Default panning should be 0', function () {
+                expect(tsw.panner().pan()).toEqual(0);
+            });
+
+            it('Create panner with different panning than default', function () {
+                expect(parseFloat(tsw.panner(-0.8).pan().toFixed(1))).toEqual(-0.8);
+            });
+
+            it('Create panning at a specified time', function (done) {
+                var osc = tsw.oscillator(),
+                    mute = tsw.gain(0),
+                    panner = tsw.panner();
+
+                tsw.connect(osc, mute, panner, tsw.speakers);
+                osc.start(tsw.now());
+
+                panner.pan(-1, tsw.now() + 1);
+
+                // Check change hasn't happened early.
+                expect(panner.pan()).toEqual(0);
+
+                setTimeout(function () {
+                    expect(Math.round(panner.pan())).toEqual(-1);
+                    done();
+                }, 2000);
             });
         });
 
         describe('Create Filter', function () {
+            it('Node should be a filter node', function () {
+                expect(tsw.filter().nodeType).toEqual('filter');
+            });
 
+            it('Default filter type should be lowpass', function () {
+                expect(tsw.filter().type()).toEqual('lowpass');
+            });
+
+            it('Create filter with different filter type than default', function () {
+                expect(tsw.filter('highpass').type()).toEqual('highpass');
+            });
         });
 
         describe('Create Compressor', function () {

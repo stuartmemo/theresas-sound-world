@@ -602,7 +602,6 @@
 
             node = tsw.createNode();
             node.nodeType = 'panner';
-            node.panAmount = 0;
 
             // Force max panning value.
             var forceMaxPanningValue = function (pan_value) {
@@ -615,7 +614,8 @@
                 return pan_value;
             };
 
-            node.pan = function (pan_value) {
+            node.pan = function (pan_value, time_to_change) {
+                var left_gain_value;
 
                 if (isDefined(pan_value)) {
                     pan_value = forceMaxPanningValue(pan_value || 0);
@@ -631,11 +631,11 @@
                     // Left gain = (1 / 100) * 40 = 0.4
                     // Right gain = 1 - 0.4 = 0.6
 
-                    node.panAmount = pan_value;
-                    left_gain.gain(1 - (0.01 * ((1 + pan_value) / 2) * 100));
-                    right_gain.gain(1 - left_gain.gain());
+                    left_gain_value = 1 - ((pan_value + 1) / 2);
+                    left_gain.gain(left_gain_value, time_to_change); 
+                    right_gain.gain(1 - left_gain_value, time_to_change);
                 } else {
-                    return node.panAmount;
+                    return -((left_gain.gain() - 1) * 2) - 1;
                 }
             };
 
