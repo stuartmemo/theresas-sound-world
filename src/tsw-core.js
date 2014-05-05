@@ -89,12 +89,23 @@
         };
 
         /*
-         * Is an argument defined?
+         * Is argument defined?
          * @method isDefined
          * @param thing Argument to check if it's defined.
          */
         var isDefined = function (thing) {
             return typeof thing !== 'undefined';
+        };
+
+        var exists = function (thing) {
+            var defined = isDefined(thing),
+                isNull = thing === null;
+
+            if (isDefined(thing)) {
+                if (thing !== null) {
+                    return true;
+                }
+            } 
         };
 
         /*
@@ -1047,7 +1058,11 @@
             }
 
             // Should the release kick-in automatically
-            settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
+            if (isDefined(settings.autoStop)) {
+                envelope.autoStop = settings.autoStop;
+            } else {
+                envelope.autoStop = true;
+            }
 
             envelope.start = function (time_to_start) {
                 var decay_time = this.attackTime + this.decayTime,
@@ -1131,61 +1146,37 @@
             +----------+     +--------------+
 
             *********************************/
+       /*
+            var osc = tsw.context().createOscillator(),
+                vol = tsw.context().createGain(),
+                lfo = tsw.context().createOscillator();
+            osc.connect(vol);
+            vol.connect(tsw.context().destination);
+            osc.frequency.value = 10;
+            osc.start(tsw.context().currentTime);
+            lfo.connect(vol.gain);
+            lfo.start(tsw.context().currentTime);
+        */
 
-            var node,
-                lfo = tsw.oscillator(),
-                depth = this.gain(),
-                noise_source = this.bufferPlayer(tsw.noise_buffer.buffer()),
-                defaults = {
-                    frequency: 0,
-                    waveType: 'triangle',
-                    depth: 1,
-                    target: null,
-                    autoStart: false
-                };
+        var osc = tsw.oscillator(),
+            vol = tsw.gain(),
+            lfo = tsw.oscillator();
 
-            node = tsw.createNode({
-                nodeType: 'noise',
-                sourceNode: noise_source
-            });
+        lfo.frequency(10);
+        tsw.connect(osc, vol, tsw.speakers);
+ //       osc.start();
+        lfo.output.connect(vol.params.gain);
+//        lfo.start();
 
-            // Merge passed settings with defaults
-            settings = applyObject(defaults, settings);
-
-            lfo.type(settings.waveType || 'triangle');
-            depth.gain(settings.depth);
-            lfo.frequency(settings.frequency);
-
-            if (settings.autoStart) {
-                lfo.start(tsw.now());
-            }
+            var lfo = tsw.oscillator('sine', 10);
 
             lfo.modulate = function (target) {
-                tsw.connect(depth, target);
-            };
-
-            lfo.setWaveType = function (waveType) {
-                lfo.type = lfo[waveType.toUpperCase()];
-            };
-
-            lfo.frequency = function (f) {
-                if (typeof f === 'undefined') {
-                    return lfo.frequency.value; 
-                } else {
-                    lfo.frequency.value = f;
+                if (exists(target)) {
+                    tsw.connect(this, target);
                 }
             };
 
-            lfo.depth = function (d) {
-                if (typeof d === 'undefined') {
-                    return depth.gain.value; 
-                } else {
-                    depth.gain.value = d;
-                }
-            };
-
-            lfo.modulate(settings.target);
-
+            lfo.nodeType = 'lfo';
             return lfo;
         };
 

@@ -189,6 +189,12 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
+        describe('Create LFO', function () {
+            it('Node should be an LFO node', function () {
+                expect(tsw.lfo().nodeType).toEqual('lfo');
+            });
+        });
+
         describe('Create Compressor', function () {
             it('Check compressor node type', function () {
                 expect(tsw.compressor().nodeType).toEqual('compressor');
@@ -197,17 +203,17 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Create Envelope', function () {
             var osc = tsw.oscillator(),
-            volume = tsw.gain(),
-            mute = tsw.gain(0),
-            envelope = tsw.envelope({
-                param: volume.params.gain,
-                startLevel: 0,
-                maxLevel: 1,
-                sustainLevel: 0.6,
-                attackTime: 2,
-                decayTime: 1,
-                autoStop: false
-            });
+                volume = tsw.gain(),
+                mute = tsw.gain(0),
+                envelope = tsw.envelope({
+                    param: volume.params.gain,
+                    startLevel: 0,
+                    maxLevel: 1,
+                    sustainLevel: 0.6,
+                    attackTime: 2,
+                    decayTime: 1,
+                    autoStop: false
+                });
 
             tsw.connect(osc, volume, mute, tsw.speakers);
 
@@ -247,7 +253,7 @@ describe('Theresa\'s Sound World', function () {
                 setTimeout(function () {
                     expect(parseFloat(volume.gain().toFixed(1))).toEqual(0.6);
                     done();
-                }, 3000);
+                }, 1500);
             });
 
             // Still sustaining?
