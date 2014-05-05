@@ -89,12 +89,23 @@
         };
 
         /*
-         * Is an argument defined?
+         * Is argument defined?
          * @method isDefined
          * @param thing Argument to check if it's defined.
          */
         var isDefined = function (thing) {
             return typeof thing !== 'undefined';
+        };
+
+        var exists = function (thing) {
+            var defined = isDefined(thing),
+                isNull = thing === null;
+
+            if (isDefined(thing)) {
+                if (thing !== null) {
+                    return true;
+                }
+            } 
         };
 
         /*
@@ -340,6 +351,14 @@
                 tsw.connect(arguments[0].node, arguments[1].node, arguments[1].channel);
             };
 
+            var connectNativeNodeToAudioParam = function () {
+                arguments[0].connect(arguments[1]);
+            };
+
+            var connectTswNodeToAudioParam = function () {
+                arguments[0].output.connect(arguments[1]);
+            };
+
             // Iterate over each argument.
             for (i = 0; i < number_of_arguments - 1; i++) {
                 var first_arg = arguments[i],
@@ -433,6 +452,16 @@
                         connectTswNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
                         continue;
                     }
+                }
+
+                if (isNativeNode(first_arg) && isAudioParam(second_arg)) {
+                    connectNativeNodeToAudioParam(first_arg, second_arg);
+                    continue;
+                }
+
+                if (isTswNode(first_arg) && isAudioParam(second_arg)) {
+                    connectTswNodeToAudioParam(first_arg, second_arg);
+                    continue;
                 }
             }
         };
@@ -602,7 +631,6 @@
 
             node = tsw.createNode();
             node.nodeType = 'panner';
-            node.panAmount = 0;
 
             // Force max panning value.
             var forceMaxPanningValue = function (pan_value) {
@@ -615,7 +643,8 @@
                 return pan_value;
             };
 
-            node.pan = function (pan_value) {
+            node.pan = function (pan_value, time_to_change) {
+                var left_gain_value;
 
                 if (isDefined(pan_value)) {
                     pan_value = forceMaxPanningValue(pan_value || 0);
@@ -631,11 +660,11 @@
                     // Left gain = (1 / 100) * 40 = 0.4
                     // Right gain = 1 - 0.4 = 0.6
 
-                    node.panAmount = pan_value;
-                    left_gain.gain(1 - (0.01 * ((1 + pan_value) / 2) * 100));
-                    right_gain.gain(1 - left_gain.gain());
+                    left_gain_value = 1 - ((pan_value + 1) / 2);
+                    left_gain.gain(left_gain_value, time_to_change); 
+                    right_gain.gain(1 - left_gain_value, time_to_change);
                 } else {
-                    return node.panAmount;
+                    return -((left_gain.gain() - 1) * 2) - 1;
                 }
             };
 
@@ -767,11 +796,11 @@
 
         /*
          * Create oscillator node.
-         * @param {string} waveType The type of wave form.
          * @param {number} frequency The starting frequency of the oscillator.
+         * @param {string} waveType The type of wave form.
          * @return {node} Oscillator node of specified type.
          */
-        tsw.oscillator = function (waveType, frequency) {
+        tsw.oscillator = function (frequency, waveType) {
             var node,
                 osc = tsw.context().createOscillator();
 
@@ -783,6 +812,10 @@
             node.frequency = createGetSetFunction(osc, 'frequency');
             node.type = createGetSetFunction(osc, 'type');
             node.detune = createGetSetFunction(osc, 'detune');
+
+            node.params = {
+                frequency: osc.frequency
+            };
 
             node.frequency(frequency || 440);
             node.type((waveType || 'sine').toLowerCase());
@@ -1047,7 +1080,11 @@
             }
 
             // Should the release kick-in automatically
-            settings.autoStop === undefined ? envelope.autoStop = true : envelope.autoStop = settings.autoStop;
+            if (isDefined(settings.autoStop)) {
+                envelope.autoStop = settings.autoStop;
+            } else {
+                envelope.autoStop = true;
+            }
 
             envelope.start = function (time_to_start) {
                 var decay_time = this.attackTime + this.decayTime,
@@ -1117,9 +1154,17 @@
         /*
          * Create LFO.
          * @method lfo
-         * @param {object} settings LFO settings.
+         * @param {number} frequency Frequency of LFO
          */
-        tsw.lfo = function (settings) {
+        tsw.lfo = function (frequency) {
+
+            var node,
+                lfo = tsw.oscillator(frequency || 10);
+
+            node = tsw.createNode({
+                sourceNode: lfo,
+                nodeType: 'lfo'
+            });
 
             /*********************************
 
@@ -1132,61 +1177,16 @@
 
             *********************************/
 
-            var node,
-                lfo = tsw.oscillator(),
-                depth = this.gain(),
-                noise_source = this.bufferPlayer(tsw.noise_buffer.buffer()),
-                defaults = {
-                    frequency: 0,
-                    waveType: 'triangle',
-                    depth: 1,
-                    target: null,
-                    autoStart: false
-                };
-
-            node = tsw.createNode({
-                nodeType: 'noise',
-                sourceNode: noise_source
-            });
-
-            // Merge passed settings with defaults
-            settings = applyObject(defaults, settings);
-
-            lfo.type(settings.waveType || 'triangle');
-            depth.gain(settings.depth);
-            lfo.frequency(settings.frequency);
-
-            if (settings.autoStart) {
-                lfo.start(tsw.now());
-            }
-
-            lfo.modulate = function (target) {
-                tsw.connect(depth, target);
-            };
-
-            lfo.setWaveType = function (waveType) {
-                lfo.type = lfo[waveType.toUpperCase()];
-            };
-
-            lfo.frequency = function (f) {
-                if (typeof f === 'undefined') {
-                    return lfo.frequency.value; 
-                } else {
-                    lfo.frequency.value = f;
+            node.modulate = function (target) {
+                if (exists(target)) {
+                    tsw.connect(lfo, target);
+                    lfo.start();
                 }
             };
 
-            lfo.depth = function (d) {
-                if (typeof d === 'undefined') {
-                    return depth.gain.value; 
-                } else {
-                    depth.gain.value = d;
-                }
-            };
+            node.frequency = lfo.frequency;
 
-            lfo.modulate(settings.target);
-
-            return lfo;
+            return node;
         };
 
         /*
