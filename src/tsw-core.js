@@ -1146,37 +1146,25 @@
             +----------+     +--------------+
 
             *********************************/
-       /*
-            var osc = tsw.context().createOscillator(),
-                vol = tsw.context().createGain(),
-                lfo = tsw.context().createOscillator();
-            osc.connect(vol);
-            vol.connect(tsw.context().destination);
-            osc.frequency.value = 10;
-            osc.start(tsw.context().currentTime);
-            lfo.connect(vol.gain);
-            lfo.start(tsw.context().currentTime);
-        */
 
-        var osc = tsw.oscillator(),
-            vol = tsw.gain(),
-            lfo = tsw.oscillator();
+            var osc = tsw.oscillator(),
+                vol = tsw.gain(),
+                lfo = tsw.oscillator(10);
 
-        lfo.frequency(10);
-        tsw.connect(osc, vol, tsw.speakers);
- //       osc.start();
-        lfo.output.connect(vol.params.gain);
-//        lfo.start();
-
-            var lfo = tsw.oscillator('sine', 10);
+            lfo.nodeType = 'lfo';
 
             lfo.modulate = function (target) {
                 if (exists(target)) {
-                    tsw.connect(this, target);
+                    this.connect(target);
+                    osc.start();
+                    //tsw.connect(this, target);
                 }
             };
 
-            lfo.nodeType = 'lfo';
+            tsw.connect(osc, vol, tsw.speakers);
+            //lfo.module.connect(vol.params.gain);
+            lfo.start();
+
             return lfo;
         };
 
