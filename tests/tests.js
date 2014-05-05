@@ -57,30 +57,30 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Creates a sine wave.', function () {
-                expect(tsw.oscillator('sine').type()).toEqual('sine');
+                expect(tsw.oscillator(300, 'sine').type()).toEqual('sine');
             });
 
             it('Creates a square wave.', function () {
-                expect(tsw.oscillator('square').type()).toEqual('square');
+                expect(tsw.oscillator(200, 'square').type()).toEqual('square');
             });
 
             it('Creates a triangle wave', function () {
-                expect(tsw.oscillator('triangle').type()).toEqual('triangle');
+                expect(tsw.oscillator(100, 'triangle').type()).toEqual('triangle');
             });
 
             it('Creates a sawtooth wave', function () {
-                expect(tsw.oscillator('sawtooth').type()).toEqual('sawtooth');
+                expect(tsw.oscillator(50, 'sawtooth').type()).toEqual('sawtooth');
             });
 
             it('Creates a sine wave with a certain frequency', function () {
-                var osc = tsw.oscillator('sawtooth', 500);
+                var osc = tsw.oscillator(500, 'sawtooth');
                 expect(osc.frequency()).toEqual(500);
             });
 
             it('Sets the frequency', function () {
                 var osc = tsw.oscillator('sine');
-                osc.frequency.value = 900;
-                expect(osc.frequency.value).toEqual(900);
+                osc.frequency(900);
+                expect(osc.frequency()).toEqual(900);
             });
         });
 
