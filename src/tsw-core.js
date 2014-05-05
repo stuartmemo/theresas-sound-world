@@ -767,11 +767,11 @@
 
         /*
          * Create oscillator node.
-         * @param {string} waveType The type of wave form.
          * @param {number} frequency The starting frequency of the oscillator.
+         * @param {string} waveType The type of wave form.
          * @return {node} Oscillator node of specified type.
          */
-        tsw.oscillator = function (waveType, frequency) {
+        tsw.oscillator = function (frequency, waveType) {
             var node,
                 osc = tsw.context().createOscillator();
 
