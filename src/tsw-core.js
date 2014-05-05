@@ -351,6 +351,14 @@
                 tsw.connect(arguments[0].node, arguments[1].node, arguments[1].channel);
             };
 
+            var connectNativeNodeToAudioParam = function () {
+                arguments[0].connect(arguments[1]);
+            };
+
+            var connectTswNodeToAudioParam = function () {
+                arguments[0].output.connect(arguments[1]);
+            };
+
             // Iterate over each argument.
             for (i = 0; i < number_of_arguments - 1; i++) {
                 var first_arg = arguments[i],
@@ -444,6 +452,16 @@
                         connectTswNodeToTswNode(first_arg.node, second_arg.node, second_arg.channel);
                         continue;
                     }
+                }
+
+                if (isNativeNode(first_arg) && isAudioParam(second_arg)) {
+                    connectNativeNodeToAudioParam(first_arg, second_arg);
+                    continue;
+                }
+
+                if (isTswNode(first_arg) && isAudioParam(second_arg)) {
+                    connectTswNodeToAudioParam(first_arg, second_arg);
+                    continue;
                 }
             }
         };
@@ -795,6 +813,10 @@
             node.type = createGetSetFunction(osc, 'type');
             node.detune = createGetSetFunction(osc, 'detune');
 
+            node.params = {
+                frequency: osc.frequency
+            };
+
             node.frequency(frequency || 440);
             node.type((waveType || 'sine').toLowerCase());
 
@@ -1132,9 +1154,17 @@
         /*
          * Create LFO.
          * @method lfo
-         * @param {object} settings LFO settings.
+         * @param {number} frequency Frequency of LFO
          */
-        tsw.lfo = function (settings) {
+        tsw.lfo = function (frequency) {
+
+            var node,
+                lfo = tsw.oscillator(frequency || 10);
+
+            node = tsw.createNode({
+                sourceNode: lfo,
+                nodeType: 'lfo'
+            });
 
             /*********************************
 
@@ -1147,25 +1177,16 @@
 
             *********************************/
 
-            var osc = tsw.oscillator(),
-                vol = tsw.gain(),
-                lfo = tsw.oscillator(10);
-
-            lfo.nodeType = 'lfo';
-
-            lfo.modulate = function (target) {
+            node.modulate = function (target) {
                 if (exists(target)) {
-                    this.connect(target);
-                    osc.start();
-                    //tsw.connect(this, target);
+                    tsw.connect(lfo, target);
+                    lfo.start();
                 }
             };
 
-            tsw.connect(osc, vol, tsw.speakers);
-            //lfo.module.connect(vol.params.gain);
-            lfo.start();
+            node.frequency = lfo.frequency;
 
-            return lfo;
+            return node;
         };
 
         /*

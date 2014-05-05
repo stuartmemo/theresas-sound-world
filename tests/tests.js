@@ -193,6 +193,14 @@ describe('Theresa\'s Sound World', function () {
             it('Node should be an LFO node', function () {
                 expect(tsw.lfo().nodeType).toEqual('lfo');
             });
+
+            it('Default LFO frequency should be 10Hz', function () {
+                expect(tsw.lfo().frequency()).toEqual(10);
+            });
+
+            it('Create LFO with different frequency than default', function () {
+                expect(tsw.lfo(5).frequency()).toEqual(5);
+            });
         });
 
         describe('Create Compressor', function () {
@@ -201,6 +209,8 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
+
+        /*
         describe('Create Envelope', function () {
             var osc = tsw.oscillator(),
                 volume = tsw.gain(),
@@ -272,6 +282,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
         });
+        */        
 
         describe('Create Noise', function () {
 
