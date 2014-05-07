@@ -78,7 +78,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Sets the frequency', function () {
-                var osc = tsw.oscillator('sine');
+                var osc = tsw.oscillator();
                 osc.frequency(900);
                 expect(osc.frequency()).toEqual(900);
             });
