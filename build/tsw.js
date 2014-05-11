@@ -166,9 +166,16 @@
                             if (exists(transition_type)) {
                                 switch(transition_type) {
                                     case 'linear':
-                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now() + 5);
                                         node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
                                         node[param_to_change].linearRampToValueAtTime(param_value, target_time);
+                                        break;
+                                    case 'exponential':
+                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                                        if (param_value === 0) {
+                                            // Exponential ramp can never reach zero.
+                                            param_value = 0.00000001;
+                                        }
+                                        node[param_to_change].exponentialRampToValueAtTime(param_value, target_time);
                                         break;
                                     default:
                                         node[param_to_change].setValueAtTime(param_value, target_time);

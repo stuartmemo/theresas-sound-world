@@ -205,6 +205,32 @@ describe('Theresa\'s Sound World', function () {
                     done();
                 }, 4500);
             });
+
+            it('Gain should ramp exponentially up then down', function (done) {
+                var osc = tsw.oscillator(),
+                    vol = tsw.gain(0);
+
+                tsw.connect(osc, vol, tsw.speakers);
+                osc.start(tsw.now());
+
+                expect(vol.gain()).toEqual(0);
+
+                vol.gain(1, tsw.now() + 2, 'exponetial');
+                vol.gain(0, tsw.now() + 4, 'exponential');
+
+                setTimeout(function () {
+                    expect(vol.gain()).toBeLessThan(0.6);
+                }, 1000);
+
+                setTimeout(function () {
+                    expect(vol.gain()).toBeLessThan(0.5);
+                }, 3500);
+
+                setTimeout(function () {
+                    expect(Math.round(vol.gain())).toEqual(0);
+                    done();
+                }, 4500);
+            });
         });
 
         describe('Create Filter', function () {
