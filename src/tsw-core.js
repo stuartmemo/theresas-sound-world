@@ -158,12 +158,23 @@
          */
         var createGetSetFunction = function (node, param_to_change) {
 
-            return function (param_value, target_time) {
+            return function (param_value, target_time, transition_type) {
                 // User has passed a value, so set it.
-                if (isDefined(param_value)) {
-                    if (isDefined(node[param_to_change].value)) {
-                        if (isDefined(target_time)) {
-                            node[param_to_change].setValueAtTime(param_value, target_time);
+                if (exists(param_value)) {
+                    if (exists(node[param_to_change].value)) {
+                        if (exists(target_time)) {
+                            if (exists(transition_type)) {
+                                switch(transition_type) {
+                                    case 'linear':
+                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                                        node[param_to_change].linearRampToValueAtTime(param_value, target_time);
+                                        break;
+                                    default:
+                                        node[param_to_change].setValueAtTime(param_value, target_time);
+                                }
+                            } else {
+                                node[param_to_change].setValueAtTime(param_value, target_time);
+                            }
                         } else {
                             node[param_to_change].value = param_value;
                         }
@@ -171,7 +182,7 @@
                         node[param_to_change] = param_value;
                     }
                 } else {
-                    if (isDefined(node[param_to_change].value)) {
+                    if (exists(node[param_to_change].value)) {
                         return node[param_to_change].value;
                     } else {
                         return node[param_to_change];
@@ -179,7 +190,6 @@
                 }
             };
         };
-
 
         /***************
          * Sound World *
