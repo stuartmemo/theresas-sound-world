@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.2';
+        version = '0.1.3';
 
     tsw = (function () {
 
@@ -1211,15 +1211,16 @@
          * Get user's audio input.
          * @method getUserAudio
          * @param {function} Callback function with streaming node passed as param;
+         * @param {function} Error callback. Called when there's an error getting user audio.
          */
-        tsw.getUserAudio = function (callback) {
+        tsw.getUserAudio = function (callback, errorCallback) {
             var audioStream = function (stream) {
                 var streamNode = tsw.context().createMediaStreamSource(stream);
 
                 callback(streamNode);
             };
 
-            navigator.webkitGetUserMedia({audio: true}, audioStream);
+            navigator.webkitGetUserMedia({audio: true}, audioStream, errorCallback);
         };
 
         /*
