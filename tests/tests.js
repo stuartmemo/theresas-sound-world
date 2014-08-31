@@ -356,16 +356,14 @@ describe('Theresa\'s Sound World', function () {
             it('Load some mp3s', function (done) {
                 tsw.load({
                     files: {
-                        sampleOne: '/tests/samples/tsw1.mp3',
-                        sampleTwo: 'tests/samples/tsw2.mp3',
-                        sampleThree: '/tests/samples/tsw3.mp3',
+                        sampleOne: '/base/tests/samples/tsw1.mp3',
+                        sampleTwo: '/base/tests/samples/tsw2.mp3',
+                        sampleThree: '/base/tests/samples/tsw3.mp3',
                     }
                 }, function (success) {
-                    console.log('succcccesss');
                     my_success = success;
                     done();
                 }, function () {
-                    console.log('really failed');    
                 });
             });
 
