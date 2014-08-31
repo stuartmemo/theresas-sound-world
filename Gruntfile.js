@@ -8,7 +8,7 @@ module.exports = function (grunt) {
         uglify: {
             all: {
                 files: {
-                    'build/tsw.min.js': ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js']
+                    'build/tsw.min.js': ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js']
                 }
             }
         },
@@ -21,13 +21,13 @@ module.exports = function (grunt) {
 
         concat: {
             dist: {
-                src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
+                src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js'],
                 dest: 'build/tsw.js'
             }
         },
 
         watch: {
-            files: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
+            files: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js'],
             tasks: ['concat', 'uglify']
         },
 
