@@ -356,13 +356,16 @@ describe('Theresa\'s Sound World', function () {
             it('Load some mp3s', function (done) {
                 tsw.load({
                     files: {
-                        sampleOne: 'samples/tsw1.mp3',
-                        sampleTwo: 'samples/tsw2.mp3',
-                        sampleThree: 'samples/tsw3.mp3',
+                        sampleOne: '/tests/samples/tsw1.mp3',
+                        sampleTwo: 'tests/samples/tsw2.mp3',
+                        sampleThree: '/tests/samples/tsw3.mp3',
                     }
                 }, function (success) {
+                    console.log('succcccesss');
                     my_success = success;
                     done();
+                }, function () {
+                    console.log('really failed');    
                 });
             });
 
@@ -370,7 +373,9 @@ describe('Theresa\'s Sound World', function () {
                 expect(Object.keys(my_success).length).toEqual(3);
             });
 
-            it('Load some files that don\'t exist', function () {
+            it('Load some files that don\'t exist', function (done) {
+                var doneCalled = false;
+
                 tsw.load({
                     files: {
                         sampleOne: 'samples/nope1.mp3',
@@ -380,7 +385,11 @@ describe('Theresa\'s Sound World', function () {
                 }, function () {
                     // do nothing
                 }, function () {
-                    //expect(true).toEqual(true);
+                    expect(true).toEqual(true);
+                    if (!doneCalled) {
+                        doneCalled = true;
+                        done();
+                    }
                 });
             });
         });
@@ -501,26 +510,4 @@ describe('Theresa\'s Sound World', function () {
         });
     });
 
-    describe('Analysis', function () {
-        var loadedFiles;
-
-        it('Loads file', function (done) {
-            tsw.load({
-                files: {
-                    sampleOne: 'samples/tsw1.mp3'
-                }
-            }, function (success) {
-                loadedFiles = success;
-                done();
-            });
-        });
-
-        it('Gets correct file info', function () {
-            var fileInfo = tsw.info(loadedFiles.sampleOne);
-            expect(fileInfo.numberOfChannels).toEqual(2);
-            expect(fileInfo.sampleRate).toEqual(44100);
-            expect(fileInfo.duration.minutes).toEqual(0);
-            expect(fileInfo.duration.seconds).toEqual(2.855986394557823);
-        });
-    });
 });
