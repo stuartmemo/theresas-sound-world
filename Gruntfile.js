@@ -13,6 +13,12 @@ module.exports = function (grunt) {
             }
         },
 
+        karma: {
+            unit: {
+                configFile: 'karma-conf.js'
+            }
+        },
+
         concat: {
             dist: {
                 src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js'],
@@ -39,9 +45,11 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-karma');
 
     // Default tasks.
     grunt.registerTask('default', ['watch']);
     grunt.registerTask('build', ['concat', 'uglify']);
     grunt.registerTask('server', ['connect', 'watch']);
+    grunt.registerTask('test', ['karma']);
 };
