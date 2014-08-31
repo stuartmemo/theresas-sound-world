@@ -1,4 +1,0 @@
-require 'jasmine'
-require 'jasmine_selenium_runner'
-require 'jasmine'
-load 'jasmine/tasks/jasmine.rake'
