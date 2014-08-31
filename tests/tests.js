@@ -385,7 +385,6 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
-    
         /**
         * Fade in/out has been removed while waiting for Firefox documentation.
         * https://github.com/stuartmemo/theresas-sound-world/issues/18
@@ -499,6 +498,29 @@ describe('Theresa\'s Sound World', function () {
             expect(tsw.midiNote('C4')).toEqual(48);
             expect(tsw.midiNote('F#2')).toEqual(30);
             expect(tsw.midiNote('d#9')).toEqual(111);
+        });
+    });
+
+    describe('Analysis', function () {
+        var loadedFiles;
+
+        it('Loads file', function (done) {
+            tsw.load({
+                files: {
+                    sampleOne: 'samples/tsw1.mp3'
+                }
+            }, function (success) {
+                loadedFiles = success;
+                done();
+            });
+        });
+
+        it('Gets correct file info', function () {
+            var fileInfo = tsw.info(loadedFiles.sampleOne);
+            expect(fileInfo.numberOfChannels).toEqual(2);
+            expect(fileInfo.sampleRate).toEqual(44100);
+            expect(fileInfo.duration.minutes).toEqual(0);
+            expect(fileInfo.duration.seconds).toEqual(2.855986394557823);
         });
     });
 });
