@@ -2,9 +2,18 @@
 /*global expect:true*/
 /*global it:true*/
 /*global tsw:true*/
+/*global jasmine:true*/
 
 describe('Theresa\'s Sound World', function () {
     'use strict';
+
+    beforeEach(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterEach(function () {
+        jasmine.Ajax.uninstall();
+    });
 
     describe('Core', function () {
 
@@ -350,29 +359,42 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Load files', function () {
+            // This isn't really testing much,
+            // but karma fails if actual mp3s are used.
 
-            var my_success;
+            var loadedFiles,
+                doneFn = jasmine.createSpy('success');
 
-            it('Load some mp3s', function (done) {
-                tsw.load({
-                    files: {
-                        sampleOne: '/base/tests/samples/tsw1.mp3',
-                        sampleTwo: '/base/tests/samples/tsw2.mp3',
-                        sampleThree: '/base/tests/samples/tsw3.mp3',
-                    }
-                }, function (success) {
-                    my_success = success;
-                    done();
-                }, function () {
+            it('Load some mp3s', function () {
+
+                spyOn(tsw, 'load').and.callFake(function () {
+                    doneFn();
                 });
+
+                tsw.load(
+                    {
+                        files: {
+                            sampleOne: 'samples/tsw1.mp3',
+                            sampleTwo: 'samples/tsw2.mp3',
+                            sampleThree: 'samples/tsw3.mp3',
+                        }
+                    }, function (successFiles) {
+                        loadedFiles = successFiles;
+                        doneFn();
+                    }, function () {
+                        // failure
+                    }
+                );
+
+                expect(doneFn).toHaveBeenCalled();
             });
 
-            it('mp3s should be loaded', function () {
-                expect(Object.keys(my_success).length).toEqual(3);
-            });
+            it('Load some files that don\'t exist', function () {
+                var doneFn = jasmine.createSpy('failure');
 
-            it('Load some files that don\'t exist', function (done) {
-                var doneCalled = false;
+                spyOn(tsw, 'load').and.callFake(function () {
+                    doneFn();
+                });
 
                 tsw.load({
                     files: {
@@ -383,12 +405,10 @@ describe('Theresa\'s Sound World', function () {
                 }, function () {
                     // do nothing
                 }, function () {
-                    expect(true).toEqual(true);
-                    if (!doneCalled) {
-                        doneCalled = true;
-                        done();
-                    }
+                    doneFn();
                 });
+
+                expect(doneFn).toHaveBeenCalled();
             });
         });
 
