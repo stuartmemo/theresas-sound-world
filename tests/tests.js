@@ -53,6 +53,14 @@ describe('Theresa\'s Sound World', function () {
             it('Node is a Buffer', function () {
                 expect(tsw.buffer().nodeType).toEqual('buffer');
             });
+
+            it('Can decode buffer', function (done) {
+                tsw.decode(new ArrayBuffer(8),function () {
+                    done();
+                },function () {
+                    done();
+                });
+            });
         });
 
         describe('Create Oscillator', function () {

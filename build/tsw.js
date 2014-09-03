@@ -950,6 +950,19 @@
         };
 
         /*
+         * Audio decoder method.
+         * @method decode
+         * @param {arraybuffer}
+         * @param {function} Success callback.
+         * @param {function} Failure callback.
+         * @return null
+         */
+        tsw.decode = function (arrayBuffer, success, failure) {
+            console.log(arrayBuffer);
+            this.context().decodeAudioData(arrayBuffer, success, failure);            
+        };
+
+        /*
          * Create filter node.
          * @method filter
          * @param {string} filterType Type of filter.
