@@ -544,6 +544,8 @@
                     files_loaded++;
 
                     that.context().decodeAudioData(request.response, function (decodedBuffer) {
+                        console.log('response');
+                        console.log(request.response);
                         returnObj[fileKey] = decodedBuffer;
 
                         if (Object.keys(returnObj).length === number_of_files) {
