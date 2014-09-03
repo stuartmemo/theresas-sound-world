@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.6';
+        version = '0.1.7';
 
     tsw = (function () {
 
@@ -958,7 +958,6 @@
          * @return null
          */
         tsw.decode = function (arrayBuffer, success, failure) {
-            console.log(arrayBuffer);
             this.context().decodeAudioData(arrayBuffer, success, failure);            
         };
 
