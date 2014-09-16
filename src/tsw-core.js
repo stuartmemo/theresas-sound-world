@@ -1099,10 +1099,10 @@
             envelope.param = settings.param || null;
 
             // Envelope values
-            envelope.attackTime = settings.attackTime || 0;
-            envelope.decayTime = settings.decayTime || 1;
-            envelope.sustainLevel = settings.sustainLevel || 1;
-            envelope.releaseTime = settings.releaseTime || 1;
+            envelope.attackTime = settings.attack || 0;
+            envelope.decayTime = settings.decay || 1;
+            envelope.sustainLevel = settings.sustain || 1;
+            envelope.releaseTime = settings.release || 1;
 
             // Automation parameters 
             if (isAudioParam(settings.param)) {
