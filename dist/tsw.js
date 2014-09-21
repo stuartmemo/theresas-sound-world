@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.8';
+        version = '0.1.9';
 
     tsw = (function () {
 
@@ -1109,13 +1109,6 @@
                 envelope.param = settings.param;
             }
 
-            // Should the release kick-in automatically
-            if (isDefined(settings.autoStop)) {
-                envelope.autoStop = settings.autoStop;
-            } else {
-                envelope.autoStop = true;
-            }
-
             envelope.start = function (time_to_start) {
                 var decay_time = this.attackTime + this.decayTime,
                     release_time = decay_time + this.releaseTime;
@@ -1131,11 +1124,11 @@
                     // Set start level
                     this.param.setValueAtTime(this.startLevel, time_to_start);
 
-                    // Attack
+                    // Attack - ramp to max level from the start time to the duration of the attack.
                     this.param.linearRampToValueAtTime(this.maxLevel, time_to_start + this.attackTime);
 
-                    // Decay
-                    this.param.setTargetAtTime(this.sustainLevel, time_to_start + decay_time, 0.05);
+                    // Decay - starts decaying when attack is done.
+                    this.param.setTargetAtTime(this.sustainLevel, time_to_start + this.attackTime, 0.05);
                 }
             };
 
@@ -1144,8 +1137,8 @@
                 timeToStop += this.releaseTime;
 
                 // Release
-                if (!this.autoStop && isAudioParam(this.param)) {
-                    this.param.setTargetAtTime(this.minLevel, tsw.now(), this.releaseTime / 10);
+                if (isAudioParam(this.param)) {
+                    this.param.setTargetAtTime(this.minLevel, timeToStop, this.releaseTime / 10);
                 }
             };
 
