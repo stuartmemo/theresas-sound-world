@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.9';
+        version = '0.1.10';
 
     tsw = (function () {
 
@@ -1132,7 +1132,7 @@
                 }
             };
 
-            envelope.stop = function (timeToStop) {
+            envelope.release = function (timeToStop) {
                 timeToStop = timeToStop || tsw.now();
                 timeToStop += this.releaseTime;
 
