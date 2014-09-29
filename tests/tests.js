@@ -66,36 +66,36 @@ describe('Theresa\'s Sound World', function () {
         describe('Create Oscillator', function () {
 
             it('Node is an OscillatorNode', function () {
-                expect(tsw.oscillator().nodeType).toEqual('oscillator');
+                expect(tsw.osc().nodeType).toEqual('oscillator');
             });
 
             it('Default type is a sine wave', function () {
-                expect(tsw.oscillator().type()).toEqual('sine');
+                expect(tsw.osc().type()).toEqual('sine');
             });
 
             it('Creates a sine wave.', function () {
-                expect(tsw.oscillator(300, 'sine').type()).toEqual('sine');
+                expect(tsw.osc(300, 'sine').type()).toEqual('sine');
             });
 
             it('Creates a square wave.', function () {
-                expect(tsw.oscillator(200, 'square').type()).toEqual('square');
+                expect(tsw.osc(200, 'square').type()).toEqual('square');
             });
 
             it('Creates a triangle wave', function () {
-                expect(tsw.oscillator(100, 'triangle').type()).toEqual('triangle');
+                expect(tsw.osc(100, 'triangle').type()).toEqual('triangle');
             });
 
             it('Creates a sawtooth wave', function () {
-                expect(tsw.oscillator(50, 'sawtooth').type()).toEqual('sawtooth');
+                expect(tsw.osc(50, 'sawtooth').type()).toEqual('sawtooth');
             });
 
             it('Creates a sine wave with a certain frequency', function () {
-                var osc = tsw.oscillator(500, 'sawtooth');
+                var osc = tsw.osc(500, 'sawtooth');
                 expect(osc.frequency()).toEqual(500);
             });
 
             it('Sets the frequency', function () {
-                var osc = tsw.oscillator();
+                var osc = tsw.osc();
                 osc.frequency(900);
                 expect(osc.frequency()).toEqual(900);
             });
@@ -122,7 +122,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Change gain at a specified time', function (done) {
-                var osc = tsw.oscillator(),
+                var osc = tsw.osc(),
                 vol = tsw.gain(0.2),
                 mute = tsw.gain(0);
 
@@ -173,7 +173,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Create panning at a specified time', function (done) {
-                var osc = tsw.oscillator(),
+                var osc = tsw.osc(),
                     mute = tsw.gain(0),
                     panner = tsw.panner();
 
@@ -194,7 +194,7 @@ describe('Theresa\'s Sound World', function () {
 
         describe('Transitions', function () {
             it('Gain should ramp linearly up then down', function (done) {
-                var osc = tsw.oscillator(),
+                var osc = tsw.osc(),
                     vol = tsw.gain(0);
 
                 tsw.connect(osc, vol, tsw.speakers);
@@ -224,7 +224,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Gain should ramp exponentially up then down', function (done) {
-                var osc = tsw.oscillator(),
+                var osc = tsw.osc(),
                     vol = tsw.gain(0);
 
                 tsw.connect(osc, vol, tsw.speakers);

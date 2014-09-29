@@ -263,6 +263,7 @@
          */
         var mapToSoundWorld = function () {
             tsw.speakers = tsw.context().destination;
+            tsw.osc = tsw.oscillator;
         };
 
         /**
