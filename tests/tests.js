@@ -476,11 +476,34 @@ describe('Theresa\'s Sound World', function () {
         });
 
         it('Create phaser effect', function () {
-            tsw.phaser();
+            var phaser = tsw.phaser({
+                rate: 5,
+                depth: 0.4
+            });
+
+            expect(phaser.nodeType).toEqual('phaser');
+            expect(phaser.rate()).toEqual(5);
+            expect(phaser.depth()).toEqual(5);
+            expect(phaser.feedback()).toEqual(1);
+
+            phaser.rate(2);
+            phaser.depth(0);
+
+            expect(phaser.rate()).toEqual(2);
+            expect(phaser.depth()).toEqual(0);
         });
 
         it('Create tremolo effect', function () {
-            // tsw.tremolo();
+            var tremolo = tsw.tremolo({
+                rate: 5    
+            });
+
+            expect(tremolo.nodeType).toEqual('tremolo');
+            expect(tremolo.rate()).toEqual(5);
+            expect(tremolo.depth()).toEqual(0.4);
+
+            tremolo.rate(2);
+            expect(tremolo.rate()).toEqual(2);
         });
     });
 

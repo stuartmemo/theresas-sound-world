@@ -1248,6 +1248,7 @@
         tsw.helper = {};
         tsw.helper.isString = isString;
         tsw.helper.isNumber = isNumber;
+        tsw.helper.createGetSetFunction = createGetSetFunction;
 
         /*
          * Kick everything off.

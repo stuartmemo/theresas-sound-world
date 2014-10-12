@@ -1248,6 +1248,7 @@
         tsw.helper = {};
         tsw.helper.isString = isString;
         tsw.helper.isNumber = isNumber;
+        tsw.helper.createGetSetFunction = createGetSetFunction;
 
         /*
          * Kick everything off.
@@ -1416,21 +1417,26 @@
         Resonance: Strength of the filter effect
         *****************************/
 
-        var node = tsw.createNode(),
-            allPassFilters = [],
+        var allPassFilters = [],
             feedback = tsw.gain(),
-            i = 0;
+            i = 0,
+            node,
+            settings = settings || {};
 
-        node.settings = {
-            rate: 8,
-            depth: 0.5,
-            feedback: 0.8
-        };
+        node = tsw.createNode({
+            nodeType: 'phaser',
+            settings: {}
+        });
 
-        // Set values
-        settings = settings || {};
+        node.depth = tsw.helper.createGetSetFunction(node.settings, 'depth');
+        node.feedback = tsw.helper.createGetSetFunction(node.settings, 'feedback');
+        node.rate = tsw.helper.createGetSetFunction(node.settings, 'rate');
 
-        feedback.gain.value = settings.feedback || node.settings.feedback;
+        node.depth(settings.depth || 0.5);
+        node.feedback(settings.feedback || 0.8);
+        node.rate(settings.rate || 8);
+
+        feedback.gain(settings.feedback || node.settings.feedback);
         settings.rate = settings.rate || node.settings.rate;
 
         for (i = 0; i < settings.rate; i++) {
