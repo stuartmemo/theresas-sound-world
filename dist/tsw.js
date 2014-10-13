@@ -933,19 +933,32 @@
         
         /*
          * Create buffer source node.
-         * @method bufferPlayer
+         * @method bufferBox
          * @param {buffer}
-         * @return BufferSource node.
+         * @return BufferBox.
          */
-        tsw.bufferPlayer = function (buff) {
+        tsw.bufferBox = function (buff) {
             var source = this.context().createBufferSource();
 
-            source.buffer = buff;
+            source.nodeType = 'bufferBox';
+
+            if (buff) {
+                source.buffer = buff;
+            }
 
             if (typeof source.start === 'undefined') {
                 source.start = source.noteOn;
                 source.stop = source.noteOff;
             }
+
+            // Alias 'start' method to 'play' method.
+            source.play = source.start;
+
+            source.load = function (buffer) {
+                if (buffer) {
+                    source.buffer = buffer;
+                }
+            };
 
             return source;
         };
@@ -1154,7 +1167,7 @@
          */
         tsw.noise = function () {
             var node,
-                noise_source = this.bufferPlayer(tsw.noise_buffer.buffer());
+                noise_source = this.bufferBox(tsw.noise_buffer.buffer());
 
             node = tsw.createNode({
                 nodeType: 'noise',

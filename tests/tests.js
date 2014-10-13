@@ -418,6 +418,12 @@ describe('Theresa\'s Sound World', function () {
 
                 expect(doneFn).toHaveBeenCalled();
             });
+
+            it('Create the now famous buffer box', function () {
+                var bufferBox = tsw.bufferBox();
+
+                expect(bufferBox.nodeType).toEqual('bufferBox');
+            });
         });
 
         /**
