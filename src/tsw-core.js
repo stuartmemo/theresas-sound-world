@@ -161,30 +161,35 @@
             return function (param_value, target_time, transition_type) {
                 // User has passed a value, so set it.
                 if (exists(param_value)) {
-                    if (exists(node[param_to_change].value)) {
-                        if (exists(target_time)) {
-                            if (exists(transition_type)) {
-                                switch(transition_type) {
-                                    case 'linear':
-                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
-                                        node[param_to_change].linearRampToValueAtTime(param_value, target_time);
-                                        break;
-                                    case 'exponential':
-                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
-                                        if (param_value === 0) {
-                                            // Exponential ramp can never reach zero.
-                                            param_value = 0.00000001;
-                                        }
-                                        node[param_to_change].exponentialRampToValueAtTime(param_value, target_time);
-                                        break;
-                                    default:
-                                        node[param_to_change].setValueAtTime(param_value, target_time);
+                    if (exists(node[param_to_change])) { 
+                        // This is a native audio parameter.
+                        if (exists(node[param_to_change].value)) {
+                            if (exists(target_time)) {
+                                if (exists(transition_type)) {
+                                    switch(transition_type) {
+                                        case 'linear':
+                                            node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                                            node[param_to_change].linearRampToValueAtTime(param_value, target_time);
+                                            break;
+                                        case 'exponential':
+                                            node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                                            if (param_value === 0) {
+                                                // Exponential ramp can never reach zero.
+                                                param_value = 0.00000001;
+                                            }
+                                            node[param_to_change].exponentialRampToValueAtTime(param_value, target_time);
+                                            break;
+                                        default:
+                                            node[param_to_change].setValueAtTime(param_value, target_time);
+                                    }
+                                } else {
+                                    node[param_to_change].setValueAtTime(param_value, target_time);
                                 }
                             } else {
-                                node[param_to_change].setValueAtTime(param_value, target_time);
+                                node[param_to_change].value = param_value;
                             }
                         } else {
-                            node[param_to_change].value = param_value;
+                            node[param_to_change] = param_value;
                         }
                     } else {
                         node[param_to_change] = param_value;
@@ -800,6 +805,7 @@
 
             node.nodeType = options.nodeType || 'default';
             node.attributes = options.attributes;
+            node.settings = options.settings;
 
             // Keep a list of nodes this node is connected to.
             node.connectedTo = [];

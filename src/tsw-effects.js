@@ -152,13 +152,12 @@
             nodeType: 'phaser',
             settings: {}
         });
-
+        
         node.depth = tsw.helper.createGetSetFunction(node.settings, 'depth');
         node.feedback = tsw.helper.createGetSetFunction(node.settings, 'feedback');
         node.rate = tsw.helper.createGetSetFunction(node.settings, 'rate');
 
-        var depth = settings.depth || 0.5;
-        node.depth(0.4);
+        node.depth(settings.depth || 0.5);
         node.feedback(settings.feedback || 0.8);
         node.rate(settings.rate || 8);
 
@@ -167,7 +166,7 @@
 
         for (i = 0; i < settings.rate; i++) {
             allPassFilters[i] = tsw.context().createBiquadFilter();
-            allPassFilters[i].type = 7;
+            allPassFilters[i].type = 'allpass';
             allPassFilters[i].frequency.value = 100 * i;
         }
 

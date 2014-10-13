@@ -30,5 +30,8 @@
     "karma-opera-launcher": "~0.1.0",
     "karma-phantomjs-launcher": "~0.1.4",
     "karma-safari-launcher": "~0.1.1"
+  },
+  "jshintConfig": {
+    "predef": [ "tsw" ]
   }
 }
