@@ -195,9 +195,10 @@ describe('Theresa\'s Sound World', function () {
         describe('Transitions', function () {
             it('Gain should ramp linearly up then down', function (done) {
                 var osc = tsw.osc(),
+                    mute = tsw.gain(0),
                     vol = tsw.gain(0);
 
-                tsw.connect(osc, vol, tsw.speakers);
+                tsw.connect(osc, vol, mute, tsw.speakers);
                 osc.start(tsw.now());
 
                 expect(vol.gain()).toEqual(0);
@@ -225,9 +226,10 @@ describe('Theresa\'s Sound World', function () {
 
             it('Gain should ramp exponentially up then down', function (done) {
                 var osc = tsw.osc(),
-                    vol = tsw.gain(0);
+                    vol = tsw.gain(0),
+                    mute = tsw.gain(0);
 
-                tsw.connect(osc, vol, tsw.speakers);
+                tsw.connect(osc, vol, mute, tsw.speakers);
                 osc.start(tsw.now());
 
                 expect(vol.gain()).toEqual(0);
@@ -423,6 +425,15 @@ describe('Theresa\'s Sound World', function () {
                 var bufferBox = tsw.bufferBox();
 
                 expect(bufferBox.nodeType).toEqual('bufferBox');
+            });
+
+            it('Load a buffer into a buffer box', function () {
+                var bufferBox = tsw.bufferBox(),
+                    buff = tsw.buffer();
+
+                bufferBox.buffer(buff.buffer());
+
+                expect(bufferBox.buffer.sampleRate).toEqual(44100);
             });
         });
 

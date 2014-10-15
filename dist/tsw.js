@@ -565,7 +565,11 @@
 
                 request.onreadystatechange = function () {
                     if (request.readyState === 4) {
-                        request.status === 200 ? success() : fail();
+                        if (request.status === 200) {
+                            success();
+                        } else {
+                            fail();
+                        }
                     }
                 };
 
@@ -932,35 +936,53 @@
         };
         
         /*
-         * Create buffer source node.
+         * Create buffer box for playing and mainpulating an audio buffer.
          * @method bufferBox
-         * @param {buffer}
+         * @param {buffer} AudioBuffer
          * @return BufferBox.
          */
         tsw.bufferBox = function (buff) {
-            var source = this.context().createBufferSource();
+            var node = tsw.createNode(
+                    {
+                        nodeType: 'bufferBox',
+                        timePaused: 0,
+                        paused: false
+                    }
+                ),
+                sourceNode = this.context().createBufferSource();
 
-            source.nodeType = 'bufferBox';
+            node.buffer = createGetSetFunction(sourceNode.buffer, 'buffer');
 
             if (buff) {
-                source.buffer = buff;
+                node.buffer(buff);
             }
 
-            if (typeof source.start === 'undefined') {
-                source.start = source.noteOn;
-                source.stop = source.noteOff;
+            if (typeof sourceNode.start === 'undefined') {
+                sourceNode.start = sourceNode.noteOn;
+                sourceNode.stop = sourceNode.noteOff;
             }
 
-            // Alias 'start' method to 'play' method.
-            source.play = source.start;
-
-            source.load = function (buffer) {
-                if (buffer) {
-                    source.buffer = buffer;
+            node.play = function (time) {
+                if (this.paused) {
+                    // start from when was paused
+                } else {
+                    sourceNode.start(time);
                 }
             };
 
-            return source;
+            node.stop = function (time) {
+                sourceNode.stop(time);
+            };
+
+            node.pause = function (time) {
+                this.stop(time);
+                this.paused = true;
+            };
+
+            // Connect source node to bufferBox node.
+            tsw.connect(sourceNode, node);
+
+            return node;
         };
 
         /*
@@ -1848,7 +1870,7 @@
             return false;
         }
 
-        note_index = note.search(/\d/),
+        note_index = note.search(/\d/);
         octave = parseInt(note.slice(-1));
 
         if (isNaN(octave)) {

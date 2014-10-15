@@ -264,7 +264,7 @@
             return false;
         }
 
-        note_index = note.search(/\d/),
+        note_index = note.search(/\d/);
         octave = parseInt(note.slice(-1));
 
         if (isNaN(octave)) {
