@@ -37,12 +37,6 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
-        describe('Nodes', function () {
-            it('Can create node', function () {
-                expect(tsw.createNode().nodeType).toEqual('default');
-            });
-        });
-
         describe('Browser Support', function () {
             it('Browser is supported', function () {
                 expect(tsw.isBrowserSupported).toEqual(true);
@@ -428,12 +422,11 @@ describe('Theresa\'s Sound World', function () {
             });
 
             it('Load a buffer into a buffer box', function () {
-                var bufferBox = tsw.bufferBox(),
-                    buff = tsw.buffer();
+                var bufferBox = tsw.bufferBox();
 
-                bufferBox.buffer(buff.buffer());
+                bufferBox.buffer(tsw.buffer());
 
-                expect(bufferBox.buffer.sampleRate).toEqual(44100);
+                expect(bufferBox.buffer().sampleRate).toEqual(44100);
             });
         });
 
