@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<title>Practical TSW tests</title>
+		<link href="http://theresassoundworld.com/styles/master.css" rel="stylesheet"/>
+		<style>
+			h1 {
+				font-family: 'Helvetica Neue', arial;
+				margin: 0.3em 0;
+			}
+
+			div.main {
+				position: relative;
+			}
+
+			#test-plate {
+				width: 300px;
+				height: 300px;
+				background: maroon;
+				position: fixed;
+				left: 50%;
+				top: 74px;
+				margin-left: 100px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>TSW - manual tests</h1>
+			<div role="main" class="main">
+                <section>
+                    <h1>1. Choose file</h1>
+                    <input id="file-to-load" type="file"/>
+                </section>
+                <section>
+                    <h1>2. Load buffer</h1>
+                    <button id="load-buffer">Load</button><span id="has-loaded"></span>
+                </section>
+                <section>
+                    <h1>3. Play/Stop buffer</h1>
+                    <button class="play-buffer">Play</button>
+                    <button id="stop-buffer">Stop</button>
+                </section>
+                <section>
+                    <h1>3. Play/Pause buffer</h1>
+                    <button class="play-buffer">Play</button>
+                    <button id="pause-buffer">Pause</button>
+                </section>
+            </div>
+		</div>
+
+		<script src="../src/tsw-core.js"></script>
+		<script src="../src/tsw-effects.js"></script>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>	
+
+        <script>
+            var bufferBox = tsw.bufferBox();
+
+            tsw.connect(bufferBox, tsw.speakers);
+
+            $('#load-buffer').click(function () {
+                var file = document.querySelector('#file-to-load'),
+                    fileReader = new FileReader();
+
+                fileReader.readAsArrayBuffer(file.files[0]);
+
+                fileReader.onload = function (fileEvent) {
+                    tsw.decode(
+                        fileEvent.target.result,
+                        function (buffer) {
+                            $('#has-loaded').text('OK');
+                            bufferBox.buffer(buffer);
+                        },
+                        function (error) {
+                            $('#has-loaded').text('Error');
+                            console.log(error);
+                        }
+                    );
+                };
+            });
+
+            $('.play-buffer').click(function () {
+                bufferBox.play();
+            });
+
+            $('#stop-buffer').click(function () {
+                bufferBox.stop();
+            });
+
+            $('#pause-buffer').click(function () {
+                bufferBox.pause();
+            });
+        </script>
+	</body>
+</html>
