@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.11';
+        version = '0.1.12';
 
     tsw = (function () {
 
@@ -973,7 +973,6 @@
                 sourceNode.onended = function () {
                     if (!that.paused) {
                         that.position(0);
-                        console.log('new position', that.position());
                     }
                 };
 
