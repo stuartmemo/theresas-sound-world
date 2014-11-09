@@ -973,7 +973,6 @@
                 sourceNode.onended = function () {
                     if (!that.paused) {
                         that.position(0);
-                        console.log('new position', that.position());
                     }
                 };
 
