@@ -152,49 +152,66 @@
             }
         };
 
+        var scheduleTransition = function (node, param_to_change, param_value, targetTime, transition_type) {
+
+            if (exists(transition_type)) {
+                switch (transition_type) {
+                    case 'linear':
+                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                        node[param_to_change].linearRampToValueAtTime(param_value, targetTime);
+                        break;
+                    case 'exponential':
+                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                        if (param_value === 0) {
+                            // Exponential ramp can never reach zero.
+                            param_value = 0.00000001;
+                        }
+                        node[param_to_change].exponentialRampToValueAtTime(param_value, targetTime);
+                        break;
+                    default:
+                        node[param_to_change].setValueAtTime(param_value, targetTime);
+                }
+            } else {
+                node[param_to_change].setValueAtTime(param_value, targetTime);
+            }
+        };
+
+        var getNodeValue = function (node, paramToChange) {
+            if (node) {
+                if (exists(node[paramToChange])) {
+                    if (exists(node[paramToChange].value)) {
+                        return node[paramToChange].value;
+                    } else {
+                        return node[paramToChange];
+                    }
+                }
+            }
+        };
+
+        var setNodeValue = function (node, paramToChange, paramValue, targetTime, transitionType) {
+            if (exists(node[paramToChange].value)) {
+                if (exists(targetTime)) {
+                    scheduleTransition(node, paramToChange, paramValue, targetTime, transitionType);
+                } else {
+                    node[paramToChange].value = paramValue;
+                }
+            } else {
+                node[paramToChange] = paramValue;
+            }
+        };
+
         /*
          * Enable jQuery style getters & setters.
-         * @param {object}
+         * @param {node} node - The tsw node to add get/sets to.
+         * @param {string} param - The actual parameter the getset gets & sets.
          */
-        var createGetSetFunction = function (node, param_to_change) {
+        var createGetSetFunction = function (node, param) {
 
-            return function (param_value, target_time, transition_type) {
-                // User has passed a value, so set it.
-                if (exists(param_value)) {
-                    if (exists(node[param_to_change].value)) {
-                        if (exists(target_time)) {
-                            if (exists(transition_type)) {
-                                switch(transition_type) {
-                                    case 'linear':
-                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
-                                        node[param_to_change].linearRampToValueAtTime(param_value, target_time);
-                                        break;
-                                    case 'exponential':
-                                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
-                                        if (param_value === 0) {
-                                            // Exponential ramp can never reach zero.
-                                            param_value = 0.00000001;
-                                        }
-                                        node[param_to_change].exponentialRampToValueAtTime(param_value, target_time);
-                                        break;
-                                    default:
-                                        node[param_to_change].setValueAtTime(param_value, target_time);
-                                }
-                            } else {
-                                node[param_to_change].setValueAtTime(param_value, target_time);
-                            }
-                        } else {
-                            node[param_to_change].value = param_value;
-                        }
-                    } else {
-                        node[param_to_change] = param_value;
-                    }
+            return function (paramValue, targetTime, transitionType) {
+                if (exists(paramValue)) {
+                    return setNodeValue(node, param, paramValue, targetTime, transitionType);
                 } else {
-                    if (exists(node[param_to_change].value)) {
-                        return node[param_to_change].value;
-                    } else {
-                        return node[param_to_change];
-                    }
+                    return getNodeValue(node, param);
                 }
             };
         };
@@ -209,14 +226,6 @@
         tsw.version = version;
         tsw.isBrowserSupported = false;
         tsw.processors = []; // Add ScriptProcessor nodes to global object to avoid garbage collection.
-
-        var initialise = function () {
-            tsw.noise_buffer = tsw.buffer();
-
-            for (var i = 0; i < tsw.noise_buffer.buffer().length; i++) {
-                tsw.noise_buffer.buffer().getChannelData(0)[i] = (Math.random() * 2) - 1;
-            }
-        };
 
         /*
          * Check if browser has Web Audio API.
@@ -565,7 +574,11 @@
 
                 request.onreadystatechange = function () {
                     if (request.readyState === 4) {
-                        request.status === 200 ? success() : fail();
+                        if (request.status === 200) {
+                            success();
+                        } else {
+                            fail();
+                        }
                     }
                 };
 
@@ -798,8 +811,9 @@
             node.input = tsw.context().createGain();
             node.output = tsw.context().createGain();
 
-            node.nodeType = options.nodeType || 'default';
-            node.attributes = options.attributes;
+            Object.keys(options).forEach(function (key) {
+                node[key] = options[key];
+            });
 
             // Keep a list of nodes this node is connected to.
             node.connectedTo = [];
@@ -894,73 +908,105 @@
          * @return {node} Buffer node.
          */
         tsw.buffer = function (no_channels, buffer_size, sample_rate) {
-            var buffer,
-                node = tsw.createNode({
-                    nodeType: 'buffer'
-                }
-            );
+            var buffer;
 
             no_channels = no_channels || 1;
             buffer_size = buffer_size || 65536;
             sample_rate = sample_rate || 44100;
 
             buffer = this.context().createBuffer(no_channels, buffer_size, sample_rate);
+            buffer.nodeType = 'buffer';
 
-            node.channels = createGetSetFunction(buffer, 'numberOfChannels');
-            node.bufferSize = createGetSetFunction(buffer, 'bufferSize');
-            node.sampleRate = createGetSetFunction(buffer, 'sampleRate');
-
-            node.data = function (val) {
-                var channel_data;
-
-                if (typeof val === 'undefined') {
-                    channel_data = [];
-
-                    for (var i = 0; i < no_channels; i++) {
-                        channel_data.push(buffer.getChannelData(i));
-                    }
-
-                    return channel_data;
-                }
-            };
-
-            node.buffer = function () {
-                return buffer;
-            };
-
-            return node;
+            return buffer;
         };
         
         /*
-         * Create buffer source node.
+         * Create buffer box for playing and mainpulating an audio buffer.
          * @method bufferBox
-         * @param {buffer}
+         * @param {buffer} AudioBuffer
          * @return BufferBox.
          */
         tsw.bufferBox = function (buff) {
-            var source = this.context().createBufferSource();
+            var node = tsw.createNode(
+                    {
+                        nodeType: 'bufferBox',
+                        timePaused: 0,
+                        paused: false
+                    }
+                ),
+                bufferWaitingArea,
+                sourceNode,
+                startTime = 0,
+                position = 0;
 
-            source.nodeType = 'bufferBox';
 
-            if (buff) {
-                source.buffer = buff;
-            }
-
-            if (typeof source.start === 'undefined') {
-                source.start = source.noteOn;
-                source.stop = source.noteOff;
-            }
-
-            // Alias 'start' method to 'play' method.
-            source.play = source.start;
-
-            source.load = function (buffer) {
+            node.buffer = function (buffer) {
                 if (buffer) {
-                    source.buffer = buffer;
+                    bufferWaitingArea = buffer;
+                } else {
+                    return sourceNode.buffer;
                 }
             };
 
-            return source;
+            node.loop = function (shouldLoop) {
+                if (shouldLoop) {
+                    sourceNode.loop = true;
+                    return this;
+                }  else {
+                    return sourceNode.loop;
+                }
+            };
+
+            if (buff) {
+                node.buffer(buff);
+            }
+
+            node.play = function (time) {
+                var that = this;
+
+                sourceNode = tsw.context().createBufferSource();
+                sourceNode.buffer = bufferWaitingArea;
+                this.paused = false;
+
+                tsw.connect(sourceNode, node.output);
+
+                sourceNode.onended = function () {
+                    if (!that.paused) {
+                        that.position(0);
+                        console.log('new position', that.position());
+                    }
+                };
+
+                startTime = tsw.now();
+                sourceNode.start(tsw.now(), this.position());
+            };
+
+            // Get or set start position of a buffer.
+            node.position = function (pos) {
+                if (pos || pos === 0) {
+                    position = pos;
+                } else {
+                    return position || 0;
+                }
+            };
+
+            node.start = node.play;
+
+            node.stop = function (time) {
+                this.paused = false;
+                sourceNode.stop(time || tsw.now());
+                this.position(0);
+            };
+
+            node.pause = function (time) {
+                this.paused = true;
+                sourceNode.stop(time || tsw.now());
+                tsw.disconnect(sourceNode);
+                    
+                this.position((tsw.now() - startTime) + this.position());
+            };
+
+            return node;
         };
 
         /*
@@ -1166,26 +1212,20 @@
          * @return Noise generating node.
          */
         tsw.noise = function () {
-            var node,
-                noise_source = this.bufferBox(tsw.noise_buffer.buffer());
+            var i,
+                noiseBuffer = this.buffer(),
+                noiseSource = this.bufferBox(),
+                bufferSize = noiseBuffer.length;
 
-            node = tsw.createNode({
-                nodeType: 'noise',
-                sourceNode: noise_source,
-                attributes: {
-                    color: 'white'
-                }
-            });
+            for (i = 0; i < bufferSize; i++) {
+                noiseBuffer.getChannelData(0)[i] = (Math.random() * 2) - 1;
+            }
 
-            noise_source.loop = true;
+            noiseSource.nodeType = 'noise';
+            noiseSource.buffer(noiseBuffer);
+            noiseSource.loop(true);
 
-            node.buffer = createGetSetFunction(noise_source, 'buffer');
-            node.type = 'white';
-            node.nodeType = 'noise';
-
-            tsw.connect(noise_source, node.output);
-
-            return node;
+            return noiseSource;
         };
 
         /*
@@ -1194,7 +1234,6 @@
          * @param {number} frequency Frequency of LFO
          */
         tsw.lfo = function (frequency) {
-
             var node,
                 lfo = tsw.oscillator(frequency || 10);
 
@@ -1271,7 +1310,6 @@
             checkBrowserSupport(function () {
                 // Browser is compatible.
                 mapToSoundWorld();
-                initialise();
                 timeManager();
             }, function (error) {
                 // Browser is not compatible.
