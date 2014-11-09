@@ -935,7 +935,10 @@
                     }
                 ),
                 bufferWaitingArea,
-                sourceNode;
+                sourceNode,
+                startTime = 0,
+                position = 0;
+
 
             node.buffer = function (buffer) {
                 if (buffer) {
@@ -959,46 +962,48 @@
             }
 
             node.play = function (time) {
-                if (this.paused) {
-                    // start from when was paused
-                    sourceNode.stop(time);
-                    tsw.disconnect(sourceNode);
-                    
-                    sourceNode = tsw.context().createBufferSource();
-                    sourceNode.buffer = bufferWaitingArea;
-                    tsw.connect(sourceNode, node.output);
+                var that = this;
 
-                    sourceNode.start(tsw.now(), this.position);
+                sourceNode = tsw.context().createBufferSource();
+                sourceNode.buffer = bufferWaitingArea;
+                this.paused = false;
+
+                tsw.connect(sourceNode, node.output);
+
+                sourceNode.onended = function () {
+                    if (!that.paused) {
+                        that.position(0);
+                        console.log('new position', that.position());
+                    }
+                };
+
+                startTime = tsw.now();
+                sourceNode.start(tsw.now(), this.position());
+            };
+
+            // Get or set start position of a buffer.
+            node.position = function (pos) {
+                if (pos || pos === 0) {
+                    position = pos;
                 } else {
-                    sourceNode = tsw.context().createBufferSource();
-                    sourceNode.buffer = bufferWaitingArea;
-                    tsw.connect(sourceNode, node.output);
-
-                    this.position = 0;
-                    this.timeStarted = tsw.now();
-                    sourceNode.start(tsw.now());
+                    return position || 0;
                 }
             };
 
             node.start = node.play;
 
             node.stop = function (time) {
-                sourceNode.stop(time);
-                tsw.disconnect(sourceNode);
                 this.paused = false;
+                sourceNode.stop(time || tsw.now());
+                this.position(0);
             };
 
             node.pause = function (time) {
-                this.stop(tsw.now());
                 this.paused = true;
-                this.position = tsw.now() - this.timeStarted; 
-
-                console.log(this.position, sourceNode.buffer.duration);
-
-                if (this.position > sourceNode.buffer.duration) {
-                    console.log('me?');
-                    this.position = 0;
-                }
+                sourceNode.stop(time || tsw.now());
+                tsw.disconnect(sourceNode);
+                    
+                this.position((tsw.now() - startTime) + this.position());
             };
 
             return node;
