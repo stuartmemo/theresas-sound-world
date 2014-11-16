@@ -919,7 +919,7 @@
 
             return buffer;
         };
-        
+
         /*
          * Create buffer box for playing and mainpulating an audio buffer.
          * @method bufferBox
@@ -939,7 +939,28 @@
                 startTime = 0,
                 position = 0;
 
+            // Set buffer if one is passed.
+            this.buffer(buff);
 
+            var calculatePosition = function () {
+                if (node.stopped) {
+                    return 0;
+                } else if (node.paused) {
+                    return position;
+                } else {
+                    return tsw.now() - startTime + position;
+                }
+            };
+
+            var stopAndDisconnect = function (nodeToDisconnect, timeToDisconnect) {
+                nodeToDisconnect.stop(timeToDisconnect, tsw.now());
+                tsw.disconnectAfterTime(nodeToDisconnect, tsw.now());
+            };
+
+            /**
+             * Get or set the audio buffer in the bufferBox.
+             * @param buffer AudioBuffer
+             */
             node.buffer = function (buffer) {
                 if (buffer) {
                     bufferWaitingArea = buffer;
@@ -948,6 +969,11 @@
                 }
             };
 
+            /**
+             * Turn on looping for the buffer in the bufferBox.
+             * @param boolean Whether the buffer should loop.
+             * CURRENTLY BROKEN - CANT SET TO FALSE
+             */
             node.loop = function (shouldLoop) {
                 if (shouldLoop) {
                     sourceNode.loop = true;
@@ -957,27 +983,29 @@
                 }
             };
 
-            if (buff) {
-                node.buffer(buff);
-            }
-
+            /**
+             * Play the buffer in the box at a certain time.
+             * @param time Time to start playing the buffer in relation to current context.
+             */
             node.play = function (time) {
                 var that = this;
 
                 sourceNode = tsw.context().createBufferSource();
                 sourceNode.buffer = bufferWaitingArea;
                 this.paused = false;
+                this.stopped = false;
 
                 tsw.connect(sourceNode, node.output);
 
                 sourceNode.onended = function () {
                     if (!that.paused) {
-                        that.position(0);
+                        that.stopped = true;
+                        position = 0;
                     }
                 };
 
-                startTime = tsw.now();
-                sourceNode.start(tsw.now(), this.position());
+                sourceNode.start(time || tsw.now(), position);
+                startTime = time || tsw.now();
             };
 
             // Get or set start position of a buffer.
@@ -985,24 +1013,27 @@
                 if (pos || pos === 0) {
                     position = pos;
                 } else {
-                    return position || 0;
+                    return calculatePosition() || 0;
                 }
             };
 
+            // Alias node.play to node.start.
             node.start = node.play;
 
+            // Stop the currently playing buffer.
             node.stop = function (time) {
-                this.paused = false;
                 sourceNode.stop(time || tsw.now());
-                this.position(0);
+                position = 0;
+                this.stopped = true;
+                this.paused = false;
             };
 
+            // Pause the currently playing buffer.
             node.pause = function (time) {
+                stopAndDisconnect(sourceNode, time);
+ 
+                position = calculatePosition();
                 this.paused = true;
-                sourceNode.stop(time || tsw.now());
-                tsw.disconnect(sourceNode);
-                    
-                this.position((tsw.now() - startTime) + this.position());
             };
 
             return node;
