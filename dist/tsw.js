@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.12';
+        version = '0.1.13';
 
     tsw = (function () {
 
@@ -533,8 +533,8 @@
         */
         tsw.load = function () {
             var returnObj = {},
-                files = arguments[0].files,
-                basePath = arguments[0].path || '',
+                files = arguments[0],
+                basePath = '',
                 extensions = [],
                 files_loaded = 0,
                 files_failed= 0,
@@ -935,26 +935,22 @@
                     }
                 ),
                 bufferWaitingArea,
+                bufferShouldLoop = false,
                 sourceNode,
                 startTime = 0,
                 position = 0;
-
 
             node.buffer = function (buffer) {
                 if (buffer) {
                     bufferWaitingArea = buffer;
                 } else {
-                    return sourceNode.buffer;
+                    return bufferWaitingArea;
                 }
             };
 
             node.loop = function (shouldLoop) {
-                if (shouldLoop) {
-                    sourceNode.loop = true;
-                    return this;
-                }  else {
-                    return sourceNode.loop;
-                }
+                bufferShouldLoop = shouldLoop;
+                return this;
             };
 
             if (buff) {
@@ -966,6 +962,8 @@
 
                 sourceNode = tsw.context().createBufferSource();
                 sourceNode.buffer = bufferWaitingArea;
+
+                sourceNode.loop = bufferShouldLoop;
                 this.paused = false;
 
                 tsw.connect(sourceNode, node.output);
@@ -1222,6 +1220,7 @@
 
             noiseSource.nodeType = 'noise';
             noiseSource.buffer(noiseBuffer);
+
             noiseSource.loop(true);
 
             return noiseSource;
