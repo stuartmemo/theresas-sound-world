@@ -24,13 +24,13 @@ module.exports = function (grunt) {
 
         concat: {
             dist: {
-                src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js'],
+                src: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js', 'src/tsw-loop.js'],
                 dest: 'dist/tsw.js'
             }
         },
 
         watch: {
-            files: ['src/tsw-core.js', 'src/tsw-effects.js', 'src/tsw-music.js', 'src/tsw-midi.js', 'src/tsw-analysis.js'],
+            files: ['src/*.js'],
             tasks: ['concat', 'uglify']
         },
 
@@ -48,6 +48,7 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-concat');
+    grunt.loadNpmTasks('grunt-contrib-copy');
     grunt.loadNpmTasks('grunt-karma');
 
     // Default tasks.
