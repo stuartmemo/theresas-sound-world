@@ -331,12 +331,16 @@
                 number_of_arguments = arguments.length;
 
             var updateConnectedToArray = function (node1, node2) {
-                node1.connectedTo.push(node2);
-                node2.connectedTo.push(node1);
+                node1.connectedTo = node1.connectedTo || [];
+
+                if (node1.hasOwnProperty('connectedTo')) {
+                    node1.connectedTo.push(node2);
+                }
             };
 
             var connectNativeNodeToNativeNode = function () {
                 arguments[0].connect(arguments[1], 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectNativeNodeToTswNode = function () {
