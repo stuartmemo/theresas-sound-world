@@ -61,6 +61,120 @@ describe('Theresa\'s Sound World', function () {
 
                 expect(osc.connectedTo).toEqual([vol]);
             });
+
+            it('Can connect native node to tsw node', function () {
+                var osc = tsw.context().createOscillator(),
+                    vol = tsw.gain();
+
+                tsw.connect(osc, vol);
+
+                expect(osc.connectedTo).toEqual([vol]);
+            });
+
+            it('Can connect tsw node to native node', function () {
+                var osc = tsw.osc(),
+                    vol = tsw.context().createGain();
+
+                tsw.connect(osc, vol);
+
+                expect(osc.connectedTo).toEqual([vol]);
+            });
+
+            it('Can connect native node to array of native nodes', function () {
+                var osc = tsw.context().createOscillator(),
+                    vol = tsw.context().createGain(),
+                    delay = tsw.context().createDelay(),
+                    nodeArray = [vol, delay];
+
+                tsw.connect(osc, nodeArray);
+
+                expect(osc.connectedTo).toEqual([vol, delay]);
+            });
+
+            it('Can connect tsw node to array of native nodes', function () {
+                var osc = tsw.osc(),
+                    vol = tsw.context().createGain(),
+                    delay = tsw.context().createDelay(),
+                    nodeArray = [vol, delay];
+
+                tsw.connect(osc, nodeArray);
+
+                expect(osc.connectedTo).toEqual([vol, delay]);
+            });
+
+            it('Can connect native node to array of tsw nodes', function () {
+                var osc = tsw.context().createOscillator(),
+                    vol = tsw.gain(),
+                    delay = tsw.wait(),
+                    nodeArray = [vol, delay];
+
+                tsw.connect(osc, nodeArray);
+
+                expect(osc.connectedTo).toEqual([vol, delay]);
+            });
+
+            it('Can connect tsw node to array of tsw nodes', function () {
+                var osc = tsw.osc(),
+                    vol = tsw.gain(),
+                    delay = tsw.wait(),
+                    nodeArray = [vol, delay];
+
+                tsw.connect(osc, nodeArray);
+
+                expect(osc.connectedTo).toEqual([vol, delay]);
+            });
+
+            it('Can connect array of native nodes to native node', function () {
+                var osc1 = tsw.context().createOscillator(),
+                    osc2 = tsw.context().createOscillator(),
+                    osc3 = tsw.context().createOscillator(),
+                    vol = tsw.context().createGain();
+
+                tsw.connect([osc1, osc2, osc3], vol);
+
+                expect(osc1.connectedTo).toEqual([vol]);
+                expect(osc2.connectedTo).toEqual([vol]);
+                expect(osc3.connectedTo).toEqual([vol]);
+            });
+
+            it('Can connect array of tsw nodes to native node', function () {
+                var osc1 = tsw.osc(100),
+                    osc2 = tsw.osc(200),
+                    osc3 = tsw.osc(300),
+                    vol = tsw.context().createGain();
+
+                tsw.connect([osc1, osc2, osc3], vol);
+
+                expect(osc1.connectedTo).toEqual([vol]);
+                expect(osc2.connectedTo).toEqual([vol]);
+                expect(osc3.connectedTo).toEqual([vol]);
+            });
+
+            it('Can connect array of native nodes to tsw node', function () {
+                var osc1 = tsw.context().createOscillator(),
+                    osc2 = tsw.context().createOscillator(),
+                    osc3 = tsw.context().createOscillator(),
+                    vol = tsw.gain(0.5);
+
+                tsw.connect([osc1, osc2, osc3], vol);
+
+                expect(osc1.connectedTo).toEqual([vol]);
+                expect(osc2.connectedTo).toEqual([vol]);
+                expect(osc3.connectedTo).toEqual([vol]);
+            });
+
+            it('Can connect array of tsw nodes to tsw node', function () {
+                var osc1 = tsw.osc(100),
+                    osc2 = tsw.osc(200),
+                    osc3 = tsw.osc(300),
+                    vol = tsw.gain(0.5);
+
+                tsw.connect([osc1, osc2, osc3], vol);
+
+                expect(osc1.connectedTo).toEqual([vol]);
+                expect(osc2.connectedTo).toEqual([vol]);
+                expect(osc3.connectedTo).toEqual([vol]);
+            });
         });
 
         describe('Create Buffer', function () {

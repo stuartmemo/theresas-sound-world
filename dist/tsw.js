@@ -345,6 +345,7 @@
 
             var connectNativeNodeToTswNode = function () {
                 arguments[0].connect(arguments[1].input, 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectNativeNodeToArray = function () {
@@ -366,6 +367,13 @@
 
             var connectTswNodeToNativeNode = function () {
                 arguments[0].output.connect(arguments[1], 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
+            };
+
+            var connectTswNodeToArray = function () {
+                for (var j = 0; j < arguments[1].length; j++) {
+                    tsw.connect(arguments[0], arguments[1][j]);
+                }
             };
 
             var connectArrayToTswNode = function () {
@@ -612,7 +620,7 @@
             } else if (typeof files === 'string') {
                 number_of_files = 1;
                 /** THIS WONT WORK - NO FILE AT THIS POINT **/
-                loadFile(basePath, file, files[file], returnObj, successCallback);
+                //loadFile(basePath, file, files[file], returnObj, successCallback);
             } else {
                 throw new Error('Files must be an array or a valid string.');
             }
