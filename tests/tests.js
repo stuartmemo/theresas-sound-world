@@ -52,6 +52,15 @@ describe('Theresa\'s Sound World', function () {
 
                 expect(osc.connectedTo).toEqual([vol]);
             });
+
+            it('Can connect tsw nodes', function () {
+                var osc = tsw.osc(),
+                    vol = tsw.gain();
+
+                tsw.connect(osc, vol);
+
+                expect(osc.connectedTo).toEqual([vol]);
+            });
         });
 
         describe('Create Buffer', function () {

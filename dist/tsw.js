@@ -361,6 +361,7 @@
 
             var connectTswNodeToTswNode = function () {
                 arguments[0].output.connect(arguments[1].input, 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectTswNodeToNativeNode = function () {
