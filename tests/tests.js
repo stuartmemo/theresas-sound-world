@@ -177,6 +177,18 @@ describe('Theresa\'s Sound World', function () {
             });
         });
 
+        describe('Can disconnect nodes', function () {
+            it('Can disconnect native node connected to native node', function () {
+                var osc = tsw.context().createOscillator(),
+                    vol = tsw.context().createGain(); 
+
+                tsw.connect(osc, vol);
+                tsw.disconnect(osc);
+
+                expect(osc.connectedTo).toEqual([]);
+            });
+        });
+
         describe('Create Buffer', function () {
             it('Node is a Buffer', function () {
                 expect(tsw.buffer().nodeType).toEqual('buffer');

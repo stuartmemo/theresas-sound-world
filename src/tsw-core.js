@@ -518,8 +518,9 @@
             var argumentsLength = arguments.length;
 
             for (var i = 0; i < argumentsLength; i++) {
-                if (arguments[i].hasOwnProperty('disconnect')) {
+                if (arguments[i].disconnect) {
                     arguments[i].disconnect();
+                    arguments[i].connectedTo = [];
                 }
                 if (arguments[i].hasOwnProperty('input')) {
                     tsw.disconnect(arguments[i].input);
@@ -535,7 +536,7 @@
          * @param {number} Time to disconnect node in seconds.
          */
         tsw.disconnectAfterTime = function (nodeToDisconnect, timeToDisconnect) {
-            nodes_to_disconnect.push({node: nodeToDisconnect, time: timeToDisconnect});
+            nodes_to_disconnect.push({ node: nodeToDisconnect, time: timeToDisconnect });
         };
 
         /*
