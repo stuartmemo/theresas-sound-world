@@ -515,18 +515,18 @@
          * @param {AudioNode} node Third....etc.
          */
         tsw.disconnect = function () {
-            var argumentsLength = arguments.length;
+            var argumentsLength = arguments.length,
+                i;
 
-            for (var i = 0; i < argumentsLength; i++) {
+            for (i = 0; i < argumentsLength; i++) {
                 if (arguments[i].disconnect) {
                     arguments[i].disconnect();
                     arguments[i].connectedTo = [];
                 }
-                if (arguments[i].hasOwnProperty('input')) {
-                    tsw.disconnect(arguments[i].input);
-                }
-                if (arguments[i].hasOwnProperty('ouput')) {
+
+                if (isTswNode(arguments[i])) {
                     tsw.disconnect(arguments[i].output);
+                    arguments[i].connectedTo = [];
                 }
             }
         };
