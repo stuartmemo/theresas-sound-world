@@ -331,16 +331,21 @@
                 number_of_arguments = arguments.length;
 
             var updateConnectedToArray = function (node1, node2) {
-                node1.connectedTo.push(node2);
-                node2.connectedTo.push(node1);
+                node1.connectedTo = node1.connectedTo || [];
+
+                if (node1.hasOwnProperty('connectedTo')) {
+                    node1.connectedTo.push(node2);
+                }
             };
 
             var connectNativeNodeToNativeNode = function () {
                 arguments[0].connect(arguments[1], 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectNativeNodeToTswNode = function () {
                 arguments[0].connect(arguments[1].input, 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectNativeNodeToArray = function () {
@@ -357,10 +362,18 @@
 
             var connectTswNodeToTswNode = function () {
                 arguments[0].output.connect(arguments[1].input, 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
             };
 
             var connectTswNodeToNativeNode = function () {
                 arguments[0].output.connect(arguments[1], 0, arguments[2]);
+                updateConnectedToArray(arguments[0], arguments[1]);
+            };
+
+            var connectTswNodeToArray = function () {
+                for (var j = 0; j < arguments[1].length; j++) {
+                    tsw.connect(arguments[0], arguments[1][j]);
+                }
             };
 
             var connectArrayToTswNode = function () {
@@ -502,17 +515,18 @@
          * @param {AudioNode} node Third....etc.
          */
         tsw.disconnect = function () {
-            var argumentsLength = arguments.length;
+            var argumentsLength = arguments.length,
+                i;
 
-            for (var i = 0; i < argumentsLength; i++) {
-                if (arguments[i].hasOwnProperty('disconnect')) {
+            for (i = 0; i < argumentsLength; i++) {
+                if (arguments[i].disconnect) {
                     arguments[i].disconnect();
+                    arguments[i].connectedTo = [];
                 }
-                if (arguments[i].hasOwnProperty('input')) {
-                    tsw.disconnect(arguments[i].input);
-                }
-                if (arguments[i].hasOwnProperty('ouput')) {
+
+                if (isTswNode(arguments[i])) {
                     tsw.disconnect(arguments[i].output);
+                    arguments[i].connectedTo = [];
                 }
             }
         };
@@ -522,7 +536,7 @@
          * @param {number} Time to disconnect node in seconds.
          */
         tsw.disconnectAfterTime = function (nodeToDisconnect, timeToDisconnect) {
-            nodes_to_disconnect.push({node: nodeToDisconnect, time: timeToDisconnect});
+            nodes_to_disconnect.push({ node: nodeToDisconnect, time: timeToDisconnect });
         };
 
         /*
@@ -607,7 +621,7 @@
             } else if (typeof files === 'string') {
                 number_of_files = 1;
                 /** THIS WONT WORK - NO FILE AT THIS POINT **/
-                loadFile(basePath, file, files[file], returnObj, successCallback);
+                //loadFile(basePath, file, files[file], returnObj, successCallback);
             } else {
                 throw new Error('Files must be an array or a valid string.');
             }
