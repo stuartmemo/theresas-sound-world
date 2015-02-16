@@ -79,21 +79,4 @@
             }
         });
     };
-
-    document.body.addEventListener('click', function () {
-        tsw.loop(function (time, currentStep) {
-            var osc = tsw.osc();
-
-            osc.frequency(300);
-            tsw.connect(osc, tsw.speakers);
-
-            if (currentStep % 4 === 0) {
-                osc.frequency(200);
-            }
-
-            osc.start(time);
-            osc.stop(time + 0.1);
-
-        }, 100);
-    });
 })();
