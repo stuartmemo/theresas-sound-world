@@ -1098,11 +1098,19 @@
                     knee: 30,           // dbs (min: 0, max: 40)
                     ratio: 12,          // ratio (min: 1, max: 20)
                     attack: 0.003,      // seconds (min: 0, max: 1)
-                    release: 0.25       // seconds (min: 0, max: 1)
+                    release: 0.25,      // seconds (min: 0, max: 1)
+                    reduction: 0        // dbs (min: -20, max: 0)
                 };
 
             settings = applyObject(defaults, settings);
             applySettings(compressor, settings);
+
+            node.threshold = createGetSetFunction(compressor, 'threshold');
+            node.knee = createGetSetFunction(compressor, 'knee');
+            node.ratio = createGetSetFunction(compressor, 'ratio');
+            node.attack = createGetSetFunction(compressor, 'attack');
+            node.release = createGetSetFunction(compressor, 'release');
+            node.reduction = createGetSetFunction(compressor, 'reduction');
 
             this.connect(node.input, compressor, node.output);
 
