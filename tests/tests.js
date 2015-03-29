@@ -455,6 +455,30 @@ describe('Theresa\'s Sound World', function () {
             it('Check compressor node type', function () {
                 expect(tsw.compressor().nodeType).toEqual('compressor');
             });
+
+            it('Can set threshold', function () {
+                expect(tsw.compressor({ threshold: -60 }).threshold()).toEqual(-60);
+            });
+
+            it('Can set knee', function () {
+                expect(tsw.compressor({ knee: 35 }).knee()).toEqual(35);
+            });
+
+            it('Can set ratio', function () {
+                expect(tsw.compressor({ ratio: 10 }).ratio()).toEqual(10);
+            });
+
+            it('Can set reduction', function () {
+                expect(tsw.compressor({ reduction: 10 }).reduction()).toEqual(10);
+            });
+
+            it('Can set attack', function () {
+                expect(tsw.compressor({ attack: 1 }).attack()).toEqual(1);
+            });
+
+            it('Can set release', function () {
+                expect(tsw.compressor({ release: 0.5 }).release()).toEqual(0.5);
+            });
         });
 
 
