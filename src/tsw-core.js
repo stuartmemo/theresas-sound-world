@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.17';
+        version = '0.1.18';
 
     tsw = (function () {
 
