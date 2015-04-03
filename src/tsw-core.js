@@ -1049,6 +1049,7 @@
                 options.type = arguments[0].type;
                 options.frequency = arguments[0].frequency || 1000;
                 options.Q = arguments[0].Q;
+                options.gain = arguments[0].gain;
             } else if (isString(arguments[0])) {
                 options.type = arguments[0];
             }
@@ -1057,10 +1058,12 @@
             node.type = createGetSetFunction(filter, 'type');
             node.frequency = createGetSetFunction(filter, 'frequency');
             node.Q = createGetSetFunction(filter, 'Q');
+            node.gain  = createGetSetFunction(filter, 'gain');
 
             node.type(options.type || 'lowpass');
             node.frequency(options.frequency || 1000);
             node.Q(options.Q || 0);
+            node.gain(options.gain || 0);
 
             this.connect(node.input, filter, node.output);
 

@@ -435,6 +435,14 @@ describe('Theresa\'s Sound World', function () {
             it('Create filter with different filter type than default', function () {
                 expect(tsw.filter('highpass').type()).toEqual('highpass');
             });
+
+            it('Default filter gain should be zero', function () {
+                expect(tsw.filter().gain()).toEqual(0);
+            });
+
+            it('Can create a filter with a predefined gain', function () {
+                expect(tsw.filter({ gain: 0.5 }).gain()).toEqual(0.5);
+            });
         });
 
         describe('Create LFO', function () {
