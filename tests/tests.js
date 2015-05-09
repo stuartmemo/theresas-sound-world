@@ -4,6 +4,8 @@
 /*global tsw:true*/
 /*global jasmine:true*/
 
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
+
 describe('Theresa\'s Sound World', function () {
     'use strict';
 
