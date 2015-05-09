@@ -155,8 +155,6 @@
         var scheduleTransition = function (
                 node, param_to_change, param_value, targetTime, transition_type) {
 
-            console.log('scheduling transition', transition_type);
-
             if (exists(transition_type)) {
                 switch (transition_type) {
                     case 'linear':
