@@ -62,15 +62,15 @@
 		<script>
 			// Volume starts off at 0.5. Changes suddendly to 0.1 after 2 seconds. Then ramps up and down.
 			var testGain = function () {
-				var osc = tsw.createOscillator(),
-					vol = tsw.createGain(0.5);
+				var osc = tsw.oscillator(),
+					vol = tsw.gain(0.5);
 
 				tsw.connect(osc, vol, tsw.speakers);
 				osc.start(tsw.now());
 
 				vol.gain(0.1, tsw.now() + 2);
-				vol.gain(0.8, tsw.now() + 6, 6);
-				vol.gain(0, tsw.now() + 10, 3);
+				vol.gain(0.8, tsw.now() + 6, 'linear');
+				vol.gain(0, tsw.now() + 10, 'linear');
 
 				osc.stop(tsw.now() + 10);
 			};
