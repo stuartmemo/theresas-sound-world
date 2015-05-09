@@ -152,24 +152,30 @@
             }
         };
 
-        var scheduleTransition = function (node, param_to_change, param_value, targetTime, transition_type) {
+        var scheduleTransition = function (
+                node, param_to_change, param_value, targetTime, transition_type) {
 
             if (exists(transition_type)) {
                 switch (transition_type) {
                     case 'linear':
-                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
-                        node[param_to_change].linearRampToValueAtTime(param_value, targetTime);
+                        node[param_to_change]
+                            .setValueAtTime(node[param_to_change].value, tsw.now());
+                        node[param_to_change]
+                            .linearRampToValueAtTime(param_value, targetTime);
                         break;
                     case 'exponential':
-                        node[param_to_change].setValueAtTime(node[param_to_change].value, tsw.now());
+                        node[param_to_change]
+                            .setValueAtTime(node[param_to_change].value, tsw.now());
                         if (param_value === 0) {
                             // Exponential ramp can never reach zero.
                             param_value = 0.00000001;
                         }
-                        node[param_to_change].exponentialRampToValueAtTime(param_value, targetTime);
+                        node[param_to_change]
+                            .exponentialRampToValueAtTime(param_value, targetTime);
                         break;
                     default:
-                        node[param_to_change].setValueAtTime(param_value, targetTime);
+                        node[param_to_change]
+                            .setValueAtTime(param_value, targetTime);
                 }
             } else {
                 node[param_to_change].setValueAtTime(param_value, targetTime);
