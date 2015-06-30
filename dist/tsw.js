@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.1.18';
+        version = '0.2.0';
 
     tsw = (function () {
 
@@ -1310,21 +1310,6 @@
             navigator.webkitGetUserMedia({audio: true}, audioStream, errorCallback);
         };
 
-        /*
-         * Time manager
-         * @method timeManager
-         */
-        var timeManager = function () {
-            (function loop () {
-                nodes_to_disconnect.forEach(function (nodeToDisconnect) {
-                    if (nodeToDisconnect.time < tsw.now()) {
-                        tsw.disconnect(nodeToDisconnect.node);
-                    }
-                });
-                setTimeout(loop, 500);
-            })();
-        };
-
         // Expose helper functions.
         tsw.helper = {};
         tsw.helper.isString = isString;
@@ -1339,7 +1324,6 @@
             checkBrowserSupport(function () {
                 // Browser is compatible.
                 mapToSoundWorld();
-                timeManager();
             }, function (error) {
                 // Browser is not compatible.
                 console.log(error);
