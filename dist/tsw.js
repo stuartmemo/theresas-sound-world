@@ -950,8 +950,8 @@
             var node = tsw.createNode(
                     {
                         nodeType: 'bufferBox',
-                        timePaused: 0,
-                        paused: false
+                        paused: false,
+                        stopped: true
                     }
                 ),
                 bufferPosition = 0,
@@ -984,13 +984,16 @@
                 sourceNode.buffer = bufferWaitingArea;
 
                 sourceNode.loop = bufferShouldLoop;
+
                 this.paused = false;
+                this.stopped = false;
 
                 tsw.connect(sourceNode, node.output);
 
                 sourceNode.onended = function () {
                     if (!that.paused) {
                         bufferPosition = 0;
+                        that.stopped = true;
                     }
                 };
 
@@ -1001,6 +1004,7 @@
             node.stop = function (time) {
                 bufferPosition = 0;
                 this.paused = false;
+                this.stopped = true;
                 sourceNode.stop(time || tsw.now());
             };
 
@@ -1008,9 +1012,11 @@
                 this.paused = true;
                 sourceNode.stop(time || tsw.now());
                 tsw.disconnect(sourceNode);
-                    
-                bufferPosition = bufferPosition +
-                    tsw.now() - startTime;
+
+                if (!this.stopped) {
+                    bufferPosition = bufferPosition +
+                        tsw.now() - startTime;
+                }
             };
 
             // Get or set start position of a buffer.
@@ -1018,7 +1024,7 @@
                 if (newPosition || newPosition === 0) {
                     bufferPosition = newPosition;
                 } else {
-                    if (this.paused) {
+                    if (this.paused || this.stopped) {
                         return bufferPosition;
                     } else {
                         return bufferPosition
