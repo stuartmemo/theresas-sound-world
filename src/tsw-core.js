@@ -954,11 +954,11 @@
                         paused: false
                     }
                 ),
-                bufferWaitingArea,
+                bufferPosition = 0,
                 bufferShouldLoop = false,
+                bufferWaitingArea,
                 sourceNode,
-                startTime = 0,
-                position = 0;
+                startTime;
 
             node.buffer = function (buffer) {
                 if (buffer) {
@@ -990,29 +990,18 @@
 
                 sourceNode.onended = function () {
                     if (!that.paused) {
-                        that.position(0);
+                        bufferPosition = 0;
                     }
                 };
 
                 startTime = tsw.now();
-                sourceNode.start(tsw.now(), this.position());
+                sourceNode.start(tsw.now(), bufferPosition);
             };
-
-            // Get or set start position of a buffer.
-            node.position = function (pos) {
-                if (pos || pos === 0) {
-                    position = pos;
-                } else {
-                    return position || 0;
-                }
-            };
-
-            node.start = node.play;
 
             node.stop = function (time) {
+                bufferPosition = 0;
                 this.paused = false;
                 sourceNode.stop(time || tsw.now());
-                this.position(0);
             };
 
             node.pause = function (time) {
@@ -1020,8 +1009,26 @@
                 sourceNode.stop(time || tsw.now());
                 tsw.disconnect(sourceNode);
                     
-                this.position((tsw.now() - startTime) + this.position());
+                bufferPosition = bufferPosition +
+                    tsw.now() - startTime;
             };
+
+            // Get or set start position of a buffer.
+            node.position = function (newPosition) {
+                if (newPosition || newPosition === 0) {
+                    bufferPosition = newPosition;
+                } else {
+                    if (this.paused) {
+                        return bufferPosition;
+                    } else {
+                        return bufferPosition
+                            + tsw.now() - startTime;
+                    }
+                }
+            };
+
+
+            node.start = node.play;
 
             return node;
         };
