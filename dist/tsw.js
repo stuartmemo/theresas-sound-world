@@ -3,7 +3,7 @@
  * tsw.js
  * An audio library.
  * http://theresassoundworld.com/
- * https://github.com/stuartmemo/theresas-sound-world 
+ * https://github.com/stuartmemo/theresas-sound-world
  * Copyright 2014 Stuart Memo
   ****************************************************/
 
@@ -105,7 +105,7 @@
                 if (thing !== null) {
                     return true;
                 }
-            } 
+            }
         };
 
         /*
@@ -613,7 +613,7 @@
                 successCallback = arguments[1];
             }
 
-            // Is 3rd argument is the failure callback?
+            // Is 3rd argument the failure callback?
             if (typeof arguments[2] === 'function') {
                 failCallback = arguments[2];
             }
@@ -704,7 +704,7 @@
                     // 100% === 2
                     // Example value = -0.56
                     // (0.44 / 2) * 100 = 22% -> 78%
-                    // Left gain = (1 / 100) * 78 = 0.78 
+                    // Left gain = (1 / 100) * 78 = 0.78
                     // Right gain = 1 - 0.78 =  0.22
 
                     // Example value = 0.2
@@ -713,7 +713,7 @@
                     // Right gain = 1 - 0.4 = 0.6
 
                     left_gain_value = 1 - ((pan_value + 1) / 2);
-                    left_gain.gain(left_gain_value, time_to_change); 
+                    left_gain.gain(left_gain_value, time_to_change);
                     right_gain.gain(1 - left_gain_value, time_to_change);
                 } else {
                     return -((left_gain.gain() - 1) * 2) - 1;
@@ -939,7 +939,7 @@
 
             return buffer;
         };
-        
+
         /*
          * Create buffer box for playing and mainpulating an audio buffer.
          * @method bufferBox
@@ -1048,7 +1048,7 @@
          * @return null
          */
         tsw.decode = function (arrayBuffer, success, failure) {
-            this.context().decodeAudioData(arrayBuffer, success, failure);            
+            this.context().decodeAudioData(arrayBuffer, success, failure);
         };
 
         /*
@@ -1091,7 +1091,7 @@
 
         /*
          * Create analyser node.
-         * @method analyser 
+         * @method analyser
          * @return Analyser node.
          */
         tsw.analyser = function () {
@@ -1106,7 +1106,7 @@
          */
         tsw.compressor = function (settings) {
             /*
-             *  Compressor 
+             *  Compressor
              *  ==========
              *  +----------+     +----------------------+     +---------------+
              *  |  Input   |-->--|       Compressor     |-->--|     Output    |
@@ -1205,7 +1205,7 @@
             envelope.sustainLevel = settings.sustain || 1;
             envelope.releaseTime = settings.release || 1;
 
-            // Automation parameters 
+            // Automation parameters
             if (isAudioParam(settings.param)) {
                 envelope.param = settings.param;
             }
@@ -1286,7 +1286,7 @@
 
             /*********************************
 
-            LFO 
+            LFO
             ===
             +----------+     +--------------+
             |    LFO   |-->--|    Target    |
@@ -2068,29 +2068,32 @@
     URL.revokeObjectURL(blobURL);
 
     tsw.secondsPerBeat = function (bpm) {
-        return 60 / bpm; 
+        return 60 / bpm;
     };
 
     /*
-    Ideal usage
+    Usage
     ===========
     tsw.loop(function (stepTime) {
        osc.start(stepTime);
-    }, 120);
+    }, 120, 4);
     */
-
     tsw.loop = function (callback, bpm, steps) {
         var nextStepTime,
-            currentStep = 0, 
+            currentStep = 0,
             scheduleAheadTime = 0.1,
-            lookAheadTime = 25;
+            lookAheadTime = 25,
+            stepsPerBar,
+            stepsPerBarRatio;
 
         bpm = bpm || 120;
         steps = steps || 16;
+        stepsPerBar = steps / 4;
+        stepsPerBarRatio = 1 / stepsPerBar;
 
         nextStepTime = tsw.now();
         worker.postMessage('start');
- 
+
         worker.addEventListener('message', function (e) {
             // Tick gets sent every 100ms from the worker.
             if (e.data === 'tick') {
@@ -2098,11 +2101,11 @@
                     callback(nextStepTime, currentStep);
 
                     // 4 steps in each beat for 16th's.
-                    nextStepTime += 0.25 * tsw.secondsPerBeat(bpm);
+                    nextStepTime += stepsPerBarRatio * tsw.secondsPerBeat(bpm);
 
                     currentStep++;
 
-                    if (currentStep === 16) {
+                    if (currentStep === steps) {
                         currentStep = 0;
                     }
                 }

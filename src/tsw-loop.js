@@ -38,29 +38,32 @@
     URL.revokeObjectURL(blobURL);
 
     tsw.secondsPerBeat = function (bpm) {
-        return 60 / bpm; 
+        return 60 / bpm;
     };
 
     /*
-    Ideal usage
+    Usage
     ===========
     tsw.loop(function (stepTime) {
        osc.start(stepTime);
-    }, 120);
+    }, 120, 4);
     */
-
     tsw.loop = function (callback, bpm, steps) {
         var nextStepTime,
-            currentStep = 0, 
+            currentStep = 0,
             scheduleAheadTime = 0.1,
-            lookAheadTime = 25;
+            lookAheadTime = 25,
+            stepsPerBar,
+            stepsPerBarRatio;
 
         bpm = bpm || 120;
         steps = steps || 16;
+        stepsPerBar = steps / 4;
+        stepsPerBarRatio = 1 / stepsPerBar;
 
         nextStepTime = tsw.now();
         worker.postMessage('start');
- 
+
         worker.addEventListener('message', function (e) {
             // Tick gets sent every 100ms from the worker.
             if (e.data === 'tick') {
@@ -68,11 +71,11 @@
                     callback(nextStepTime, currentStep);
 
                     // 4 steps in each beat for 16th's.
-                    nextStepTime += 0.25 * tsw.secondsPerBeat(bpm);
+                    nextStepTime += stepsPerBarRatio * tsw.secondsPerBeat(bpm);
 
                     currentStep++;
 
-                    if (currentStep === 16) {
+                    if (currentStep === steps) {
                         currentStep = 0;
                     }
                 }
