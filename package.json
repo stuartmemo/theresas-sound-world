@@ -12,6 +12,10 @@
     "type": "git",
     "url": "https://github.com/stuartmemo/theresas-sound-world"
   },
+  "scripts": {
+    "start": "grunt serve",
+    "test": "grunt test"
+  },
   "dependencies": {},
   "devDependencies": {
     "grunt": "0.4.1",

@@ -6,8 +6,13 @@
 		<link href="http://theresassoundworld.com/styles/master.css" rel="stylesheet"/>
 		<style>
 			h1 {
+				color: white;
 				font-family: 'Helvetica Neue', arial;
 				margin: 0.3em 0;
+			}
+
+			section h1 {
+				color: black;
 			}
 
 			div.main {
@@ -22,6 +27,13 @@
 				left: 50%;
 				top: 74px;
 				margin-left: 100px;
+			}
+
+			canvas {
+				background-color: yellow;
+				border: 1px solid black;
+				display: block;
+				margin-bottom: 1em;
 			}
 		</style>
 	</head>
@@ -49,12 +61,17 @@
                     <p>Buffer Position: <span id="position"></span></p>
                     <p>Pause Position: <span id="pause-position"></span></p>
                 </section>
+				<section>
+					<h1>4. Envelope graph</h1>
+					<canvas id="envelope-graph"></canvas>
+					<button id="envelope-button">Start envelope</button>
+				</section>
             </div>
 		</div>
 
 		<script src="../dist/tsw.js"></script>
 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>	
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
         <script>
             var bufferBox = tsw.bufferBox(),
@@ -99,6 +116,30 @@
             setInterval(function () {
                 $position.text(bufferBox.position());
             }, 100);
+
+			(function () {
+				$('#envelope-button').click(function () {
+					var osc = tsw.osc(),
+						analyser = tsw.analyser(),
+						bufferLength,
+						dataArray;
+
+					analyser.fftSize = 2048;
+					bufferLength = analyser.frequencyBinCount;
+					dataArray = new Uint8Array(bufferLength);
+					analyser.getByteTimeDomainData(dataArray);
+
+					var draw = function () {
+						drawGraph = requestAnimationFrame(draw);
+
+						analyser.getByteTimeDomainData(dataArray);
+					};
+
+					tsw.connect(osc, analyser, tsw.speakers);
+					osc.start(tsw.now());
+					osc.stop(tsw.now() + 2);
+				});
+			})();
         </script>
 	</body>
 </html>
