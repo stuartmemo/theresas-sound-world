@@ -1229,7 +1229,11 @@
                     this.param.linearRampToValueAtTime(this.maxLevel, time_to_start + this.attackTime);
 
                     // Decay - starts decaying when attack is done.
-                    this.param.setTargetAtTime(this.sustainLevel, time_to_start + this.attackTime, 0.05);
+                    this.param.setValueAtTime(this.maxLevel, time_to_start + this.attackTime);
+                    this.param.exponentialRampToValueAtTime(this.sustainLevel, time_to_start + decay_time);
+
+                    // Sustain
+                    this.param.setValueAtTime(this.sustainLevel, time_to_start + decay_time);
                 }
             };
 

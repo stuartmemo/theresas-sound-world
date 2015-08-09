@@ -64,6 +64,7 @@
 				<section>
 					<h1>4. Envelope graph</h1>
 					<canvas id="envelope-graph"></canvas>
+					<canvas id="volume-graph"></canvas>
 					<button id="envelope-button">Start envelope</button>
 				</section>
             </div>
@@ -121,23 +122,88 @@
 				$('#envelope-button').click(function () {
 					var osc = tsw.osc(),
 						analyser = tsw.analyser(),
+						vol = tsw.gain(1),
+						envelope =  tsw.envelope({
+							attack: 0.5, // Duration of the attack phase.
+							decay: 1, // Duration of the decay phase.
+							sustain: 0.4, // Level to sustain at.
+							release: 2, // Duration of the release phase.
+							param: vol.params.gain, // Parameter to control.
+							startLevel: 0
+						}),
+						canvas = document.getElementById('envelope-graph'),
+						canvasContext = canvas.getContext('2d'),
 						bufferLength,
 						dataArray;
 
-					analyser.fftSize = 2048;
+					canvas.width = 300;
+					canvas.height = 150;
+
+					analyser.fftSize = 1024;
 					bufferLength = analyser.frequencyBinCount;
 					dataArray = new Uint8Array(bufferLength);
 					analyser.getByteTimeDomainData(dataArray);
 
-					var draw = function () {
-						drawGraph = requestAnimationFrame(draw);
+					function drawGraph (volumeNode) {
+						var graph = document.getElementById('volume-graph'),
+						graphHeight = graph.height, // haha graphite.
+						graphWidth = graph.width,
+						ctx = graph.getContext('2d'),
+						i = 0,
+						interval = 100,
+						totalTimeToGraph = 50,
+						maxGain = 1;
 
-						analyser.getByteTimeDomainData(dataArray);
+						ctx.moveTo(0, graphHeight); // start graph at bottom left.
+
+						var interval = setInterval(function () {
+							var x = (graph.width / totalTimeToGraph) * i,
+							y = graph.height - (graph.height * vol.params.gain.value);
+
+							ctx.lineTo(x, y);
+							ctx.stroke();
+							i++;
+						}, 100);
 					};
 
-					tsw.connect(osc, analyser, tsw.speakers);
+					var draw = function () {
+						var sliceWidth = canvas.width / bufferLength,
+							highestPoint = 0,
+							x = 0;
+
+						var drawGraph = requestAnimationFrame(draw);
+						analyser.getByteTimeDomainData(dataArray);
+
+						canvasContext.fillStyle = 'yellow';
+						canvasContext.fillRect(0, 0, canvas.width, canvas.height);
+
+						canvasContext.lineWidth = 1;
+						canvasContext.strokeStyle = 'black';
+						canvasContext.beginPath();
+
+						for (var i = 0; i < bufferLength; i++) {
+							var vol = dataArray[i] / 128.0;
+
+							if (vol > highestPoint) {
+								highestPoint = vol;
+							}
+						}
+
+						highestPoint = (2 * canvas.height) - (highestPoint * canvas.height);
+						canvasContext.moveTo(0, highestPoint);
+						canvasContext.lineTo(canvas.width, highestPoint);
+
+				        canvasContext.stroke();
+					};
+
+					draw();
+					drawGraph();
+
+					tsw.connect(osc, vol, analyser, tsw.speakers);
 					osc.start(tsw.now());
-					osc.stop(tsw.now() + 2);
+					envelope.start(tsw.now());
+					envelope.release(tsw.now() + 2);
+					osc.stop(tsw.now() + 10);
 				});
 			})();
         </script>
