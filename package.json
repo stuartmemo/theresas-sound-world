@@ -2,7 +2,7 @@
   "name": "theresas-sound-world",
   "title": "Theresa's Sound World",
   "description": "JavaScript library for audio manipulation.",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "homepage": "http://theresassoundworld.com",
   "author": {
     "name": "Stuart Memo",
@@ -11,6 +11,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/stuartmemo/theresas-sound-world"
+  },
+  "scripts": {
+    "start": "grunt serve",
+    "test": "grunt test"
   },
   "dependencies": {},
   "devDependencies": {
