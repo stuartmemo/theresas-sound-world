@@ -1201,9 +1201,9 @@
 
             // Envelope values
             envelope.attackTime = settings.attack || 0;
-            envelope.decayTime = settings.decay || 1;
+            envelope.decayTime = settings.decay || 0;
             envelope.sustainLevel = settings.sustain || 1;
-            envelope.releaseTime = settings.release || 1;
+            envelope.releaseTime = settings.release || 0;
 
             // Automation parameters
             if (isAudioParam(settings.param)) {

@@ -124,8 +124,8 @@
 						analyser = tsw.analyser(),
 						vol = tsw.gain(1),
 						envelope =  tsw.envelope({
-							attack: 0.5, // Duration of the attack phase.
-							decay: 1, // Duration of the decay phase.
+							attack: 0, // Duration of the attack phase.
+							decay: 0, // Duration of the decay phase.
 							sustain: 0.4, // Level to sustain at.
 							release: 2, // Duration of the release phase.
 							param: vol.params.gain, // Parameter to control.
