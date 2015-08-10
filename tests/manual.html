@@ -124,10 +124,10 @@
 						analyser = tsw.analyser(),
 						vol = tsw.gain(1),
 						envelope =  tsw.envelope({
-							attack: 0, // Duration of the attack phase.
-							decay: 0, // Duration of the decay phase.
-							sustain: 0.4, // Level to sustain at.
-							release: 2, // Duration of the release phase.
+							attack: 1, // Duration of the attack phase.
+							decay: 1, // Duration of the decay phase.
+							sustain: 0.5, // Level to sustain at.
+							release: 8, // Duration of the release phase.
 							param: vol.params.gain, // Parameter to control.
 							startLevel: 0
 						}),
@@ -202,7 +202,7 @@
 					tsw.connect(osc, vol, analyser, tsw.speakers);
 					osc.start(tsw.now());
 					envelope.start(tsw.now());
-					envelope.release(tsw.now() + 2);
+					envelope.release(tsw.now() + 3);
 					osc.stop(tsw.now() + 10);
 				});
 			})();
