@@ -1201,9 +1201,9 @@
 
             // Envelope values
             envelope.attackTime = settings.attack || 0;
-            envelope.decayTime = settings.decay || 1;
+            envelope.decayTime = settings.decay || 0;
             envelope.sustainLevel = settings.sustain || 1;
-            envelope.releaseTime = settings.release || 1;
+            envelope.releaseTime = settings.release || 0;
 
             // Automation parameters
             if (isAudioParam(settings.param)) {
@@ -1238,12 +1238,20 @@
             };
 
             envelope.release = function (timeToStop) {
+                var actualMinValue = this.minLevel;
+
                 timeToStop = timeToStop || tsw.now();
-                timeToStop += this.releaseTime;
+
+                if (this.minLevel === 0) {
+                    actualMinValue = 0.00000001;
+                }
 
                 // Release
                 if (isAudioParam(this.param)) {
-                    this.param.setTargetAtTime(this.minLevel, timeToStop, this.releaseTime / 10);
+                    this.param.setValueAtTime(this.sustainLevel, timeToStop);
+                    this.param.exponentialRampToValueAtTime(actualMinValue, timeToStop + this.releaseTime);
+                    this.param.exponentialRampToValueAtTime(actualMinValue, timeToStop + this.releaseTime);
+                    this.param.setValueAtTime(this.minLevel, timeToStop + this.releaseTime);
                 }
             };
 
