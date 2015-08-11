@@ -2110,7 +2110,7 @@
             // Tick gets sent every 100ms from the worker.
             if (e.data === 'tick') {
                 while (nextStepTime < tsw.now() + scheduleAheadTime) {
-                    callback(nextStepTime, currentStep);
+                    callback(nextStepTime, currentStep + 1);
 
                     // 4 steps in each beat for 16th's.
                     nextStepTime += stepsPerBarRatio * tsw.secondsPerBeat(bpm);
