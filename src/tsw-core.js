@@ -1005,7 +1005,10 @@
                 bufferPosition = 0;
                 this.paused = false;
                 this.stopped = true;
-                sourceNode.stop(time || tsw.now());
+
+                if (sourceNode) {
+                    sourceNode.stop(time || tsw.now());
+                }
             };
 
             node.pause = function (time) {
