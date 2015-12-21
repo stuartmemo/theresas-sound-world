@@ -80,6 +80,10 @@
 
             tsw.connect(bufferBox, tsw.speakers);
 
+            bufferBox.on('end', function () {
+                console.log('Ended!');
+            });
+
             $('#load-buffer').click(function () {
                 var file = document.querySelector('#file-to-load'),
                     fileReader = new FileReader();

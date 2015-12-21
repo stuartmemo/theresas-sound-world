@@ -958,7 +958,8 @@
                 bufferShouldLoop = false,
                 bufferWaitingArea,
                 sourceNode,
-                startTime;
+                startTime,
+                onEndFunction;
 
             node.buffer = function (buffer) {
                 if (buffer) {
@@ -995,6 +996,10 @@
                         bufferPosition = 0;
                         that.stopped = true;
                     }
+
+                    if (onEndFunction) {
+                        onEndFunction();
+                    }
                 };
 
                 startTime = tsw.now();
@@ -1010,6 +1015,12 @@
                     sourceNode.stop(time || tsw.now());
                 }
             };
+
+            node.on = function (eventName, callback) {
+                if (eventName === 'end') {
+                    onEndFunction = callback;
+                }
+            }
 
             node.pause = function (time) {
                 this.paused = true;
