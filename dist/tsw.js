@@ -11,7 +11,7 @@
     'use strict';
 
     var tsw,
-        version = '0.3.2';
+        version = '0.3.3';
 
     tsw = (function () {
 
@@ -1391,8 +1391,6 @@
 (function (window, undefined) {
     'use strict';
 
-    window.tsw = tsw || {};
-
     /*
      * Creates delay node.
      *
@@ -1411,8 +1409,8 @@
          *  +-------+         +----------+     +----------+
          *      |                |   |              |
          *      v                v   +-----<--------+
-         *      |                |   
-         *   +---------------+   +--------------+        
+         *      |                |
+         *   +---------------+   +--------------+
          *   |     Output    |<--| Effect Level |
          *   | (Destination) |   |    (Gain)    |
          *   +---------------+   +--------------+
@@ -1464,7 +1462,7 @@
          *  |  Input   |-->--|  Distortion  |
          *  | (Source) |     | (WaveShaper) |
          *  +----------+     +--------------+
-         *                    |        | 
+         *                    |        |
          *   +-----------------+   +-------------------+
          *   | Low-pass Filter |   |  High-pass Filter |
          *   |  (BiquadFilter) |   |   (BiquadFilter)  |
@@ -1511,7 +1509,7 @@
         | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
         +----------+     +-----------------+               +-----------------+
               |                |      |                           |
-              v                v      Ê                           v 
+              v                v      Ê                           v
         +---------------+      |      |                     +----------+
         |     Output    |---<--+      +----------<----------| Feedback |
         | (Destination) |                                   |  (Gain)  |
@@ -1591,9 +1589,9 @@
         Config
         ------
         Effect Level - Volume of effect
-        Reverb Time - 
-        Reverb Type - 
-        Reverb Path - Path of impulse response file    
+        Reverb Time -
+        Reverb Type -
+        Reverb Path - Path of impulse response file
 
         ***********************************/
 
@@ -1639,7 +1637,7 @@
     tsw.tremolo = function (settings) {
 
         /******************************
-        
+
         Tremolo
         =======
         +---------+     +-------------+
@@ -1975,8 +1973,6 @@
  (function (window, undefined) {
     'use strict';
 
-    tsw = tsw || {};
-
     tsw.isMidiSupported = function () {
         return typeof navigator.requestMIDIAccess === 'function';
     };
@@ -1984,7 +1980,7 @@
     /*
      * Initiate MIDI input/output if available.
      *
-     * @method getUserMidi 
+     * @method getUserMidi
      * @param {function} success Callback if MIDI has been initiated.
      * @param {function} failure Callback if MIDI hasn't been initialed.
      */
@@ -2071,8 +2067,6 @@
 
     var currentStep = 0,
         lookAhead = 25;
-
-    tsw = tsw || {};
 
     // Build a worker from an anonymous function body.
     var blobURL = URL.createObjectURL(

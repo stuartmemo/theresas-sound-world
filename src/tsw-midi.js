@@ -8,8 +8,6 @@
  (function (window, undefined) {
     'use strict';
 
-    tsw = tsw || {};
-
     tsw.isMidiSupported = function () {
         return typeof navigator.requestMIDIAccess === 'function';
     };
@@ -17,7 +15,7 @@
     /*
      * Initiate MIDI input/output if available.
      *
-     * @method getUserMidi 
+     * @method getUserMidi
      * @param {function} success Callback if MIDI has been initiated.
      * @param {function} failure Callback if MIDI hasn't been initialed.
      */

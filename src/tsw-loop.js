@@ -11,8 +11,6 @@
     var currentStep = 0,
         lookAhead = 25;
 
-    tsw = tsw || {};
-
     // Build a worker from an anonymous function body.
     var blobURL = URL.createObjectURL(
             new Blob(

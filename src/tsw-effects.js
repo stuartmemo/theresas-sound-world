@@ -8,8 +8,6 @@
 (function (window, undefined) {
     'use strict';
 
-    window.tsw = tsw || {};
-
     /*
      * Creates delay node.
      *
@@ -28,8 +26,8 @@
          *  +-------+         +----------+     +----------+
          *      |                |   |              |
          *      v                v   +-----<--------+
-         *      |                |   
-         *   +---------------+   +--------------+        
+         *      |                |
+         *   +---------------+   +--------------+
          *   |     Output    |<--| Effect Level |
          *   | (Destination) |   |    (Gain)    |
          *   +---------------+   +--------------+
@@ -81,7 +79,7 @@
          *  |  Input   |-->--|  Distortion  |
          *  | (Source) |     | (WaveShaper) |
          *  +----------+     +--------------+
-         *                    |        | 
+         *                    |        |
          *   +-----------------+   +-------------------+
          *   | Low-pass Filter |   |  High-pass Filter |
          *   |  (BiquadFilter) |   |   (BiquadFilter)  |
@@ -128,7 +126,7 @@
         | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
         +----------+     +-----------------+               +-----------------+
               |                |      |                           |
-              v                v      Ê                           v 
+              v                v      Ê                           v
         +---------------+      |      |                     +----------+
         |     Output    |---<--+      +----------<----------| Feedback |
         | (Destination) |                                   |  (Gain)  |
@@ -208,9 +206,9 @@
         Config
         ------
         Effect Level - Volume of effect
-        Reverb Time - 
-        Reverb Type - 
-        Reverb Path - Path of impulse response file    
+        Reverb Time -
+        Reverb Type -
+        Reverb Path - Path of impulse response file
 
         ***********************************/
 
@@ -256,7 +254,7 @@
     tsw.tremolo = function (settings) {
 
         /******************************
-        
+
         Tremolo
         =======
         +---------+     +-------------+
