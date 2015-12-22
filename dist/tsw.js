@@ -1369,11 +1369,16 @@
             });
         };
 
-        return (window.tsw = tsw) ;
+        return tsw;
     })();
 
     tsw.init();
 
+    if (typeof module !== 'undefined' && typeof module.exports !== 'undefined') {
+        module.exports = tsw;
+    } else {
+        window.tsw = tsw;
+    }
 })(window);
 
 /**********************************
