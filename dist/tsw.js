@@ -1,7 +1,7 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-exports = {
+module.exports = {
     /**
      * Is an argument a string?
      * @method isString
@@ -1387,7 +1387,7 @@ module.exports = tsw;
 
 'use strict';
 
-var tsw = {};
+var tsw = require('./tsw-core');
 
 /*
  * Creates delay node.
@@ -1507,7 +1507,7 @@ tsw.phaser = function (settings) {
     | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
     +----------+     +-----------------+               +-----------------+
           |                |      |                           |
-          v                v      Ê                           v
+          v                v      ^                           v
     +---------------+      |      |                     +----------+
     |     Output    |---<--+      +----------<----------| Feedback |
     | (Destination) |                                   |  (Gain)  |
@@ -1674,7 +1674,7 @@ tsw.tremolo = function (settings) {
 
 module.exports = tsw;
 
-},{}],4:[function(require,module,exports){
+},{"./tsw-core":2}],4:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - Loop
  * tsw-loop.js

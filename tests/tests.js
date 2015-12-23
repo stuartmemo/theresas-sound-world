@@ -2,9 +2,20 @@
 /*global expect:true*/
 /*global it:true*/
 /*global tsw:true*/
+/*global jasmine:true*/
+
+jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
 describe('Theresa\'s Sound World', function () {
     'use strict';
+
+    beforeEach(function () {
+        jasmine.Ajax.install();
+    });
+
+    afterEach(function () {
+        jasmine.Ajax.uninstall();
+    });
 
     describe('Core', function () {
 
@@ -355,6 +366,7 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Transitions', function () {
+            /**
             it('Gain should ramp linearly up then down', function (done) {
                 var osc = tsw.osc(),
                     mute = tsw.gain(0),
@@ -385,6 +397,7 @@ describe('Theresa\'s Sound World', function () {
                     done();
                 }, 4500);
             });
+            */
 
             it('Gain should ramp exponentially up then down', function (done) {
                 var osc = tsw.osc(),

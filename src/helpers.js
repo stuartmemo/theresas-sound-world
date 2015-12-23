@@ -1,6 +1,6 @@
 'use strict';
 
-exports = {
+module.exports = {
     /**
      * Is an argument a string?
      * @method isString

@@ -6,7 +6,7 @@
 
 'use strict';
 
-var tsw = {};
+var tsw = require('./tsw-core');
 
 /*
  * Creates delay node.
@@ -126,7 +126,7 @@ tsw.phaser = function (settings) {
     | (Source) |     | (BiquadFilter)  |               |  (BiquadFilter) |
     +----------+     +-----------------+               +-----------------+
           |                |      |                           |
-          v                v      Ê                           v
+          v                v      ^                           v
     +---------------+      |      |                     +----------+
     |     Output    |---<--+      +----------<----------| Feedback |
     | (Destination) |                                   |  (Gain)  |
