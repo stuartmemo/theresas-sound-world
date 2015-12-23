@@ -13,11 +13,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-        'src/tsw-core.js',
-        'src/tsw-effects.js',
-        'src/tsw-music.js',
-        'src/tsw-midi.js',
-        'src/tsw-analysis.js',
+        'dist/tsw.js',
         'tests/*.js',
         {
             pattern: 'tests/samples/*.mp3',
@@ -29,13 +25,13 @@ module.exports = function(config) {
 
     // list of files to exclude
     exclude: [
-      
+
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-    
+
     },
 
 

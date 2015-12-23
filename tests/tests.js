@@ -2,20 +2,9 @@
 /*global expect:true*/
 /*global it:true*/
 /*global tsw:true*/
-/*global jasmine:true*/
-
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 20000;
 
 describe('Theresa\'s Sound World', function () {
     'use strict';
-
-    beforeEach(function () {
-        jasmine.Ajax.install();
-    });
-
-    afterEach(function () {
-        jasmine.Ajax.uninstall();
-    });
 
     describe('Core', function () {
 
@@ -182,7 +171,7 @@ describe('Theresa\'s Sound World', function () {
         describe('Can disconnect nodes', function () {
             it('Can disconnect native node connected to native node', function () {
                 var osc = tsw.context().createOscillator(),
-                    vol = tsw.context().createGain(); 
+                    vol = tsw.context().createGain();
 
                 tsw.connect(osc, vol);
                 tsw.disconnect(osc);
@@ -564,7 +553,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
         });
-        */        
+        */
 
         describe('Create Noise', function () {
 
