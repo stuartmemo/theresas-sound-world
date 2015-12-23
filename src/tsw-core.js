@@ -9,6 +9,8 @@
 
 'use strict';
 
+var helpers = require('./helpers');
+
 var tsw,
     version = '0.3.3';
 
@@ -67,24 +69,6 @@ tsw = (function () {
      */
     var isObject = function (thing) {
         return typeof thing === 'object';
-    };
-
-    /*
-     * Is an argument a string?
-     * @method isString
-     * @param thing Argument to check if it's a string.
-     */
-    var isString = function (thing) {
-        return typeof thing === 'string';
-    };
-
-    /*
-     * Is an argument a number?
-     * @method isNumber
-     * @param thing Argument to check if it's a number.
-     */
-    var isNumber = function (thing) {
-        return typeof thing === 'number';
     };
 
     /*
@@ -1082,7 +1066,7 @@ tsw = (function () {
             options.frequency = arguments[0].frequency || 1000;
             options.Q = arguments[0].Q;
             options.gain = arguments[0].gain;
-        } else if (isString(arguments[0])) {
+        } else if (helpers.isString(arguments[0])) {
             options.type = arguments[0];
         }
 
@@ -1347,11 +1331,6 @@ tsw = (function () {
 
         navigator.webkitGetUserMedia({audio: true}, audioStream, errorCallback);
     };
-
-    // Expose helper functions.
-    tsw.helper = {};
-    tsw.helper.isString = isString;
-    tsw.helper.isNumber = isNumber;
 
     /*
      * Kick everything off.

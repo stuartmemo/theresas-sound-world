@@ -72,7 +72,7 @@
 
 		<script src="../dist/tsw.js"></script>
 
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
         <script>
             var bufferBox = tsw.bufferBox(),
@@ -150,13 +150,13 @@
 
 					function drawGraph (volumeNode) {
 						var graph = document.getElementById('volume-graph'),
-						graphHeight = graph.height, // haha graphite.
-						graphWidth = graph.width,
-						ctx = graph.getContext('2d'),
-						i = 0,
-						interval = 100,
-						totalTimeToGraph = 50,
-						maxGain = 1;
+							graphHeight = graph.height, // haha graphite.
+							graphWidth = graph.width,
+							ctx = graph.getContext('2d'),
+							i = 0,
+							interval = 100,
+							totalTimeToGraph = 50,
+							maxGain = 1;
 
 						ctx.moveTo(0, graphHeight); // start graph at bottom left.
 
