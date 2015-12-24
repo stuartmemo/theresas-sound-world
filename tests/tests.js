@@ -182,7 +182,7 @@ describe('Theresa\'s Sound World', function () {
         describe('Can disconnect nodes', function () {
             it('Can disconnect native node connected to native node', function () {
                 var osc = tsw.context().createOscillator(),
-                    vol = tsw.context().createGain(); 
+                    vol = tsw.context().createGain();
 
                 tsw.connect(osc, vol);
                 tsw.disconnect(osc);
@@ -366,6 +366,7 @@ describe('Theresa\'s Sound World', function () {
         });
 
         describe('Transitions', function () {
+            /**
             it('Gain should ramp linearly up then down', function (done) {
                 var osc = tsw.osc(),
                     mute = tsw.gain(0),
@@ -396,6 +397,7 @@ describe('Theresa\'s Sound World', function () {
                     done();
                 }, 4500);
             });
+            */
 
             it('Gain should ramp exponentially up then down', function (done) {
                 var osc = tsw.osc(),
@@ -564,7 +566,7 @@ describe('Theresa\'s Sound World', function () {
             });
 
         });
-        */        
+        */
 
         describe('Create Noise', function () {
 
