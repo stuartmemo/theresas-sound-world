@@ -3,6 +3,8 @@
 var browserify = require('browserify');
 var del = require('del');
 var gulp = require('gulp');
+var header = require('gulp-header');
+var pkg = require('./package.json');
 var rename = require('gulp-rename');
 var runSequence = require('run-sequence');
 var source = require('vinyl-source-stream');
@@ -37,6 +39,24 @@ gulp.task('uglify', function () {
         .pipe(gulp.dest('./dist'));
 });
 
+gulp.task('add-banner', function () {
+    var banner = [
+        '/**',
+        ' * @name <%= pkg.title %>',
+        ' * @description <%= pkg.description %>',
+        ' * @version v<%= pkg.version %>',
+        ' * @tutorial <%= pkg.homepage %>',
+        ' * @author <%= pkg.author.name %>',
+        ' * @license <%= pkg.license %>',
+        ' */',
+        ''
+    ].join('\n');
+
+    return gulp.src('./dist/tsw.*')
+        .pipe(header(banner, { pkg: pkg }))
+        .pipe(gulp.dest('./dist'));
+});
+
 gulp.task('build', function () {
-    runSequence('clean', 'bundle', 'uglify');
+    runSequence('clean', 'bundle', 'uglify', 'add-banner');
 });

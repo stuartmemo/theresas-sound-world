@@ -1,7 +1,7 @@
 {
   "name": "theresas-sound-world",
   "title": "Theresa's Sound World",
-  "description": "JavaScript library for audio manipulation.",
+  "description": "A JavaScript library for audio manipulation.",
   "version": "0.3.3",
   "homepage": "http://theresassoundworld.com",
   "author": {
@@ -22,6 +22,7 @@
     "browserify": "^12.0.1",
     "del": "^2.2.0",
     "gulp": "^3.9.0",
+    "gulp-header": "^1.7.1",
     "gulp-rename": "^1.2.2",
     "gulp-uglify": "^1.5.1",
     "karma": "~0.13.15",
