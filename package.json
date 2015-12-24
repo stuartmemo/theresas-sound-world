@@ -15,7 +15,6 @@
   "license": "MIT",
   "main": "dist/tsw.js",
   "scripts": {
-    "start": "grunt serve",
     "test": "gulp test"
   },
   "dependencies": {},
