@@ -2,7 +2,7 @@
   "name": "theresas-sound-world",
   "title": "Theresa's Sound World",
   "description": "A JavaScript library for audio manipulation.",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "homepage": "http://theresassoundworld.com",
   "author": {
     "name": "Stuart Memo",
@@ -13,7 +13,7 @@
     "url": "https://github.com/stuartmemo/theresas-sound-world"
   },
   "license": "MIT",
-  "main": "src/tsw-main.js",
+  "main": "src/tsw-npm.js",
   "scripts": {
     "test": "gulp test"
   },

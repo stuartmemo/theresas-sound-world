@@ -31,7 +31,7 @@ gulp.task('test', function (done) {
 });
 
 gulp.task('bundle', function () {
-    return browserify('./src/tsw-main.js')
+    return browserify('./src/tsw-browser.js')
         .bundle()
         .pipe(source('tsw.js'))
         .pipe(gulp.dest('./dist'));

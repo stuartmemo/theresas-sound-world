@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.4.1
+ * @version v0.4.2
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -30,6 +30,11 @@ module.exports = {
 };
 
 },{}],2:[function(require,module,exports){
+var tsw = require('./tsw-main');
+
+window.tsw = tsw;
+
+},{"./tsw-main":6}],3:[function(require,module,exports){
 /****************************************************
  * Theresa's Sound World
  * tsw.js
@@ -44,7 +49,7 @@ module.exports = {
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.4.1';
+    version = '0.4.2';
 
 tsw = (function () {
 
@@ -1386,7 +1391,7 @@ tsw.init();
 
 module.exports = tsw;
 
-},{"./helpers":1}],3:[function(require,module,exports){
+},{"./helpers":1}],4:[function(require,module,exports){
 /**********************************
  * Theresas's Sound World - Effects
  * tsw-effects.js
@@ -1682,7 +1687,7 @@ tsw.tremolo = function (settings) {
 
 module.exports = tsw;
 
-},{"./tsw-core":2}],4:[function(require,module,exports){
+},{"./tsw-core":3}],5:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - Loop
  * tsw-loop.js
@@ -1767,7 +1772,7 @@ tsw.loop = function (callback, bpm, steps) {
 
 module.exports = tsw;
 
-},{}],5:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 var tswCore = require('./tsw-core');
 var tswEffects = require('./tsw-effects');
 var tswMusic = require('./tsw-music');
@@ -1796,13 +1801,9 @@ for (var attrname in tswMidi) {
     tsw[attrname] = tswMidi[attrname];
 }
 
-if (typeof window === 'undefined') {
-    module.exports = tsw;
-} else {
-    window.tsw = tsw;
-}
+module.exports = tsw;
 
-},{"./tsw-core":2,"./tsw-effects":3,"./tsw-loop":4,"./tsw-midi":6,"./tsw-music":7}],6:[function(require,module,exports){
+},{"./tsw-core":3,"./tsw-effects":4,"./tsw-loop":5,"./tsw-midi":7,"./tsw-music":8}],7:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - MIDI
  * tsw-midi.js
@@ -1886,7 +1887,7 @@ tsw.midiNote = function (thing_to_convert) {
 
 module.exports = tsw;
 
-},{"./helpers":1}],7:[function(require,module,exports){
+},{"./helpers":1}],8:[function(require,module,exports){
 /*********************************
  * Theresas's Sound World - Music
  * tsw.js
@@ -2175,4 +2176,4 @@ tsw.frequency = function (note) {
 
 module.exports = tsw;
 
-},{}]},{},[5]);
+},{}]},{},[2]);
