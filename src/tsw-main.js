@@ -26,5 +26,8 @@ for (var attrname in tswMidi) {
     tsw[attrname] = tswMidi[attrname];
 }
 
-window.tsw = tsw;
-module.exports = tsw;
+if (typeof window === 'undefined') {
+    module.exports = tsw;
+} else {
+    window.tsw = tsw;
+}
