@@ -1,6 +1,7 @@
 'use strict';
 
 var browserify = require('browserify');
+var connect = require('gulp-connect');
 var del = require('del');
 var gulp = require('gulp');
 var header = require('gulp-header');
@@ -16,6 +17,10 @@ gulp.task('clean', function (done) {
     del(['./dist']).then(function () {
         done();
     });
+});
+
+gulp.task('serve', function () {
+    connect.server();
 });
 
 gulp.task('test', function (done) {
@@ -59,4 +64,8 @@ gulp.task('add-banner', function () {
 
 gulp.task('build', function () {
     runSequence('clean', 'bundle', 'uglify', 'add-banner');
+});
+
+gulp.task('build-and-test', function () {
+    runSequence('build', 'test');
 });
