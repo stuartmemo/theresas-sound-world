@@ -3,6 +3,7 @@ var tswEffects = require('./tsw-effects');
 var tswMusic = require('./tsw-music');
 var tswLoop = require('./tsw-loop');
 var tswMidi = require('./tsw-midi');
+var tswAnalysis = require('./tsw-analysis');
 
 var tsw = {};
 
@@ -24,6 +25,10 @@ for (var attrname in tswLoop) {
 
 for (var attrname in tswMidi) {
     tsw[attrname] = tswMidi[attrname];
+}
+
+for (var attrname in tswAnalysis) {
+    tsw[attrname] = tswAnalysis[attrname];
 }
 
 module.exports = tsw;
