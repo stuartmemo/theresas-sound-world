@@ -30,11 +30,48 @@ module.exports = {
 };
 
 },{}],2:[function(require,module,exports){
+/***********************************
+ * Theresas's Sound World - Analysis
+ * tsw-analysis.js
+ * Copyright 2014 Stuart Memo
+ **********************************/
+
+'use strict';
+
+var tsw = {};
+
+var getDuration = function (timeInSeconds) {
+    var minutes = Math.floor(timeInSeconds / 60);
+
+    return {
+        minutes: minutes,
+        seconds: timeInSeconds - (minutes * 60),
+        totalSeconds: timeInSeconds
+    };
+};
+
+tsw.analyser = function () {
+    var analyser = tsw.context().createAnalyser();
+
+    return analyser;
+};
+
+tsw.info = function (file) {
+    return {
+        duration: getDuration(file.duration),
+        numberOfChannels: file.numberOfChannels,
+        sampleRate: file.sampleRate
+    };
+};
+
+module.exports = tsw;
+
+},{}],3:[function(require,module,exports){
 var tsw = require('./tsw-main');
 
 window.tsw = tsw;
 
-},{"./tsw-main":6}],3:[function(require,module,exports){
+},{"./tsw-main":7}],4:[function(require,module,exports){
 /****************************************************
  * Theresa's Sound World
  * tsw.js
@@ -1391,7 +1428,7 @@ tsw.init();
 
 module.exports = tsw;
 
-},{"./helpers":1}],4:[function(require,module,exports){
+},{"./helpers":1}],5:[function(require,module,exports){
 /**********************************
  * Theresas's Sound World - Effects
  * tsw-effects.js
@@ -1687,7 +1724,7 @@ tsw.tremolo = function (settings) {
 
 module.exports = tsw;
 
-},{"./tsw-core":3}],5:[function(require,module,exports){
+},{"./tsw-core":4}],6:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - Loop
  * tsw-loop.js
@@ -1772,12 +1809,13 @@ tsw.loop = function (callback, bpm, steps) {
 
 module.exports = tsw;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var tswCore = require('./tsw-core');
 var tswEffects = require('./tsw-effects');
 var tswMusic = require('./tsw-music');
 var tswLoop = require('./tsw-loop');
 var tswMidi = require('./tsw-midi');
+var tswAnalysis = require('./tsw-analysis');
 
 var tsw = {};
 
@@ -1801,9 +1839,13 @@ for (var attrname in tswMidi) {
     tsw[attrname] = tswMidi[attrname];
 }
 
+for (var attrname in tswAnalysis) {
+    tsw[attrname] = tswAnalysis[attrname];
+}
+
 module.exports = tsw;
 
-},{"./tsw-core":3,"./tsw-effects":4,"./tsw-loop":5,"./tsw-midi":7,"./tsw-music":8}],7:[function(require,module,exports){
+},{"./tsw-analysis":2,"./tsw-core":4,"./tsw-effects":5,"./tsw-loop":6,"./tsw-midi":8,"./tsw-music":9}],8:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - MIDI
  * tsw-midi.js
@@ -1887,7 +1929,7 @@ tsw.midiNote = function (thing_to_convert) {
 
 module.exports = tsw;
 
-},{"./helpers":1}],8:[function(require,module,exports){
+},{"./helpers":1}],9:[function(require,module,exports){
 /*********************************
  * Theresas's Sound World - Music
  * tsw.js
@@ -2176,4 +2218,4 @@ tsw.frequency = function (note) {
 
 module.exports = tsw;
 
-},{}]},{},[2]);
+},{}]},{},[3]);
