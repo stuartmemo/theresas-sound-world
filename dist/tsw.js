@@ -1081,8 +1081,11 @@ tsw = (function () {
 
         node.pause = function (time) {
             this.paused = true;
-            sourceNode.stop(time || tsw.now());
-            tsw.disconnect(sourceNode);
+
+            if (sourceNode) {
+                sourceNode.stop(time || tsw.now());
+                tsw.disconnect(sourceNode);
+            }
 
             if (!this.stopped) {
                 bufferPosition = bufferPosition +
@@ -1093,7 +1096,13 @@ tsw = (function () {
         // Get or set start position of a buffer.
         node.position = function (newPosition) {
             if (newPosition || newPosition === 0) {
-                bufferPosition = newPosition;
+                if (this.paused || this.stopped) {
+                    bufferPosition = newPosition;
+                } else {
+                    this.pause();
+                    bufferPosition = newPosition;
+                    this.play();
+                }
             } else {
                 if (this.paused || this.stopped) {
                     return bufferPosition;
@@ -1103,7 +1112,6 @@ tsw = (function () {
                 }
             }
         };
-
 
         node.start = node.play;
 
