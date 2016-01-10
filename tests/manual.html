@@ -55,11 +55,15 @@
                     <button id="stop-buffer">Stop</button>
                 </section>
                 <section>
-                    <h1>3. Play/Pause buffer</h1>
+                    <h1>4. Play/Pause buffer</h1>
                     <button class="play-buffer">Play</button>
                     <button id="pause-buffer">Pause</button>
                     <p>Buffer Position: <span id="position"></span></p>
                     <p>Pause Position: <span id="pause-position"></span></p>
+                </section>
+                <section>
+                    <h1>5. Set position to 1 second from start</h1>
+                    <button id="set-position">Set position</button>
                 </section>
 				<section>
 					<h1>4. Envelope graph</h1>
@@ -116,6 +120,10 @@
             $('#pause-buffer').click(function () {
                 bufferBox.pause();
                 $('#pause-position').text(bufferBox.position());
+            });
+
+            $('#set-position').click(function () {
+                bufferBox.position(1);
             });
 
             setInterval(function () {
