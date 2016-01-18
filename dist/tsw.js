@@ -38,7 +38,7 @@ module.exports = {
 
 'use strict';
 
-var tsw = {};
+var tsw = require('./tsw-core');
 
 var getDuration = function (timeInSeconds) {
     var minutes = Math.floor(timeInSeconds / 60);
@@ -66,7 +66,7 @@ tsw.info = function (file) {
 
 module.exports = tsw;
 
-},{}],3:[function(require,module,exports){
+},{"./tsw-core":4}],3:[function(require,module,exports){
 var tsw = require('./tsw-main');
 
 window.tsw = tsw;

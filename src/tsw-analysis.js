@@ -6,7 +6,7 @@
 
 'use strict';
 
-var tsw = {};
+var tsw = require('./tsw-core');
 
 var getDuration = function (timeInSeconds) {
     var minutes = Math.floor(timeInSeconds / 60);
