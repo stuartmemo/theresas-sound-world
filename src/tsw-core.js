@@ -966,11 +966,11 @@ tsw = (function () {
 
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
-
             sourceNode.loop = bufferShouldLoop;
 
             this.paused = false;
             this.stopped = false;
+            this.playing = true;
 
             tsw.connect(sourceNode, node.output);
 

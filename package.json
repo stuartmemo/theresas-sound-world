@@ -15,11 +15,12 @@
   "license": "MIT",
   "main": "src/tsw-npm.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "karma start"
   },
   "dependencies": {},
   "devDependencies": {
     "browserify": "^12.0.1",
+    "chai": "^3.4.1",
     "del": "^2.2.0",
     "gulp": "^3.9.0",
     "gulp-connect": "^2.3.1",
@@ -29,11 +30,12 @@
     "karma": "~0.13.15",
     "karma-chrome-launcher": "~0.2.2",
     "karma-firefox-launcher": "~0.1.7",
-    "karma-jasmine": "~0.3.6",
-    "karma-jasmine-ajax": "^0.1.13",
+    "karma-mocha": "^0.2.1",
+    "karma-nyan-reporter": "^0.2.3",
     "karma-opera-launcher": "~0.3.0",
     "karma-phantomjs-launcher": "~0.2.1",
     "karma-safari-launcher": "~0.1.1",
+    "mocha": "^2.4.4",
     "run-sequence": "^1.1.5",
     "vinyl-source-stream": "^1.1.0"
   },

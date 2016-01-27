@@ -1,28 +1,25 @@
 {
-    "name": "theresas-sound-world",
-    "version": "0.4.5",
-    "homepage": "https://theresassoundworld.com",
-    "authors": [
-        "Stuart Memo <stuartmemo@gmail.com>"
-    ],
-    "description":
-        "Theresa's Sound World is powerful way of manipulating audio in the browser in a quick and friendly manner. Built on top of the Web Audio API, it uses a modular routing system allowing you to make sophisticated audio applications and instruments.",
-    "main": "build/tsw.js",
-    "keywords": [
-        "sound",
-        "music",
-        "audio",
-        "processing"
-    ],
-    "license": "MIT",
-    "private": false,
-    "ignore": [
-        "**/.*",
-        "node_modules",
-        "bower_components",
-        "app/bower_components"
-    ],
-    "devDependencies": {
-        "jasmine": "latest"
-    }
+  "name": "theresas-sound-world",
+  "version": "0.4.5",
+  "homepage": "https://theresassoundworld.com",
+  "authors": [
+    "Stuart Memo <stuartmemo@gmail.com>"
+  ],
+  "description": "Theresa's Sound World is powerful way of manipulating audio in the browser in a quick and friendly manner. Built on top of the Web Audio API, it uses a modular routing system allowing you to make sophisticated audio applications and instruments.",
+  "main": "build/tsw.js",
+  "keywords": [
+    "sound",
+    "music",
+    "audio",
+    "processing"
+  ],
+  "license": "MIT",
+  "private": false,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "app/bower_components"
+  ],
+  "devDependencies": {}
 }

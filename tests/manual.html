@@ -216,6 +216,10 @@
 					envelope.start(tsw.now());
 					envelope.release(tsw.now() + 3);
 					osc.stop(tsw.now() + 10);
+
+                    setInterval(function () {
+                        console.log(vol.gain());
+                    }, 500);
 				});
 			})();
         </script>
