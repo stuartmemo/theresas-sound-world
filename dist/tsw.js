@@ -1045,6 +1045,7 @@ tsw = (function () {
 
             this.paused = false;
             this.stopped = false;
+            this.playing = true;
 
             tsw.connect(sourceNode, node.output);
 

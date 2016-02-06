@@ -9,12 +9,14 @@ module.exports = function(config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['jasmine-ajax', 'jasmine'],
+    frameworks: ['mocha'],
 
     // list of files / patterns to load in the browser
     files: [
+        'http://chaijs.com/chai.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/sinon.js/1.15.4/sinon.min.js',
         'dist/tsw.js',
-        'tests/*.js',
+        'tests/*-tests.js',
         {
             pattern: 'tests/samples/*.mp3',
             watched: false,
@@ -38,7 +40,7 @@ module.exports = function(config) {
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters: ['progress'],
+    reporters: ['nyan'],
 
 
     // web server port
