@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.4.5
+ * @version v0.4.6
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.4.5';
+    version = '0.4.6';
 
 tsw = (function () {
 
