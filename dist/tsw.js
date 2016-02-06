@@ -1040,7 +1040,6 @@ tsw = (function () {
 
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
-
             sourceNode.loop = bufferShouldLoop;
 
             this.paused = false;
@@ -1050,13 +1049,17 @@ tsw = (function () {
             tsw.connect(sourceNode, node.output);
 
             sourceNode.onended = function () {
-                if (!that.paused) {
+                if (
+                    !that.paused &&
+                    !that.stopped &&
+                    node.position() >= (node.buffer().length / tsw.context().sampleRate)
+                ) {
                     bufferPosition = 0;
                     that.stopped = true;
-                }
 
-                if (onEndFunction) {
-                    onEndFunction();
+                    if (onEndFunction) {
+                        onEndFunction();
+                    }
                 }
             };
 
