@@ -11,28 +11,30 @@ var tsw = {},
     lookAhead = 25;
 
 // Build a worker from an anonymous function body.
-var blobURL = URL.createObjectURL(
-        new Blob(
-            [ '(',
-                function () {
-                    //Long-running work here
-                    self.addEventListener('message', function (e) {
+if (typeof URL !== 'undefined') {
+    var blobURL = URL.createObjectURL(
+            new Blob(
+                [ '(',
+                    function () {
+                        //Long-running work here
+                        self.addEventListener('message', function (e) {
 
-                        if (e.data === 'start') {
-                            setInterval(function () {
-                                self.postMessage('tick');
-                            }, 25);
-                        }
-                    });
-                }.toString(),
-            ')()' ],
-            { type: 'application/javascript' }
-        )
-);
+                            if (e.data === 'start') {
+                                setInterval(function () {
+                                    self.postMessage('tick');
+                                }, 25);
+                            }
+                        });
+                    }.toString(),
+                ')()' ],
+                { type: 'application/javascript' }
+            )
+    );
 
-var worker = new Worker(blobURL);
+    var worker = new Worker(blobURL);
 
-URL.revokeObjectURL(blobURL);
+    URL.revokeObjectURL(blobURL);
+}
 
 tsw.secondsPerBeat = function (bpm) {
     return 60 / bpm;
