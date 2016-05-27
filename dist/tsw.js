@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.4.6
+ * @version v0.5.0
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.4.6';
+    version = '0.5.0';
 
 tsw = (function () {
 
@@ -301,15 +301,19 @@ tsw = (function () {
         var context;
         // Check if the Web Audio API is supported.
         if (typeof webkitAudioContext === 'undefined' && typeof AudioContext === 'undefined') {
-            if (typeof webkitAudiocontext().prototype.createGainNode === 'undefined') {
-                failure('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
+            if (typeof webkitAudioContext === 'function') {
+                if (typeof webkitAudiocontext().prototype.createGainNode === 'undefined') {
+                    failure('Sorry, your browser doesn\'t support a recent enough version of the Web Audio API.');
+                }
             } else {
                 // Using older version of API.
-                var ctx = webkitAudiocontext().prototype;
+                if (typeof webkitAudiocontext === 'function') {
+                    var ctx = webkitAudiocontext().prototype;
 
-                ctx.createGain  = ctx.createGainNode;
-                ctx.createDelay = ctx.createDelayNode;
-                ctx.createScriptProcessor = ctx.createJavaScriptNode;
+                    ctx.createGain  = ctx.createGainNode;
+                    ctx.createDelay = ctx.createDelayNode;
+                    ctx.createScriptProcessor = ctx.createJavaScriptNode;
+                }
             }
         } else {
             if (typeof AudioContext === 'function') {
@@ -334,8 +338,10 @@ tsw = (function () {
      * Map WAAPI methods to tsw.
      */
     var mapToSoundWorld = function () {
-        tsw.speakers = tsw.context().destination;
-        tsw.osc = tsw.oscillator;
+        if (typeof tsw.context === 'function') {
+            tsw.speakers = tsw.context().destination;
+            tsw.osc = tsw.oscillator;
+        }
     };
 
     /**
@@ -1436,7 +1442,9 @@ tsw = (function () {
     return tsw;
 })();
 
-tsw.init();
+if (typeof window !== 'undefined' && window.document) {
+    tsw.init();
+}
 
 module.exports = tsw;
 
@@ -1750,28 +1758,30 @@ var tsw = {},
     lookAhead = 25;
 
 // Build a worker from an anonymous function body.
-var blobURL = URL.createObjectURL(
-        new Blob(
-            [ '(',
-                function () {
-                    //Long-running work here
-                    self.addEventListener('message', function (e) {
+if (typeof URL !== 'undefined') {
+    var blobURL = URL.createObjectURL(
+            new Blob(
+                [ '(',
+                    function () {
+                        //Long-running work here
+                        self.addEventListener('message', function (e) {
 
-                        if (e.data === 'start') {
-                            setInterval(function () {
-                                self.postMessage('tick');
-                            }, 25);
-                        }
-                    });
-                }.toString(),
-            ')()' ],
-            { type: 'application/javascript' }
-        )
-);
+                            if (e.data === 'start') {
+                                setInterval(function () {
+                                    self.postMessage('tick');
+                                }, 25);
+                            }
+                        });
+                    }.toString(),
+                ')()' ],
+                { type: 'application/javascript' }
+            )
+    );
 
-var worker = new Worker(blobURL);
+    var worker = new Worker(blobURL);
 
-URL.revokeObjectURL(blobURL);
+    URL.revokeObjectURL(blobURL);
+}
 
 tsw.secondsPerBeat = function (bpm) {
     return 60 / bpm;
