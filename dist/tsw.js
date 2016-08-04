@@ -114,7 +114,10 @@ tsw = (function () {
      */
     var applySettings = function (node, settings) {
         for (var setting in settings) {
-            node[setting].value = settings[setting];
+            if(isObject(node[setting]))
+            {
+                node[setting].value = settings[setting];
+            }
         }
     };
 
