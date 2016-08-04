@@ -40,7 +40,7 @@ tsw = (function () {
      */
     var applySettings = function (node, settings) {
         for (var setting in settings) {
-            if(typeof node[setting] === "object")
+            if(isObject(node[setting]))
             {
                 node[setting].value = settings[setting];
             }
