@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.5.2
+ * @version v0.5.3
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.5.2';
+    version = '0.5.3';
 
 tsw = (function () {
 
@@ -1212,8 +1212,7 @@ tsw = (function () {
                 knee: 30,           // dbs (min: 0, max: 40)
                 ratio: 12,          // ratio (min: 1, max: 20)
                 attack: 0.003,      // seconds (min: 0, max: 1)
-                release: 0.25,      // seconds (min: 0, max: 1)
-                reduction: 0        // dbs (min: -20, max: 0)
+                release: 0.25      // seconds (min: 0, max: 1)
             };
 
         settings = applyObject(defaults, settings);
@@ -1224,7 +1223,6 @@ tsw = (function () {
         node.ratio = createGetSetFunction(compressor, 'ratio');
         node.attack = createGetSetFunction(compressor, 'attack');
         node.release = createGetSetFunction(compressor, 'release');
-        node.reduction = createGetSetFunction(compressor, 'reduction');
 
         this.connect(node.input, compressor, node.output);
 

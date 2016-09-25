@@ -467,10 +467,6 @@ describe('Core', function () {
             expect(tsw.compressor({ ratio: 10 }).ratio()).to.eq(10);
         });
 
-        it('Can set reduction', function () {
-            expect(tsw.compressor({ reduction: 10 }).reduction()).to.eq(10);
-        });
-
         it('Can set attack', function () {
             expect(tsw.compressor({ attack: 1 }).attack()).to.eq(1);
         });
