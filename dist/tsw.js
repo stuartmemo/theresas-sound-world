@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.5.3
+ * @version v0.6.0
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.5.3';
+    version = '0.6.0';
 
 tsw = (function () {
 
@@ -1021,11 +1021,15 @@ tsw = (function () {
                 }
             ),
             bufferPosition = 0,
-            bufferShouldLoop = false,
             bufferWaitingArea,
             sourceNode,
             startTime,
-            onEndFunction;
+            onEndFunction,
+            loop = {
+                on: false,
+                start: null,
+                end: null
+            };
 
         node.buffer = function (buffer) {
             if (buffer) {
@@ -1035,8 +1039,16 @@ tsw = (function () {
             }
         };
 
-        node.loop = function (shouldLoop) {
-            bufferShouldLoop = shouldLoop;
+        node.loopOn = function (startSeconds, endSeconds) {
+            loop.on = true;
+            loop.start = startSeconds;
+            loop.end = endSeconds;
+
+            return this;
+        };
+
+        node.loopOff = function () {
+            loop.on = false;
             return this;
         };
 
@@ -1049,7 +1061,9 @@ tsw = (function () {
 
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
-            sourceNode.loop = bufferShouldLoop;
+            sourceNode.loop = loop.on;
+            sourceNode.loopStart = loop.start;
+            sourceNode.loopEnd = loop.end;
 
             this.paused = false;
             this.stopped = false;
@@ -1367,7 +1381,7 @@ tsw = (function () {
         noiseSource.nodeType = 'noise';
         noiseSource.buffer(noiseBuffer);
 
-        noiseSource.loop(true);
+        noiseSource.loopOn(true);
 
         return noiseSource;
     };

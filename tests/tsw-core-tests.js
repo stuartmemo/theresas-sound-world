@@ -620,10 +620,6 @@ describe('Core', function () {
             expect(bufferBox.stopped).to.eq(false);
             expect(bufferBox.playing).to.eq(true);
         });
-
-        it('fires a end event when buffers reaches end', function () {
-
-        });
     });
 
     /**
