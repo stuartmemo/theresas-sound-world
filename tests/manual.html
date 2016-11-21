@@ -65,8 +65,12 @@
                     <h1>5. Set position to 1 second from start</h1>
                     <button id="set-position">Set position</button>
                 </section>
+                <section>
+                    <h1>6. Loop buffer</h1>
+                    <button id="loop-buffer">Loop it</button>
+                </section>
 				<section>
-					<h1>4. Envelope graph</h1>
+					<h1>7. Envelope graph</h1>
 					<canvas id="envelope-graph"></canvas>
 					<canvas id="volume-graph"></canvas>
 					<button id="envelope-button">Start envelope</button>
@@ -125,6 +129,11 @@
             $('#set-position').click(function () {
                 bufferBox.position(1);
             });
+
+			$('#loop-buffer').click(function () {
+				bufferBox.loopOn(1, 1.5);
+				bufferBox.play();
+			});
 
             setInterval(function () {
                 $position.text(bufferBox.position());
