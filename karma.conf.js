@@ -25,6 +25,10 @@ module.exports = function(config) {
         }
     ],
 
+    proxies: {
+        'tests/samples/': 'base/tests/samples/'
+    },
+
     // list of files to exclude
     exclude: [
 
