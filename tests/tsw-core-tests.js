@@ -552,25 +552,25 @@ describe('Core', function () {
     */
 
     describe('Create Noise', function () {
-
         it('Node nodeType is "noise"', function () {
             expect(tsw.noise().nodeType).to.eq('noise');
         });
     });
 
     describe('Load files', function () {
-        // This isn't really testing much,
-        // but karma fails if actual mp3s are used.
-
         it('Load some mp3s', function (done) {
             tsw.load(
                 {
                     files: {
-                        sampleOne: 'samples/tsw1.mp3',
-                        sampleTwo: 'samples/tsw2.mp3',
-                        sampleThree: 'samples/tsw3.mp3',
+                        sampleOne: '/base/tests/samples/tsw1.mp3',
+                        sampleTwo: '/base/tests/samples/tsw2.mp3',
+                        sampleThree: '/base/tests/samples/tsw3.mp3',
                     }
                 }, function (successFiles) {
+                    // success
+                    expect(successFiles.sampleOne).to.be.ok;
+                    expect(successFiles.sampleTwo).to.be.ok;
+                    expect(successFiles.sampleThree).to.be.ok;
                     done();
                 }, function () {
                     // failure
@@ -610,15 +610,132 @@ describe('Core', function () {
             expect(bufferBox.buffer().sampleRate).to.eq(44100);
         });
 
-        it('can play a buffer', function () {
+        it('can play a buffer', function (done) {
             var bufferBox = tsw.bufferBox();
 
             bufferBox.buffer(tsw.buffer());
+
+            expect(bufferBox.position()).to.eq(0);
+
             bufferBox.play(tsw.now());
 
             expect(bufferBox.paused).to.eq(false);
             expect(bufferBox.stopped).to.eq(false);
             expect(bufferBox.playing).to.eq(true);
+
+            setTimeout(function () {
+                expect(bufferBox.position()).to.be.above(0.4);
+                done();
+            }, 500);
+        });
+
+        it.skip('will put positon back to zero when playing gets to end of buffer', function (done) {
+            var bufferBox = tsw.bufferBox(),
+                mute = tsw.gain(0);
+
+            tsw.connect(bufferBox, mute, tsw.speakers);
+
+
+            this.timeout(10000);
+
+            tsw.load(
+                { files: { sampleOne: 'base/tests/samples/tsw1.mp3' } },
+                function (successFiles) {
+                    bufferBox.buffer(successFiles.sampleOne);
+                    bufferBox.play();
+
+                    setTimeout(function () {
+                        expect(bufferBox.position()).to.eq(0);
+                        done();
+                    }, 7000);
+            });
+        });
+
+        it.skip('can pause a buffer multiple times', function (done) {
+            var bufferBox = tsw.bufferBox(),
+                mute = tsw.gain(0);
+
+            tsw.connect(bufferBox, mute, tsw.speakers);
+
+            this.timeout(10000);
+
+            tsw.load(
+                { files: { sampleOne: 'base/tests/samples/12345.mp3' } },
+                function (successFiles) {
+                    var marginOfError = 0.2,
+                        delta = 0,
+                        startTime;
+
+                    bufferBox.buffer(successFiles.sampleOne);
+
+                    expect(bufferBox.position()).to.eq(0);
+
+                    // Play audio
+                    startTime = tsw.now();
+                    bufferBox.play();
+
+                    // After 1 second
+                    setTimeout(function () {
+                        var pausedTime;
+
+                        // Pause audio after 1 second.
+                        delta = tsw.now() - startTime;
+
+                        bufferBox.pause();
+                        expect(bufferBox.position()).to.be.at.least(delta - marginOfError);
+                        expect(bufferBox.position()).to.be.at.most(delta + marginOfError);
+
+                        pausedTime = bufferBox.position();
+
+                        // After 2 seconds
+                        setTimeout(function () {
+                            // Check position hasn't changed after 2 seconds.
+                            expect(bufferBox.position()).to.eq(pausedTime);
+
+                            // Play audio one last time.
+                            startTime = tsw.now();
+                            bufferBox.play();
+
+                            // After 3 seconds
+                            setTimeout(function () {
+                                delta = tsw.now() - startTime;
+                                bufferBox.pause();
+
+                                expect(bufferBox.position()).to.be.at.least(3);
+                                expect(bufferBox.position()).to.be.at.most(4.5);
+                                done();
+                            }, 3000)
+                        }, 2000);
+                    }, 1000);
+                }, function () {
+                    // failure
+                    done();
+                }
+            );
+        });
+
+        it('can turn on looping buffer', function () {
+            var bufferBox = tsw.bufferBox();
+
+            bufferBox.buffer(tsw.buffer());
+            bufferBox.play(tsw.now());
+
+            expect(bufferBox.loop.on).to.eq(false);
+
+            bufferBox.loopOn();
+
+            expect(bufferBox.loop.on).to.eq(true);
+        });
+
+        it('can turn off looping a buffer', function () {
+            var bufferBox = tsw.bufferBox();
+
+            bufferBox.buffer(tsw.buffer());
+            bufferBox.play(tsw.now());
+            bufferBox.loopOn();
+            bufferBox.loopOff();
+
+            expect(bufferBox.loop.on).to.eq(false);
         });
     });
 

@@ -21,8 +21,8 @@ describe('Music', function () {
         expect(tsw.frequency('d#3')).to.eq(155.56349186104046);
         expect(tsw.frequency('eb3')).to.eq(155.56349186104046);
         expect(tsw.frequency('C')).to.eq(261.6255653005986);
-        expect(tsw.frequency('D#')).to.eq(311.12698372208087);
-        expect(tsw.frequency('eb')).to.eq(311.12698372208087);
+        expect(tsw.frequency('D#').toFixed(2)).to.eq((311.12698372208087).toFixed(2));
+        expect(tsw.frequency('eb').toFixed(2)).to.eq((311.12698372208087).toFixed(2));
         expect(tsw.frequency('Not a note')).to.eq(false);
         expect(tsw.frequency(123)).to.eq(false);
     });
