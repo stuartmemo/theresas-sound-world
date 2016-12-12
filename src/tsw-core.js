@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.7.0';
+    version = '0.6.1';
 
 tsw = (function () {
 
@@ -543,8 +543,9 @@ tsw = (function () {
     * @param {array} files
     * @param {function} callback
     */
-    tsw.load = function (config) {
+    tsw.load = function () {
         var returnObj = {},
+            files = arguments[0],
             basePath = '',
             extensions = [],
             files_loaded = 0,
@@ -558,7 +559,7 @@ tsw = (function () {
         var loadFile = function (basePath, fileKey, filePath, returnObj, successCallback, failCallback) {
             var request = new XMLHttpRequest();
 
-            request.open('GET', filePath, true);
+            request.open('GET', basePath + filePath, true);
             request.responseType = 'arraybuffer';
 
             var success = function () {
@@ -577,9 +578,9 @@ tsw = (function () {
                 files_failed++;
 
                 if (isFunction(failCallback)) {
-                    failCallback(request.status, filePath);
+                    failCallback();
                 } else {
-                    console.error('There was an error loading your file(s)', request.status);
+                    console.log('There was an error loading your file(s)', request.status);
                 }
             };
 
@@ -609,11 +610,16 @@ tsw = (function () {
             failCallback = arguments[2];
         }
 
-        if (typeof config.files === 'object') {
-            number_of_files = Object.keys(config.files).length;
-            for (var file in config.files) {
-                loadFile(basePath, file, config.files[file], returnObj, successCallback, failCallback);
+        // 1st argument is files object
+        if (typeof files === 'object') {
+            number_of_files = Object.keys(files).length;
+            for (var file in files) {
+                loadFile(basePath, file, files[file], returnObj, successCallback, failCallback);
             }
+        } else if (typeof files === 'string') {
+            number_of_files = 1;
+            /** THIS WONT WORK - NO FILE AT THIS POINT **/
+            //loadFile(basePath, file, files[file], returnObj, successCallback);
         } else {
             throw new Error('Files must be an array or a valid string.');
         }
@@ -933,27 +939,23 @@ tsw = (function () {
      * @return BufferBox.
      */
     tsw.bufferBox = function (buff) {
-        var node = tsw.createNode({
-                nodeType: 'bufferBox',
-                paused: false,
-                stopped: true,
-                loop: {
-                    duration: 0,
-                    end: 0,
-                    on: false,
-                    start: 0,
-                    total: 0
+        var node = tsw.createNode(
+                {
+                    nodeType: 'bufferBox',
+                    paused: false,
+                    stopped: true
                 }
-            }),
-            lastKnownPosition = {
-                time: 0,
-                loops: 0
-            },
-            currentPosition = 0,
+            ),
+            bufferPosition = 0,
             bufferWaitingArea,
             sourceNode,
             startTime,
-            onEndFunction;
+            onEndFunction,
+            loop = {
+                on: false,
+                start: null,
+                end: null
+            };
 
         node.buffer = function (buffer) {
             if (buffer) {
@@ -964,32 +966,30 @@ tsw = (function () {
         };
 
         node.loopOn = function (startSeconds, endSeconds) {
-            node.loop.on = true;
-            node.loop.start = startSeconds || 0;
-            node.loop.end = endSeconds || node.buffer().length / tsw.context().sampleRate;
-            node.loop.duration = node.loop.end - node.loop.start;
+            loop.on = true;
+            loop.start = startSeconds;
+            loop.end = endSeconds;
 
             return this;
         };
 
         node.loopOff = function () {
-            node.loop.on = false;
+            loop.on = false;
             return this;
         };
+
+        if (buff) {
+            node.buffer(buff);
+        }
 
         node.play = function (time) {
             var that = this;
 
-            if (tsw.context().state === 'suspended') {
-                tsw.context().resume();
-                return;
-            }
-
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
-            sourceNode.loop = node.loop.on;
-            sourceNode.loopStart = node.loop.start || sourceNode.loopStart;
-            sourceNode.loopEnd = node.loop.end || sourceNode.loopEnd;
+            sourceNode.loop = loop.on;
+            sourceNode.loopStart = loop.start || sourceNode.loopStart;
+            sourceNode.loopEnd = loop.end || sourceNode.loopEnd;
 
             this.paused = false;
             this.stopped = false;
@@ -1003,7 +1003,8 @@ tsw = (function () {
                     !that.stopped &&
                     node.position() >= (node.buffer().length / tsw.context().sampleRate)
                 ) {
-                    node.stop();
+                    bufferPosition = 0;
+                    that.stopped = true;
 
                     if (onEndFunction) {
                         onEndFunction();
@@ -1012,12 +1013,11 @@ tsw = (function () {
             };
 
             startTime = tsw.now();
-            sourceNode.start(tsw.now(), node.position());
+            sourceNode.start(tsw.now(), bufferPosition);
         };
 
         node.stop = function (time) {
-            node.position(0);
-            node.loop.total = 0;
+            bufferPosition = 0;
             this.paused = false;
             this.stopped = true;
 
@@ -1033,52 +1033,38 @@ tsw = (function () {
         }
 
         node.pause = function (time) {
-            tsw.context().suspend();
-        };
+            this.paused = true;
 
-        node.setPosition = function (newPosition) {
-            if (this.paused || this.stopped) {
-                currentPosition = newPosition;
-            } else {
-                this.pause();
-                currentPosition = newPosition;
-                this.play();
+            if (sourceNode) {
+                sourceNode.stop(time || tsw.now());
+                tsw.disconnect(sourceNode);
             }
-        };
 
-        node.getPosition = function () {
-            if (this.paused || this.stopped) {
-                return currentPosition;
-            } else {
-                if (node.loop.on) {
-                    // If context time is more than buffer start time + buffer duration then
-                    // the buffer has looped.
-                    if (tsw.now() > startTime + (node.loop.duration * node.loop.total)) {
-                        node.loop.total++;
-                    }
-
-                }
-
-                return tsw.now() -
-                    startTime -
-                    (node.loop.duration * node.loop.total) +
-                    node.loop.duration +
-                    node.loop.start;
+            if (!this.stopped) {
+                bufferPosition = bufferPosition +
+                    tsw.now() - startTime;
             }
         };
 
         // Get or set start position of a buffer.
         node.position = function (newPosition) {
             if (newPosition || newPosition === 0) {
-                node.setPosition(newPosition);
+                if (this.paused || this.stopped) {
+                    bufferPosition = newPosition;
+                } else {
+                    this.pause();
+                    bufferPosition = newPosition;
+                    this.play();
+                }
             } else {
-                return node.getPosition();
+                if (this.paused || this.stopped) {
+                    return bufferPosition;
+                } else {
+                    return bufferPosition
+                        + tsw.now() - startTime;
+                }
             }
         };
-
-        if (buff) {
-            node.buffer(buff);
-        }
 
         node.start = node.play;
 
@@ -1390,7 +1376,7 @@ tsw = (function () {
             mapToSoundWorld();
         }, function (error) {
             // Browser is not compatible.
-            console.error(error);
+            console.log(error);
         });
     };
 
