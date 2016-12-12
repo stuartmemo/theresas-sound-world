@@ -387,7 +387,7 @@ describe('Core', function () {
                     expect(vol.gain()).to.be.below(0.6);
                 }
                 catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }, 1000);
 
@@ -396,7 +396,7 @@ describe('Core', function () {
                     expect(vol.gain()).to.be.below(0.5);
                 }
                 catch (e) {
-                    console.log(e);
+                    console.error(e);
                 }
             }, 3500);
 
@@ -405,7 +405,7 @@ describe('Core', function () {
                     expect(vol.gain()).to.be.below(0.5);
                 }
                 catch (e) {
-                    console.log(e);
+                    console.error(e);
                     done();
                 }
                 done();
