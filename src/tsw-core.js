@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.6.0';
+    version = '0.5.3';
 
 tsw = (function () {
 
@@ -947,15 +947,11 @@ tsw = (function () {
                 }
             ),
             bufferPosition = 0,
+            bufferShouldLoop = false,
             bufferWaitingArea,
             sourceNode,
             startTime,
-            onEndFunction,
-            loop = {
-                on: false,
-                start: null,
-                end: null
-            };
+            onEndFunction;
 
         node.buffer = function (buffer) {
             if (buffer) {
@@ -965,16 +961,8 @@ tsw = (function () {
             }
         };
 
-        node.loopOn = function (startSeconds, endSeconds) {
-            loop.on = true;
-            loop.start = startSeconds;
-            loop.end = endSeconds;
-
-            return this;
-        };
-
-        node.loopOff = function () {
-            loop.on = false;
+        node.loop = function (shouldLoop) {
+            bufferShouldLoop = shouldLoop;
             return this;
         };
 
@@ -987,9 +975,7 @@ tsw = (function () {
 
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
-            sourceNode.loop = loop.on;
-            sourceNode.loopStart = loop.start;
-            sourceNode.loopEnd = loop.end;
+            sourceNode.loop = bufferShouldLoop;
 
             this.paused = false;
             this.stopped = false;
@@ -1307,7 +1293,7 @@ tsw = (function () {
         noiseSource.nodeType = 'noise';
         noiseSource.buffer(noiseBuffer);
 
-        noiseSource.loopOn(true);
+        noiseSource.loop(true);
 
         return noiseSource;
     };
