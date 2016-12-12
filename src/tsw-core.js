@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.7.1';
+    version = '0.7.0';
 
 tsw = (function () {
 
@@ -1012,7 +1012,6 @@ tsw = (function () {
             };
 
             startTime = tsw.now();
-
             sourceNode.start(tsw.now(), node.position());
         };
 
@@ -1058,15 +1057,13 @@ tsw = (function () {
                         node.loop.total++;
                     }
 
-                    return tsw.now() -
-                        startTime -
-                        (node.loop.duration * node.loop.total) +
-                        node.loop.duration +
-                        node.loop.start;
-                } else {
-                    return tsw.now() -
-                        startTime + currentPosition;
                 }
+
+                return tsw.now() -
+                    startTime -
+                    (node.loop.duration * node.loop.total) +
+                    node.loop.duration +
+                    node.loop.start;
             }
         };
 
