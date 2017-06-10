@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.8.0';
+    version = '0.8.1';
 
 tsw = (function () {
 
@@ -998,8 +998,8 @@ tsw = (function () {
                 }
             };
 
-            startTime = tsw.now();
-            sourceNode.start(tsw.now(), bufferPosition);
+            startTime = time || tsw.now();
+            sourceNode.start(startTime, bufferPosition);
         };
 
         node.stop = function (time) {
