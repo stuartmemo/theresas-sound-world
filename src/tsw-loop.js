@@ -11,7 +11,7 @@ var tsw = {},
     lookAhead = 25;
 
 // Build a worker from an anonymous function body.
-if (typeof URL !== 'undefined') {
+if (URL && URL.createObjectURL) {
     var blobURL = URL.createObjectURL(
             new Blob(
                 [ '(',
