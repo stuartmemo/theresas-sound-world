@@ -1,5 +1,3 @@
-'use strict';
-
 var browserify = require('browserify');
 var connect = require('gulp-connect');
 var del = require('del');
@@ -24,10 +22,12 @@ gulp.task('serve', function () {
 });
 
 gulp.task('test', function (done) {
-    new Server({
+    Server.start({
         configFile: __dirname + '/karma.conf.js',
         singleRun: true
-    }, done).start();
+    }, function () {
+        done();
+    });
 });
 
 gulp.task('bundle', function () {
@@ -62,10 +62,5 @@ gulp.task('add-banner', function () {
         .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('build', function () {
-    runSequence('clean', 'bundle', 'uglify', 'add-banner');
-});
-
-gulp.task('build-and-test', function () {
-    runSequence('build', 'test');
-});
+gulp.task('build', gulp.series('clean', 'bundle', 'uglify', 'add-banner'));
+gulp.task('build-and-test', gulp.series('build', 'test'));
