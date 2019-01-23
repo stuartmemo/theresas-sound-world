@@ -1044,7 +1044,7 @@ tsw = (function () {
             node.buffer(buff);
         }
 
-        node.play = function (time) {
+        node.play = function (time, duration) {
             var that = this;
 
             sourceNode = tsw.context().createBufferSource();
@@ -1073,7 +1073,7 @@ tsw = (function () {
             };
 
             startTime = time || tsw.now();
-            sourceNode.start(startTime, bufferPosition);
+            sourceNode.start(startTime, bufferPosition, duration);
         };
 
         node.stop = function (time) {
@@ -1124,6 +1124,8 @@ tsw = (function () {
                         + tsw.now() - startTime;
                 }
             }
+
+            return node;
         };
 
         node.start = node.play;
