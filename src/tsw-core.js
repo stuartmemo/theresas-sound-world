@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.8.4';
+    version = '0.9.0';
 
 tsw = (function () {
 
