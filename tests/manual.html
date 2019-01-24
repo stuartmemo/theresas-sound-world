@@ -65,18 +65,25 @@
                     <h1>5. Set position to 1 second from start</h1>
                     <button id="set-position">Set position</button>
                 </section>
-				<section>
-					<h1>4. Envelope graph</h1>
-					<canvas id="envelope-graph"></canvas>
-					<canvas id="volume-graph"></canvas>
-					<button id="envelope-button">Start envelope</button>
+                <section>
+                    <h1>6. Only play first 2 seconds of buffer</h1>
+                    <button id="play-start-section">Play first 2 seconds</button>
 				</section>
+				<section>
+                    <h1>7. play 2 seconds of buffer, 3 seconds from the start</h1>
+                    <button id="play-middle-section">Play section</button>
+                </section>
+                <section>
+                    <h1>8. Envelope graph</h1>
+                    <canvas id="envelope-graph"></canvas>
+                    <canvas id="volume-graph"></canvas>
+                    <button id="envelope-button">Start envelope</button>
+                </section>
             </div>
-		</div>
+        </div>
 
-		<script src="../dist/tsw.js"></script>
-
-		<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+        <script src="../dist/tsw.js"></script>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
 
         <script>
             var bufferBox = tsw.bufferBox(),
@@ -125,6 +132,16 @@
             $('#set-position').click(function () {
                 bufferBox.position(1);
             });
+
+            $('#play-start-section').click(function () {
+                bufferBox.play(null, 2);
+            });
+
+            $('#play-middle-section').click(function () {
+                bufferBox
+                    .position(tsw.now() + 2)
+                    .play(tsw.now(), 3);
+			});
 
             setInterval(function () {
                 $position.text(bufferBox.position());
