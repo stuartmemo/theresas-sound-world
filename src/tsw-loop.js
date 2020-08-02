@@ -6,9 +6,7 @@
 
 'use strict';
 
-var tsw = {},
-    currentStep = 0,
-    lookAhead = 25;
+var tsw = {};
 
 // Build a worker from an anonymous function body.
 if (typeof URL !== 'undefined' && URL.createObjectURL) {
@@ -31,7 +29,7 @@ if (typeof URL !== 'undefined' && URL.createObjectURL) {
             )
     );
 
-    var worker = new Worker(blobURL);
+    var worker = new Worker(blobURL, { type: 'module' });
 
     URL.revokeObjectURL(blobURL);
 }
@@ -51,7 +49,6 @@ tsw.loop = function (callback, bpm, steps) {
     var nextStepTime,
         currentStep = 0,
         scheduleAheadTime = 0.1,
-        lookAheadTime = 25,
         stepsPerBar,
         stepsPerBarRatio;
 

@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.9.0
+ * @version v0.10.0
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -71,7 +71,7 @@ var tsw = require('./tsw-main');
 
 window.tsw = tsw;
 
-},{"./tsw-main":7}],4:[function(require,module,exports){
+},{"./tsw-main":6}],4:[function(require,module,exports){
 /****************************************************
  * Theresa's Sound World
  * tsw.js
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.9.0';
+    version = '0.10.0';
 
 tsw = (function () {
 
@@ -1748,97 +1748,9 @@ tsw.tremolo = function (settings) {
 module.exports = tsw;
 
 },{"./tsw-core":4}],6:[function(require,module,exports){
-/*******************************
- * Theresas's Sound World - Loop
- * tsw-loop.js
- * Copyright 2014 Stuart Memo
- *******************************/
-
-'use strict';
-
-var tsw = {},
-    currentStep = 0,
-    lookAhead = 25;
-
-// Build a worker from an anonymous function body.
-if (typeof URL !== 'undefined' && URL.createObjectURL) {
-    var blobURL = URL.createObjectURL(
-            new Blob(
-                [ '(',
-                    function () {
-                        //Long-running work here
-                        self.addEventListener('message', function (e) {
-
-                            if (e.data === 'start') {
-                                setInterval(function () {
-                                    self.postMessage('tick');
-                                }, 25);
-                            }
-                        });
-                    }.toString(),
-                ')()' ],
-                { type: 'application/javascript' }
-            )
-    );
-
-    var worker = new Worker(blobURL);
-
-    URL.revokeObjectURL(blobURL);
-}
-
-tsw.secondsPerBeat = function (bpm) {
-    return 60 / bpm;
-};
-
-/*
-Usage
-===========
-tsw.loop(function (stepTime) {
-   osc.start(stepTime);
-}, 120, 4);
-*/
-tsw.loop = function (callback, bpm, steps) {
-    var nextStepTime,
-        currentStep = 0,
-        scheduleAheadTime = 0.1,
-        lookAheadTime = 25,
-        stepsPerBar,
-        stepsPerBarRatio;
-
-    bpm = bpm || 120;
-    steps = steps || 16;
-    stepsPerBar = steps / 4;
-    stepsPerBarRatio = 1 / stepsPerBar;
-
-    nextStepTime = tsw.now();
-    worker.postMessage('start');
-
-    worker.addEventListener('message', function (e) {
-        // Tick gets sent every 100ms from the worker.
-        if (e.data === 'tick') {
-            while (nextStepTime < tsw.now() + scheduleAheadTime) {
-                callback(nextStepTime, currentStep + 1);
-
-                // 4 steps in each beat for 16th's.
-                nextStepTime += stepsPerBarRatio * tsw.secondsPerBeat(bpm);
-
-                currentStep++;
-
-                if (currentStep === steps) {
-                    currentStep = 0;
-                }
-            }
-        }
-    });
-};
-
-module.exports = tsw;
-
-},{}],7:[function(require,module,exports){
 var tswCore = require('./tsw-core');
 var tswEffects = require('./tsw-effects');
 var tswMusic = require('./tsw-music');
-var tswLoop = require('./tsw-loop');
 var tswMidi = require('./tsw-midi');
 var tswAnalysis = require('./tsw-analysis');
 
@@ -1856,10 +1768,6 @@ for (var attrname in tswMusic) {
     tsw[attrname] = tswMusic[attrname];
 }
 
-for (var attrname in tswLoop) {
-    tsw[attrname] = tswLoop[attrname];
-}
-
 for (var attrname in tswMidi) {
     tsw[attrname] = tswMidi[attrname];
 }
@@ -1870,7 +1778,7 @@ for (var attrname in tswAnalysis) {
 
 module.exports = tsw;
 
-},{"./tsw-analysis":2,"./tsw-core":4,"./tsw-effects":5,"./tsw-loop":6,"./tsw-midi":8,"./tsw-music":9}],8:[function(require,module,exports){
+},{"./tsw-analysis":2,"./tsw-core":4,"./tsw-effects":5,"./tsw-midi":7,"./tsw-music":8}],7:[function(require,module,exports){
 /*******************************
  * Theresas's Sound World - MIDI
  * tsw-midi.js
@@ -1954,7 +1862,7 @@ tsw.midiNote = function (thing_to_convert) {
 
 module.exports = tsw;
 
-},{"./helpers":1}],9:[function(require,module,exports){
+},{"./helpers":1}],8:[function(require,module,exports){
 /*********************************
  * Theresas's Sound World - Music
  * tsw.js

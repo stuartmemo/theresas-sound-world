@@ -1,7 +1,6 @@
 var tswCore = require('./tsw-core');
 var tswEffects = require('./tsw-effects');
 var tswMusic = require('./tsw-music');
-var tswLoop = require('./tsw-loop');
 var tswMidi = require('./tsw-midi');
 var tswAnalysis = require('./tsw-analysis');
 
@@ -17,10 +16,6 @@ for (var attrname in tswEffects) {
 
 for (var attrname in tswMusic) {
     tsw[attrname] = tswMusic[attrname];
-}
-
-for (var attrname in tswLoop) {
-    tsw[attrname] = tswLoop[attrname];
 }
 
 for (var attrname in tswMidi) {
