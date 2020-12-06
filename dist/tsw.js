@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.10.0
+ * @version v0.11.0
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.10.0';
+    version = '0.11.0';
 
 tsw = (function () {
 
@@ -1044,12 +1044,13 @@ tsw = (function () {
             node.buffer(buff);
         }
 
-        node.play = function (time, duration) {
+        node.play = function (time, duration, detune) {
             var that = this;
 
             sourceNode = tsw.context().createBufferSource();
             sourceNode.buffer = bufferWaitingArea;
             sourceNode.loop = bufferShouldLoop;
+            sourceNode.detune.value = detune || 0;
 
             this.paused = false;
             this.stopped = false;
