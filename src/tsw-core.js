@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.11.0';
+    version = '0.11.1';
 
 tsw = (function () {
 
@@ -859,7 +859,8 @@ tsw = (function () {
         node.detune = createGetSetFunction(osc, 'detune');
 
         node.params = {
-            frequency: osc.frequency
+            frequency: osc.frequency,
+            detune: osc.detune
         };
 
         node.frequency(frequency || 440);
