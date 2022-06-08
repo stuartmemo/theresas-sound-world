@@ -2,7 +2,7 @@
   "name": "theresas-sound-world",
   "title": "Theresa's Sound World",
   "description": "A JavaScript library for audio manipulation.",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "homepage": "http://theresassoundworld.com",
   "author": {
     "name": "Stuart Memo",
@@ -23,6 +23,7 @@
     "browserify": "^16.5.1",
     "chai": "^4.2.0",
     "del": "^5.1.0",
+    "each-props": "^2.0.0",
     "gulp": "^4.0.2",
     "gulp-connect": "^5.7.0",
     "gulp-header": "^2.0.9",

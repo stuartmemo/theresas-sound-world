@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.11.0
+ * @version v0.11.1
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.11.0';
+    version = '0.11.1';
 
 tsw = (function () {
 
@@ -933,7 +933,8 @@ tsw = (function () {
         node.detune = createGetSetFunction(osc, 'detune');
 
         node.params = {
-            frequency: osc.frequency
+            frequency: osc.frequency,
+            detune: osc.detune
         };
 
         node.frequency(frequency || 440);
