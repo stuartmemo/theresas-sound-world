@@ -1,7 +1,7 @@
 /**
  * @name Theresa's Sound World
  * @description A JavaScript library for audio manipulation.
- * @version v0.11.1
+ * @version v0.11.2
  * @tutorial http://theresassoundworld.com
  * @author Stuart Memo
  * @license MIT
@@ -86,7 +86,7 @@ window.tsw = tsw;
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.11.1';
+    version = '0.11.2';
 
 tsw = (function () {
 
@@ -1174,6 +1174,13 @@ tsw = (function () {
         node.frequency = createGetSetFunction(filter, 'frequency');
         node.Q = createGetSetFunction(filter, 'Q');
         node.gain  = createGetSetFunction(filter, 'gain');
+
+        node.params = {
+            detune: filter.detune,
+            frequency: filter.frequency,
+            gain: filter.gain,
+            Q: filter.Q
+        };
 
         node.type(options.type || 'lowpass');
         node.frequency(options.frequency || 1000);
