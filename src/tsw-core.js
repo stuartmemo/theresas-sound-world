@@ -12,7 +12,7 @@
 var helpers = require('./helpers');
 
 var tsw,
-    version = '0.11.1';
+    version = '0.11.2';
 
 tsw = (function () {
 
@@ -1100,6 +1100,13 @@ tsw = (function () {
         node.frequency = createGetSetFunction(filter, 'frequency');
         node.Q = createGetSetFunction(filter, 'Q');
         node.gain  = createGetSetFunction(filter, 'gain');
+
+        node.params = {
+            detune: filter.detune,
+            frequency: filter.frequency,
+            gain: filter.gain,
+            Q: filter.Q
+        };
 
         node.type(options.type || 'lowpass');
         node.frequency(options.frequency || 1000);
