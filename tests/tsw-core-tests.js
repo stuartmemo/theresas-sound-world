@@ -255,6 +255,11 @@ describe('Core', function () {
             osc.frequency(900);
             expect(osc.frequency()).to.eq(900);
         });
+
+        it('Creates an oscillator with a note name', function () {
+            var osc = tsw.osc('D#3', 'sawtooth');
+            expect(osc.frequency()).to.eq(155.56349186104046);
+        });
     });
 
     describe('Create Gain', function () {
