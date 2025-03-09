@@ -10,6 +10,7 @@
 'use strict';
 
 var helpers = require('./helpers');
+var tswMusic = require('./tsw-music');
 
 var tsw,
     version = '0.11.2';
@@ -845,7 +846,7 @@ tsw = (function () {
      * @param {string} waveType The type of wave form.
      * @return {node} Oscillator node of specified type.
      */
-    tsw.oscillator = function (frequency, waveType) {
+    tsw.oscillator = function (frequencyOrNote, waveType) {
         var node,
             osc = tsw.context().createOscillator();
 
@@ -863,7 +864,12 @@ tsw = (function () {
             detune: osc.detune
         };
 
-        node.frequency(frequency || 440);
+        if (helpers.isString(frequencyOrNote)) {
+            node.frequency(tswMusic.frequency(frequencyOrNote));
+        } else {
+            node.frequency(frequencyOrNote || 440);
+        }
+
         node.type((waveType || 'sine').toLowerCase());
 
         node.isPlaying = function () {
